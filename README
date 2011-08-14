@@ -1,0 +1,10 @@
+# zMundo ReadMe
+
+zMundo is a lightweight clone of the Mundo publish/subscribe architecture
+over [ZeroMQ](http://www.zeromq.org) and [Protocol
+Buffers](http://code.google.com/p/protobuf/).
+
+## Status
+
+Currently, zMundo is in the preAlpha phase, meaning that it is only
+conceptualized and active development has not yet started.

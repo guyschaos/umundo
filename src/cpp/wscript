@@ -1,0 +1,15 @@
+#! /usr/bin/env python
+# encoding: utf-8
+#
+# file:	wscript
+# desc:	zMundo waf build file for cpp sources
+# auth: nn
+
+def options(opt):
+    pass
+    # 2DO
+
+def configure(cnf):
+    print ('\n   [configuring c++ part]\n')
+    pass
+    # 2DO

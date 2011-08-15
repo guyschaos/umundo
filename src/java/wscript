@@ -1,0 +1,111 @@
+#! /usr/bin/env python
+# encoding: utf-8
+#
+# file:	wscript
+# desc:	zMundo waf build file for java sources
+# auth: fheinrichs
+
+import os
+
+# SETTINGS
+
+zm_junitdir 	  = 'tls/junit'
+zm_junitjar 	  = zm_junitdir + '/junit-4.8.2.jar'
+zm_jarname	  = 'zmundo.jar'
+
+# settings for javac
+
+zm_compatibility  = '1.5'	
+zm_javacflags = [
+    '-Xlint:unchecked',
+    '-verbose'
+    ]
+zm_defaultassertions = False
+
+# BUILD PROCESS
+
+def options(opt):
+    opt.load('junit', tooldir=zm_junitdir)
+
+    opt.add_option(
+	    '--assertions',
+	    action = 'store_true',
+	    default = zm_defaultassertions,
+	    help='Enable assertions (for javac)'
+	    )
+
+
+def configure(cnf):
+    print ('\n   [configuring java]\n')
+
+    cnf.load('java')
+
+    zm_suffix = cnf.env.ZM_SUFFIX
+    zm_dir    = cnf.env.ZM_DIR
+
+    # determine the src path
+    cnf.env.JAVA_SRC = [
+	    zm_dir['SRC'] + zm_suffix['JAVA'],
+	    zm_dir['BIN'] + zm_suffix['GEN'] + zm_suffix['JAVA']
+	    ]
+
+    # detemine the class path (all jars in the lib folder + here)
+    zm_javalibdir = zm_dir['LIB'] + zm_suffix['JAVA']
+    cnf.env.JAVA_CP = [
+	    zm_javalibdir + file for file in os.listdir(zm_javalibdir) if file.endswith('jar')
+	    ]
+    cnf.env.JAVA_CP.append('.')
+
+    # configure junit
+    if cnf.options.junitpath == '':
+	cnf.options.junitpath = zm_junitjar
+    try:
+        ret = cnf.load('junit', tooldir=zm_junitdir)
+        cnf.env.ENABLE_JUNIT = cnf.options.junit 
+    except:
+	cnf.env.ENABLE_JUNIT = False
+
+
+def build(bld):
+    print ('\n   [building java]\n')
+
+    # compile the java classes first (using a task builder)
+    btb = bld(
+	    name	= 'jcompile',			# name of build (for ordering)
+	    use		= 'NNN',			# dependencies on other builds (NNN=none)
+	    features	= 'javac',			# what java command
+	    srcpath 	= bld.env.JAVA_SRC,		# path to sources
+	    classpath	= bld.env.JAVA_CP,		# class path to use
+	    compat	= zm_compatibility,		# compile compatibiliy level
+	    outdir	= '../..' + bld.env.ZM_SUFFIX['JAVA'] # out dir (relative to build)
+    	    )
+    
+    # Other Options
+    # srcdir = 'src' # space separated source directories (e.g. 'src gen')
+
+    print ('javacflags: %s' % btb.env.JAVACFLAGS)
+    btb.env.JAVACFLAGS = zm_javacflags
+    if bld.options.assertions:
+	btb.env.JAVACFLAGS.append('-ea')
+
+    # JUnit tests
+    if bld.env.ENABLE_JUNIT:
+	print('junit')
+	zm_dir = bld.env.ZM_DIR
+	zm_suffix = bld.env.ZM_SUFFIX
+	btb.features += ' junit'
+	btb.junitsrc = zm_dir['SRC'] + zm_suffix['TEST'] + zm_suffix['JAVA']
+	btb.junitclasspath = bld.env.JAVA_CP.append(zm_junitjar)
+	btb.use += ' JUNIT'
+	btb.env.JUNIT_EXEC_FLAGS = ['-ea']
+
+    # now create the jar task builder
+    jtb = bld(
+	    name     = 'jjar',
+	    use      = 'jcompile',
+	    features = 'jar',
+	    basedir  = btb.outdir,
+	    destfile = btb.outdir + '/' + zm_jarname
+	   )
+    #manifest  = 'manifest',
+    #jaropts = '-C default/src/ .', # can be used to give files

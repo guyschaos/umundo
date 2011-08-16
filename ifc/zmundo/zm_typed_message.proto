@@ -27,14 +27,14 @@ option java_outer_classname = "ZMTypedMessageProtos";
     {@author	Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>}
 */
 
-message ZM_typed_message {
+message ZMTypedMessage {
 
-    extend zmundo.ZM_message {
-        optional ZM_typed_message typed_message = 16;
+    extend zmundo.ZMMessage {
+        optional ZMTypedMessage typedMessage = 16;
     }
 
-    optional uint32 type_index = 1;
-    optional string type_name = 2;
+    optional uint32 typeIndex = 1;
+    optional string typeName = 2;
     required bytes payload = 3;
 
     extensions 16 to max;

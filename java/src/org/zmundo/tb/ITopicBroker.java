@@ -1,14 +1,14 @@
 /*
  * Build by TU Darmstadt 2011, all rights reserved.
  */
-package org.zmundo;
+
+package org.zmundo.tb;
 
 /**
- * 2DO ZMNode class doc
  *
  * @author Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>
- * @version 0.1
  */
-public class ZMNode {
+public interface ITopicBroker {
 
+	// 2DO complete this stub
 }

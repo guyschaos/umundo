@@ -43,37 +43,37 @@ option java_outer_classname = "ZMMessageProtos";
     {@author	Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>}
 */
 
-message ZM_string_message {
+message ZMStringMessage {
     repeated string payload = 1;
 }
 
-message ZM_int_message {
+message ZMIntMessage {
     repeated int32 payload = 1;
 }
 
-message ZM_long_message {
+message ZMLongMessage {
     repeated int64 payload = 1;
 }
 
-message ZM_bool_message {
+message ZMBoolMessage {
     repeated bool payload = 1;
 }
 
-message ZM_float_message {
+message ZMFloatMessage {
     repeated float payload = 1;
 }
 
-message ZM_double_message {
+message ZMDoubleMessage {
     repeated double payload = 1;
 }
 
-message ZM_message {
-    optional ZM_string_message string_payload = 1;
-    optional ZM_int_message int_payload = 2;
-    optional ZM_long_message long_payload = 3;
-    optional ZM_bool_message bool_payload = 4;
-    optional ZM_float_message float_payload = 5;
-    optional ZM_double_message double_payload = 6;
+message ZMMessage {
+    optional ZMStringMessage stringPayload = 1;
+    optional ZMIntMessage intPayload = 2;
+    optional ZMLongMessage longPayload = 3;
+    optional ZMBoolMessage boolPayload = 4;
+    optional ZMFloatMessage floatPayload = 5;
+    optional ZMDoubleMessage doublePayload = 6;
 
     extensions 15 to max;
 }

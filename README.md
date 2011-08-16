@@ -34,12 +34,13 @@ for all officially supported platforms.
 <table>
     <tr><th>Dependency</th><th>Version</th><th>Comments</th></tr>
     <tr>
-	<td>[ZeroMQ](http://www.zeromq.org)</td>
+	<td><a href="http://www.zeromq.org">ZeroMQ</a></td> 
 	<td>2.1</td>
 	<td>Can also be installed globally</td>
     </tr>
     <tr>
-	<td>[Google Protocol Buffers](http://code.google.com/p/protobuf/)</td>
+	<td><a href="http://code.google.com/p/protobuf/">
+               Google Protocol Buffers</a></td> 
 	<td>2.4.1</td>
 	<td> </td>
     </tr>

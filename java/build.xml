@@ -88,9 +88,10 @@
 
     <target name="precompile" depends="init" 
 	    description="precompiles the used interfaces">
-	<echo>    [pre-compiling]</echo>
-        <apply executable="${mcc}" parallel="true">
-            <arg value="--proto_path=${ifc.dir}"/>
+		<echo>    [pre-compiling]</echo>
+    	<property name="protoc.import.path" location="${ifc.dir}"/>
+        <apply executable="${protoc}" parallel="true">
+            <arg value="--proto_path=${protoc.import.path}"/>
             <arg value="--java_out=${gen.dir}"/>
             <fileset dir="${ifc.dir}">
                 <include name="**/*.proto" />

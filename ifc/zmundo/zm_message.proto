@@ -1,0 +1,79 @@
+package zmundo;
+
+option java_package = "org.zmundo.msg";
+option java_outer_classname = "ZMMessageProtos";
+
+/*! {\brief {Defines the format of messages in zmundo.}} 
+    
+    This proto defines the the format of messages in zMundo. It contains
+    standard messages for strings, booleans, int (signed int32), longs, floats and
+    doubles. You can think of these messages as arbitrarily sized arrays (or lists)
+    of the specific type. Plus there is a general message {\p ZM_message}, that
+    consists of all of these messages as optional parts. zMundo messages are sent
+    around using these {\p ZM_messages}. For example, if a string should be sent
+    around, you would create a {\p ZM_string_message} and place it inside the {\p
+    ZM_message} that goes on the wire.
+
+    Protobuf cannot distinguish between different message types by relying purely 
+    on their binary representation. Therefore, only messages of the type {\p
+    ZM_message} are used in zMundo. Supplying user messages then would require
+    using the magic number indicating a binary message. However, to avoid this 
+    problem, the extensions construct in protobuf is used in {\p ZM_message}. This
+    means, that custom messages can define an extension to {\p ZM_message},
+    specifying additional components. {\p ZM_message} allows the tag range 
+    {\code 16 to max\endcode} for user extensions.
+
+    If a message transporting a custom message of a certain type is needed, this 
+    can be achieved using the nested extension pattern described 
+    {\link 
+    http://code.google.com/intl/de-DE/apis/protocolbuffers/docs/proto.html#extensions
+    here \endlink}. A generic way to achieve this is to use the {\p
+    ZM_typed_message}. This special message carries an embedded message and a
+    string component describing the type of that message.
+    
+    {\note Note that using the convenient {\p ZM_typed_message} comes at a cost:
+    the on wire size of the message becomes bloated by the type identifier. In
+    case of performance critical applications, the denser {\p ZM_message} or a
+    binary payload should be used}
+
+    In order to generate the sources to use this description, you hava to invoke
+    {\p protoc} with appropriate parameters for the target source. See the 
+    protobuf description for details: {\link http://code.google.com/p/protobuf/}.
+
+    {@author	Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>}
+*/
+
+message ZM_string_message {
+    repeated string payload = 1;
+}
+
+message ZM_int_message {
+    repeated int32 payload = 1;
+}
+
+message ZM_long_message {
+    repeated int64 payload = 1;
+}
+
+message ZM_bool_message {
+    repeated bool payload = 1;
+}
+
+message ZM_float_message {
+    repeated float payload = 1;
+}
+
+message ZM_double_message {
+    repeated double payload = 1;
+}
+
+message ZM_message {
+    optional ZM_string_message string_payload = 1;
+    optional ZM_int_message int_payload = 2;
+    optional ZM_long_message long_payload = 3;
+    optional ZM_bool_message bool_payload = 4;
+    optional ZM_float_message float_payload = 5;
+    optional ZM_double_message double_payload = 6;
+
+    extensions 15 to max;
+}

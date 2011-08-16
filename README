@@ -11,7 +11,6 @@ Buffers](http://code.google.com/p/protobuf/).
 
 ## Status
 
-
 <table>
     <tr>
         <th>Version</th>
@@ -25,6 +24,26 @@ Buffers](http://code.google.com/p/protobuf/).
     </tr>
 </table>
 
+## Dependencies
+
+The dependencies of zMundo are listed below. Note that this
+list is only relevant for developers aiming to build these
+dependencies for a specific platform. zMundo ships with binaries
+for all officially supported platforms.
+
+<table>
+    <tr><th>Dependency</th><th>Version</th><th>Comments</th></tr>
+    <tr>
+	<td>[ZeroMQ](http://www.zeromq.org)</td>
+	<td>2.1</td>
+	<td>Can also be installed globally</td>
+    </tr>
+    <tr>
+	<td>[Google Protocol Buffers](http://code.google.com/p/protobuf/)</td>
+	<td>2.4.1</td>
+	<td> </td>
+    </tr>
+</table>
 
 ## Directory Structure
 

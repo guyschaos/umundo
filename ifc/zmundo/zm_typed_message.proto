@@ -1,0 +1,41 @@
+package zmundo;
+
+import "zm_message.proto";
+
+option java_package = "org.zmundo.msg";
+option java_outer_classname = "ZMTypedMessageProtos";
+
+/*! {\brief {Defines the format of typed messages in zmundo.}} 
+    
+    This proto defines the the format of typed messages in zMundo. Typed
+    messages are containers, that carry the binary data of another user
+    defined message along with a string specifying the type of that message.
+    This message defines an extension to {\p ZM_message} and uses the
+    tag number {\code tag = 15 \endcode}. Therefore this number is marked as
+    reserved and other extension can start at tag number 16.
+
+    {\note Note that using the convenient {\p ZM_typed_message} comes at a cost:
+    the on wire size of the message becomes bloated by the type identifier. In
+    case of performance critical applications, the denser {\p ZM_message} or a
+    binary payload should be used}
+
+    In order to limit the problem of bloated size, the {\p ZM_typed_message}
+    contains both: a string identifier for the type name and an unsigned integer
+    (32Bit) identifier for the type index. Both are marked as optional, what 
+    should be read 
+
+    {@author	Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>}
+*/
+
+message ZM_typed_message {
+
+    extend zmundo.ZM_message {
+        optional ZM_typed_message typed_message = 16;
+    }
+
+    optional uint32 type_index = 1;
+    optional string type_name = 2;
+    required bytes payload = 3;
+
+    extensions 16 to max;
+}

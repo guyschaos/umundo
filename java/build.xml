@@ -125,7 +125,7 @@
 	    <fileset dir="${lib.dir}/native/win32">
                 <include name="**/*.dll"/>
 	    </fileset>
-	    <fileset dir="${etc.dir}/win32">
+	    <fileset dir="${etc.dir}/lib/win32">
                 <include name="**/*.dll"/>
 	    </fileset>
         </copy>
@@ -195,7 +195,7 @@
     <target name="jar" depends="compile" 
 	    description="create the jar file">
         <echo>    [creating jar]</echo>
-        <jar jarfile="${jarname}" compress="true">
+        <jar jarfile="${bin.dir}/${jarname}" compress="true">
             <fileset dir="${bin.dir}">
                 <include name="**/*.class" />
             </fileset>

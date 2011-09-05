@@ -118,7 +118,7 @@
         </javac>
     </target>
 
-    <target name="createcnt"
+    <target name="createcnt" depends="init"
 	    description="creates needed content">
         <echo>    [copying library files]</echo>
         <copy todir="${bin.lib.dir}/">
@@ -215,12 +215,15 @@
 
     <target name="doc" depends="init,precompile" 
 	    description="generates project documentation">
+    	<property name="doxygen.src.path" location="${src.dir}"/>
+    	<property name="doxygen.ifc.path" location="${ifc.dir}"/>
+    	<property name="doxygen.out.path" location="${doc.dir}"/>
         <taskdef name="doxygen" 
                  classname="org.doxygen.tools.DoxygenTask"
                  classpathref="compile.cp"/>
         <doxygen>
-	    <property name="INPUT" value="${src.dir} ${ifc.dir}"/>
-	    <property name="OUTPUT_DIRECTORY" value="${doc.dir}"/>
+	    <property name="INPUT" value="${doxygen.src.path} ${doxygen.ifc.path}"/>
+	    <property name="OUTPUT_DIRECTORY" value="${doxygen.out.path}"/>
 	    <property name="PROJECT_NAME" value="${project.name}"/>
 	    <property name="PROJECT_LOGO" value="${project.logo}"/>
 	    <property name="PROJECT_BRIEF" value="${project.description}"/>

@@ -1,6 +1,6 @@
-# zMundo ReadMe
+# uMundo ReadMe
 
-zMundo is a lightweight clone of the Mundo publish/subscribe architecture
+uMundo is a lightweight clone of the Mundo publish/subscribe architecture
 over [ZeroMQ](http://www.zeromq.org) and [Protocol
 Buffers](http://code.google.com/p/protobuf/).
 
@@ -18,7 +18,7 @@ Buffers](http://code.google.com/p/protobuf/).
     </tr>
     <tr>
         <th>Description</th>
-	<td> Currently, zMundo is in the preAlpha phase, 
+	<td> Currently, uMundo is in the preAlpha phase, 
 	meaning that it is only conceptualized and active 
 	development has not yet started.
     </tr>
@@ -26,47 +26,28 @@ Buffers](http://code.google.com/p/protobuf/).
 
 ## Dependencies
 
-The dependencies of zMundo are listed below. Note that this
+The dependencies of uMundo are listed below. Note that this
 list is only relevant for developers aiming to build these
-dependencies for a specific platform. zMundo ships with binaries
+dependencies for a specific platform. uMundo ships with binaries
 for all officially supported platforms.
 
 <table>
     <tr><th>Dependency</th><th>Version</th><th>Comments</th></tr>
     <tr>
-	<td><a href="http://www.zeromq.org">ZeroMQ</a></td> 
-	<td>2.1</td>
-	<td>Can also be installed globally</td>
+	<td><a href="http://www.apple.com/support/bonjour/">Bonjour</a></td> 
+	<td>latest</td>
+	<td>Has to be installed globally; use avahi for linux</td>
     </tr>
     <tr>
 	<td><a href="http://code.google.com/p/protobuf/">
                Google Protocol Buffers</a></td> 
 	<td>2.4.1</td>
-	<td> </td>
+	<td>Only required for uMundoSerialization</td>
+    </tr>
+    <tr>
+	<td><a href="http://www.cmake.org/cmake/resources/software.html">
+               cMake</a></td> 
+	<td>latest</td>
+	<td>Build system</td>
     </tr>
 </table>
-
-## Directory Structure
-
-The directory structure is as follows:
-
- 1. there is a special subfolder for everything related to the c++
-    port of zmundo (docs, libs etc.)
- 2. there is another special subfolder for everything related to the
-    java part of zmundo
- 3. there is a folder containing the protocol buffer interfaces used
-    to describe data structures relevant to both ports
- 4. there is a folder containing everything else that is shared between
-    the two ports
-
-The tree then is the following:
-
-   +---cpp (1)
-   +---etc (4)
-   |   +---contrib
-   |   +---doc
-   |   +---lib
-   |   \---tools
-   +---ifc (3)
-   |   \---zmundo
-   \---java (2)

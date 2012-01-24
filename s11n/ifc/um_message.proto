@@ -1,22 +1,22 @@
-package zmundo;
+package umundo;
 
-option java_package = "org.zmundo.msg";
-option java_outer_classname = "ZMMessageProtos";
+option java_package = "org.umundo.ser";
+option java_outer_classname = "UMMessageProtos";
 
-/*! {\brief {Defines the format of messages in zmundo.}} 
+/*! {\brief {Defines the format of messages in umundo.}} 
     
-    This proto defines the the format of messages in zMundo. It contains
+    This proto defines the the format of messages in uMundo. It contains
     standard messages for strings, booleans, int (signed int32), longs, floats and
     doubles. You can think of these messages as arbitrarily sized arrays (or lists)
-    of the specific type. Plus there is a general message {\p ZM_message}, that
-    consists of all of these messages as optional parts. zMundo messages are sent
-    around using these {\p ZM_messages}. For example, if a string should be sent
+    of the specific type. Plus there is a general message {\p UM_message}, that
+    consists of all of these messages as optional parts. uMundo messages are sent
+    around using these {\p UM_messages}. For example, if a string should be sent
     around, you would create a {\p ZM_string_message} and place it inside the {\p
     ZM_message} that goes on the wire.
 
     Protobuf cannot distinguish between different message types by relying purely 
     on their binary representation. Therefore, only messages of the type {\p
-    ZM_message} are used in zMundo. Supplying user messages then would require
+    ZM_message} are used in uMundo. Supplying user messages then would require
     using the magic number indicating a binary message. However, to avoid this 
     problem, the extensions construct in protobuf is used in {\p ZM_message}. This
     means, that custom messages can define an extension to {\p ZM_message},

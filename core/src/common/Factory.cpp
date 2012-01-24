@@ -7,9 +7,9 @@ Factory* Factory::_instance = NULL;
 Factory* Factory::getInstance() {
 	if (Factory::_instance == NULL) {
 		Factory::_instance = new Factory();
-    assert(_instance->_publisherImpl != NULL);
-    assert(_instance->_subscriberImpl != NULL);
-    assert(_instance->_discoveryImpl != NULL);
+		assert(_instance->_publisherImpl != NULL);
+		assert(_instance->_subscriberImpl != NULL);
+		assert(_instance->_discoveryImpl != NULL);
 	}
 	return Factory::_instance;
 }

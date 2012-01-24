@@ -15,32 +15,32 @@
 #define BONJOUR_RESOLVE_TTL 120
 
 namespace umundo {
-	
-	class BonjourNodeStub : public NodeStub {
-	public:
-		BonjourNodeStub();
-		virtual ~BonjourNodeStub();
 
-		uint16_t getPort();
-		const string& getDomain();
-		const string& getHost();
-    const string& getIP();
+class BonjourNodeStub : public NodeStub {
+public:
+	BonjourNodeStub();
+	virtual ~BonjourNodeStub();
 
-	private:
-		void resolve();
+	uint16_t getPort();
+	const string& getDomain();
+	const string& getHost();
+	const string& getIP();
 
-		static void DNSSD_API resolveReply(
-			DNSServiceRef sdref, 
-			const DNSServiceFlags flags, 
-			uint32_t ifIndex, 
-			DNSServiceErrorType errorCode,
-			const char *fullname, 
-			const char *hosttarget, 
-			uint16_t opaqueport, 
-			uint16_t txtLen, 
-			const unsigned char *txtRecord, 
-			void *context
-		);
+private:
+	void resolve();
+
+	static void DNSSD_API resolveReply(
+	    DNSServiceRef sdref,
+	    const DNSServiceFlags flags,
+	    uint32_t ifIndex,
+	    DNSServiceErrorType errorCode,
+	    const char *fullname,
+	    const char *hosttarget,
+	    uint16_t opaqueport,
+	    uint16_t txtLen,
+	    const unsigned char *txtRecord,
+	    void *context
+	);
 
 #if 0
 	static void queryReply(
@@ -55,35 +55,35 @@ namespace umundo {
 	    const void *rdata,
 	    uint32_t ttl,
 	    void *context
-	  );
+	);
 #endif
-    
+
 	static void DNSSD_API addrInfoReply(
-	  DNSServiceRef sdRef,
-	  DNSServiceFlags flags,
-	  uint32_t interfaceIndex,
-	  DNSServiceErrorType errorCode,
-	  const char *hostname,
-	  const struct sockaddr *address,
-	  uint32_t ttl,
-	  void *context
-  );
+	    DNSServiceRef sdRef,
+	    DNSServiceFlags flags,
+	    uint32_t interfaceIndex,
+	    DNSServiceErrorType errorCode,
+	    const char *hostname,
+	    const struct sockaddr *address,
+	    uint32_t ttl,
+	    void *context
+	);
 
-		DNSServiceRef _dnsRegisterClient;
-		DNSServiceRef _dnsResolveClient;
-		DNSServiceRef _dnsQueryClient;
+	DNSServiceRef _dnsRegisterClient;
+	DNSServiceRef _dnsResolveClient;
+	DNSServiceRef _dnsQueryClient;
 
-		std::set<std::string> _actualDomains;
-		std::string _regType;
-    std::string _bonjourDomain;
-    std::string _hostTarget;
-    Mutex _mutex;
-		time_t _ttl;
+	std::set<std::string> _actualDomains;
+	std::string _regType;
+	std::string _bonjourDomain;
+	std::string _hostTarget;
+	Mutex _mutex;
+	time_t _ttl;
 
-		friend std::ostream& operator<<(std::ostream&, const BonjourNodeStub*);		
-		friend class BonjourNodeDiscovery;
-	};
-	
+	friend std::ostream& operator<<(std::ostream&, const BonjourNodeStub*);
+	friend class BonjourNodeDiscovery;
+};
+
 }
 
 #endif /* end of include guard: BonjourNodeStub_H_WRJ8277D */

@@ -29,12 +29,12 @@
 
 namespace umundo {
 
-	using std::string;
-	using std::map;
-	using std::set;
-	using boost::shared_ptr;
-	using boost::weak_ptr;
-	
+using std::string;
+using std::map;
+using std::set;
+using boost::shared_ptr;
+using boost::weak_ptr;
+
 }
 
 #endif /* end of include guard: STDINC_H_XA3W5TTL */

@@ -24,21 +24,21 @@ BonjourNodeDiscovery::~BonjourNodeDiscovery() {
 }
 
 void BonjourNodeDiscovery::remove(shared_ptr<Node> node) {
-  intptr_t address = (intptr_t)(node.get());
+	intptr_t address = (intptr_t)(node.get());
 
-  if (_nodes.find(address) == _nodes.end())
-    return;
-  
-  _mutex.lock();
+	if (_nodes.find(address) == _nodes.end())
+		return;
+
+	_mutex.lock();
 	DNSServiceRef dnsRegisterClient = _dnsClients[address];
-  assert(_sockFD.find(DNSServiceRefSockFD(dnsRegisterClient)) != _sockFD.end());
-  assert(_sockFD[DNSServiceRefSockFD(dnsRegisterClient)] == dnsRegisterClient);
+	assert(_sockFD.find(DNSServiceRefSockFD(dnsRegisterClient)) != _sockFD.end());
+	assert(_sockFD[DNSServiceRefSockFD(dnsRegisterClient)] == dnsRegisterClient);
 
-  _dnsClients.erase(address);
-  _sockFD.erase(DNSServiceRefSockFD(dnsRegisterClient));
-  _nodes.erase(address);
-  DNSServiceRefDeallocate(dnsRegisterClient);
-  _mutex.unlock();
+	_dnsClients.erase(address);
+	_sockFD.erase(DNSServiceRefSockFD(dnsRegisterClient));
+	_nodes.erase(address);
+	DNSServiceRefDeallocate(dnsRegisterClient);
+	_mutex.unlock();
 }
 
 /**
@@ -83,37 +83,37 @@ void BonjourNodeDiscovery::add(shared_ptr<Node> node) {
 
 	free(regtype);
 
-  _mutex.lock();
+	_mutex.lock();
 	if(dnsRegisterClient && err == 0) {
 		int sockFD = DNSServiceRefSockFD(dnsRegisterClient);
-	 	assert(getInstance()->_dnsClients[address] == NULL);
-	 	getInstance()->_nodes[address] = node;
-	 	getInstance()->_dnsClients[address] = dnsRegisterClient;
-	 	getInstance()->_sockFD[sockFD] = dnsRegisterClient;
-  } else {
-	 	LOG_WARN("DNSServiceRegister returned error %d", err);
-  }
-  _mutex.unlock();
+		assert(getInstance()->_dnsClients[address] == NULL);
+		getInstance()->_nodes[address] = node;
+		getInstance()->_dnsClients[address] = dnsRegisterClient;
+		getInstance()->_sockFD[sockFD] = dnsRegisterClient;
+	} else {
+		LOG_WARN("DNSServiceRegister returned error %d", err);
+	}
+	_mutex.unlock();
 }
 
 void BonjourNodeDiscovery::unbrowse(NodeQuery* query) {
-  intptr_t address = (intptr_t)(query);
+	intptr_t address = (intptr_t)(query);
 
-  if (_dnsClients.find(address) == _dnsClients.end())
-    return;
+	if (_dnsClients.find(address) == _dnsClients.end())
+		return;
 
-  _mutex.lock();
+	_mutex.lock();
 	DNSServiceRef dnsRegisterClient = _dnsClients[(intptr_t)query];
-  assert(_sockFD.find(DNSServiceRefSockFD(dnsRegisterClient)) != _sockFD.end());
-  assert(_sockFD[DNSServiceRefSockFD(dnsRegisterClient)] == dnsRegisterClient);
-  _dnsClients.erase(address);
-  _sockFD.erase(DNSServiceRefSockFD(dnsRegisterClient));
-  if (_queryNodes.find(query) != _queryNodes.end())
-    _queryNodes.erase(query);
-  _browsers.erase(address);
-  
-  DNSServiceRefDeallocate(dnsRegisterClient);
-  _mutex.unlock();
+	assert(_sockFD.find(DNSServiceRefSockFD(dnsRegisterClient)) != _sockFD.end());
+	assert(_sockFD[DNSServiceRefSockFD(dnsRegisterClient)] == dnsRegisterClient);
+	_dnsClients.erase(address);
+	_sockFD.erase(DNSServiceRefSockFD(dnsRegisterClient));
+	if (_queryNodes.find(query) != _queryNodes.end())
+		_queryNodes.erase(query);
+	_browsers.erase(address);
+
+	DNSServiceRefDeallocate(dnsRegisterClient);
+	_mutex.unlock();
 }
 
 void BonjourNodeDiscovery::browse(NodeQuery* query) {
@@ -162,10 +162,10 @@ void BonjourNodeDiscovery::run() {
 	int nfds = -1;
 
 	while(isStarted()) {
-    nfds = 0;
+		nfds = 0;
 		FD_ZERO(&readfds);
 		// tv structure gets modified we have to reset each time
-    tv.tv_sec  = BONJOUR_REPOLL_SEC;
+		tv.tv_sec  = BONJOUR_REPOLL_SEC;
 		tv.tv_usec = BONJOUR_REPOLL_USEC;
 
 		std::map<int, DNSServiceRef>::const_iterator it;
@@ -175,22 +175,22 @@ void BonjourNodeDiscovery::run() {
 			FD_SET(it->first, &readfds);
 		}
 		nfds++;
-    
+
 		int result = select(nfds, &readfds, (fd_set*)NULL, (fd_set*)NULL, &tv);
 
 		if (result > 0) {
-      _mutex.lock();
+			_mutex.lock();
 			for (it = _sockFD.begin(); it != _sockFD.end(); it++) {
 				if (FD_ISSET(it->first, &readfds)) {
 					DNSServiceProcessResult(it->second);
 				}
 			}
-      _mutex.unlock();
+			_mutex.unlock();
 		} else if (result == 0) {
 			// timeout
 		} else {
-      LOG_WARN("select failed %s", strerror(errno));
-      Thread::sleepMs(500);
+			LOG_WARN("select failed %s", strerror(errno));
+			Thread::sleepMs(500);
 		}
 	}
 }
@@ -254,9 +254,9 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 		return;
 	} else {
 		query->notifyResultSet();
-    if (!(flags & (kDNSServiceFlagsAdd))) {
-      myself->_queryNodes[query].erase(replyName);
-    }
+		if (!(flags & (kDNSServiceFlagsAdd))) {
+			myself->_queryNodes[query].erase(replyName);
+		}
 	}
 
 }

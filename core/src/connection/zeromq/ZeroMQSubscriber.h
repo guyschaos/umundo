@@ -15,30 +15,32 @@ class ZeroMQSubscriber : public SubscriberImpl, public ResultSet<PublisherStub>,
 public:
 	SubscriberImpl* create(string, Receiver*);
 	virtual ~ZeroMQSubscriber();
-	
+
 	string getChannelName();
-	
+
 	void added(shared_ptr<PublisherStub>);
 	void removed(shared_ptr<PublisherStub>);
 	void changed(shared_ptr<PublisherStub>);
-	
+
 	// Thread
 	void run();
-	
+
 protected:
 	ZeroMQSubscriber();
 	ZeroMQSubscriber(string, Receiver*);
 
 	string _channelName;
 	Receiver* _receiver;
-	
+
 	void* _socket;
 	void* _zeroMQCtx;
 
-private:	
+private:
 	ZeroMQSubscriber(const ZeroMQSubscriber &other) {}
-	ZeroMQSubscriber& operator= (const ZeroMQSubscriber &other) { return *this; }
-	
+	ZeroMQSubscriber& operator= (const ZeroMQSubscriber &other) {
+		return *this;
+	}
+
 
 	friend class Factory;
 };

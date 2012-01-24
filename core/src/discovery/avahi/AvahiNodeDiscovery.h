@@ -28,17 +28,17 @@ public:
 	static shared_ptr<AvahiNodeDiscovery> getInstance();
 
 	shared_ptr<DiscoveryImpl> create();
-		
+
 	void remove(shared_ptr<Node> node);
 	void add(shared_ptr<Node> node);
-	
+
 	void browse(shared_ptr<NodeQuery> discovery);
 	void unbrowse(shared_ptr<NodeQuery> discovery);
-  void run();
+	void run();
 
 private:
 	AvahiNodeDiscovery();
-	
+
 	AvahiSimplePoll *_simplePoll;
 
 	static void entryGroupCallback(AvahiEntryGroup*, AvahiEntryGroupState, void*);
@@ -46,31 +46,31 @@ private:
 	static void browseClientCallback(AvahiClient*, AvahiClientState, void*);
 
 	static void browseCallback(
-    AvahiServiceBrowser *b,
-    AvahiIfIndex interface,
-    AvahiProtocol protocol,
-    AvahiBrowserEvent event,
-    const char *name,
-    const char *type,
-    const char *domain,
-    AvahiLookupResultFlags flags,
-		void* userdata
+	    AvahiServiceBrowser *b,
+	    AvahiIfIndex interface,
+	    AvahiProtocol protocol,
+	    AvahiBrowserEvent event,
+	    const char *name,
+	    const char *type,
+	    const char *domain,
+	    AvahiLookupResultFlags flags,
+	    void* userdata
 	);
 
 	static void resolveCallback(
-    AvahiServiceResolver *r,
-    AvahiIfIndex interface,
-    AvahiProtocol protocol,
-    AvahiResolverEvent event,
-    const char *name,
-    const char *type,
-    const char *domain,
-    const char *host_name,
-    const AvahiAddress *address,
-    uint16_t port,
-    AvahiStringList *txt,
-    AvahiLookupResultFlags flags,
-		void* userdata
+	    AvahiServiceResolver *r,
+	    AvahiIfIndex interface,
+	    AvahiProtocol protocol,
+	    AvahiResolverEvent event,
+	    const char *name,
+	    const char *type,
+	    const char *domain,
+	    const char *host_name,
+	    const AvahiAddress *address,
+	    uint16_t port,
+	    AvahiStringList *txt,
+	    AvahiLookupResultFlags flags,
+	    void* userdata
 	);
 
 	map<intptr_t, shared_ptr<NodeQuery> > _browsers;       // memory addresses of queries for static callbacks
@@ -78,13 +78,13 @@ private:
 	map<intptr_t, AvahiClient* > _avahiClients;            // memory addresses of local nodes to avahi clients
 	map<intptr_t, AvahiEntryGroup* > _avahiGroups;         // memory addresses of local nodes to avahi groups
 	map<intptr_t, AvahiServiceBrowser* > _avahiBrowser;        // memory addresses of local nodes to avahi service browsers
-	
+
 	map<shared_ptr<NodeQuery>, map<string, shared_ptr<AvahiNodeStub> > > _queryNodes;
-	
+
 	static shared_ptr<AvahiNodeDiscovery> _instance;
-	
+
 	static bool printWarn(const char* file, int line, const char* fct, int err);
-	
+
 	friend class AvahiNodeStub;
 	friend class Factory;
 };

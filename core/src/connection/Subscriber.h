@@ -20,9 +20,9 @@ public:
 
 	Subscriber(string channelName, Receiver* receiver);
 	virtual ~Subscriber();
-	
+
 	virtual string getChannelName();
-	
+
 protected:
 	SubscriberImpl* _impl;
 };

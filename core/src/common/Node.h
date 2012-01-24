@@ -8,18 +8,18 @@
 #include "common/NodeStub.h"
 
 namespace umundo {
-	
-	class Node : public NodeStub {
-	public:
-		Node() {
-      _uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
-    }
-		
-	protected:
-		
-		Node* _impl;
-	};
-	
+
+class Node : public NodeStub {
+public:
+	Node() {
+		_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
+	}
+
+protected:
+
+	Node* _impl;
+};
+
 }
 
 

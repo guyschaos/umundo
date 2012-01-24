@@ -7,7 +7,7 @@ BonjourNodeStub::BonjourNodeStub() {
 	DEBUG_CTOR("BonjourNodeStub");
 	_isRemote = false;
 	_isAdded = false;
-  _ttl = 0;
+	_ttl = 0;
 };
 
 BonjourNodeStub::~BonjourNodeStub() {
@@ -23,7 +23,7 @@ uint16_t BonjourNodeStub::getPort() {
 const string& BonjourNodeStub::getIP() {
 	resolve();
 	// just return the first ip address
-  assert(_interfaces.size() > 0);
+	assert(_interfaces.size() > 0);
 	return (_interfaces.begin())->second;
 }
 
@@ -38,12 +38,12 @@ const string& BonjourNodeStub::getHost() {
 }
 
 void BonjourNodeStub::resolve() {
-  _mutex.lock();
-  // we already resolved 
+	_mutex.lock();
+	// we already resolved
 	if (time(NULL) < _ttl) {
-    _mutex.unlock();
+		_mutex.unlock();
 		return;
-  }
+	}
 
 	DNSServiceFlags rflags = 0;
 	uint32_t interfaceIndex = kDNSServiceInterfaceIndexAny;
@@ -119,9 +119,9 @@ void BonjourNodeStub::resolve() {
 	}
 #endif
 
-  _ttl = time(NULL) + BONJOUR_RESOLVE_TTL;
+	_ttl = time(NULL) + BONJOUR_RESOLVE_TTL;
 	free(regtype);
-  _mutex.unlock();
+	_mutex.unlock();
 
 }
 
@@ -151,13 +151,13 @@ void DNSSD_API BonjourNodeStub::addrInfoReply(
 		return;
 	}
 
-  bool override = false;
+	bool override = false;
 	char* addr = NULL;
-  
+
 	if (address && address->sa_family == AF_INET) {
 		const unsigned char *b = (const unsigned char *) &((struct sockaddr_in *)address)->sin_addr;
 		asprintf(&addr, "%d.%d.%d.%d", b[0], b[1], b[2], b[3]);
-    override = true; // we prefer ipv4 ..
+		override = true; // we prefer ipv4 ..
 	}	else if (address && address->sa_family == AF_INET6) {
 		const struct sockaddr_in6 *s6 = (const struct sockaddr_in6 *)address;
 		const unsigned char *b = (const unsigned char*)&s6->sin6_addr;
@@ -171,9 +171,9 @@ void DNSSD_API BonjourNodeStub::addrInfoReply(
 #endif
 
 	BonjourNodeStub* node = (BonjourNodeStub*)context;
-  if (node->_interfaces.find(interfaceIndex) == node->_interfaces.end() || override)
-    node->_interfaces[interfaceIndex] = addr;
-  free(addr);
+	if (node->_interfaces.find(interfaceIndex) == node->_interfaces.end() || override)
+		node->_interfaces[interfaceIndex] = addr;
+	free(addr);
 }
 
 #if 0
@@ -231,24 +231,24 @@ void DNSSD_API BonjourNodeStub::resolveReply(
 	          << "]" << std::endl;
 #endif
 
-  if(errorCode == kDNSServiceErr_NoError) {
-    BonjourNodeStub* node = (BonjourNodeStub*)context;
-    node->_bonjourDomain = fullname;
-    node->_hostTarget = hosttarget;
+	if(errorCode == kDNSServiceErr_NoError) {
+		BonjourNodeStub* node = (BonjourNodeStub*)context;
+		node->_bonjourDomain = fullname;
+		node->_hostTarget = hosttarget;
 
-    const char* domainStart = strchr(hosttarget, '.');
-    node->_domain = ++domainStart;
+		const char* domainStart = strchr(hosttarget, '.');
+		node->_domain = ++domainStart;
 
-    char* host = (char*)malloc(strlen(hosttarget) + 1);
-    memcpy(host, hosttarget, strlen(hosttarget));
-    char* hostEnd = strchr(host, '.');
-    hostEnd[0] = 0;
-    node->_host = host;
-    free(host);
+		char* host = (char*)malloc(strlen(hosttarget) + 1);
+		memcpy(host, hosttarget, strlen(hosttarget));
+		char* hostEnd = strchr(host, '.');
+		hostEnd[0] = 0;
+		node->_host = host;
+		free(host);
 
-    node->_port = ntohs(opaqueport);
-  } else {
-    LOG_WARN("BonjourNodeStub::resolveReply called with error");
+		node->_port = ntohs(opaqueport);
+	} else {
+		LOG_WARN("BonjourNodeStub::resolveReply called with error");
 	}
 }
 

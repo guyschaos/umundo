@@ -12,28 +12,28 @@
 
 namespace umundo {
 
-	class AvahiNodeStubDiscovery;
-	
-	class AvahiNodeStub : public NodeStub {
-	public:
-		AvahiNodeStub();
-		virtual ~AvahiNodeStub();
+class AvahiNodeStubDiscovery;
 
-		uint16_t getPort();
-		std::string getDomain();
-		std::string getHost();
-    std::string getIP();
+class AvahiNodeStub : public NodeStub {
+public:
+	AvahiNodeStub();
+	virtual ~AvahiNodeStub();
 
-	private:
-		void resolve();
+	uint16_t getPort();
+	std::string getDomain();
+	std::string getHost();
+	std::string getIP();
 
-		bool _isOurOwn;
-		bool _isWan;
+private:
+	void resolve();
 
-		friend std::ostream& operator<<(std::ostream&, const AvahiNodeStub*);		
-		friend class AvahiNodeDiscovery;
-	};
-	
+	bool _isOurOwn;
+	bool _isWan;
+
+	friend std::ostream& operator<<(std::ostream&, const AvahiNodeStub*);
+	friend class AvahiNodeDiscovery;
+};
+
 }
 
 #endif /* end of include guard: AVAHINODESTUB_H_ACCARM71 */

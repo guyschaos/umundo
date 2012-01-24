@@ -29,17 +29,17 @@ public:
 	static PublisherImpl* createPublisher(string);
 	static SubscriberImpl* createSubscriber(string, Receiver*);
 	static DiscoveryImpl* createDiscovery();
-	
+
 	PublisherImpl* _publisherImpl;
 	SubscriberImpl* _subscriberImpl;
 	DiscoveryImpl* _discoveryImpl;
-	
+
 protected:
 	Factory();
-	
+
 private:
 	static Factory* _instance;
-	
+
 };
 
 }

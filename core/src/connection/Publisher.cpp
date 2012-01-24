@@ -8,7 +8,7 @@ Publisher::Publisher(const string& channelName) : PublisherStub(channelName) {
 }
 
 Publisher::~Publisher() {
-  delete _impl;
+	delete _impl;
 }
 
 void Publisher::send(char* buffer, size_t length) {

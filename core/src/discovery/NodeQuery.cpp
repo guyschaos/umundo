@@ -11,33 +11,33 @@ NodeQuery::~NodeQuery() {
 }
 
 void NodeQuery::added(shared_ptr<NodeStub> node) {
-  _mutex.lock();
+	_mutex.lock();
 	if (_notifyImmediately) {
 		_listener->added(node);
 	} else {
 		_pendingAdditions.insert(node);
 	}
-  _mutex.unlock();
+	_mutex.unlock();
 }
 
 void NodeQuery::changed(shared_ptr<NodeStub> node) {
-  _mutex.lock();
+	_mutex.lock();
 	if (_notifyImmediately) {
 		_listener->changed(node);
 	} else {
 		_pendingChanges.insert(node);
 	}
-  _mutex.unlock();
+	_mutex.unlock();
 }
 
 void NodeQuery::removed(shared_ptr<NodeStub> node) {
-  _mutex.lock();
+	_mutex.lock();
 	if (_notifyImmediately) {
 		_listener->removed(node);
 	} else {
 		_pendingRemovals.insert(node);
 	}
-  _mutex.unlock();
+	_mutex.unlock();
 }
 
 void NodeQuery::notifyImmediately(bool notifyImmediately) {
@@ -51,7 +51,7 @@ void NodeQuery::notifyResultSet() {
 		_listener->changed(*nodeIter);
 	}
 	_pendingChanges.clear();
-	
+
 	for (nodeIter = _pendingRemovals.begin(); nodeIter != _pendingRemovals.end(); nodeIter++) {
 		_listener->removed(*nodeIter);
 	}

@@ -16,13 +16,13 @@
 #include "common/ResultSet.h"
 
 namespace umundo {
-  
+
 class ZeroMQNode : public Thread, public ResultSet<NodeStub>, public Node {
 public:
 	static shared_ptr<ZeroMQNode> getInstance();
 	virtual ~ZeroMQNode();
 
-  // pub sub maintenance
+	// pub sub maintenance
 	static void addSubscriber(SubscriberImpl*);
 	static void removeSubscriber(SubscriberImpl*);
 	static void addPublisher(PublisherImpl*);
@@ -45,33 +45,35 @@ protected:
 	void processPubRemoved(const char*, zmq_msg_t);
 
 	// local subscriber maintenance
-  void addRemotePubToLocalSubs(const char*, shared_ptr<PublisherStub>);
-  void removeRemotePubFromLocalSubs(const char*, shared_ptr<PublisherStub>);
-	
+	void addRemotePubToLocalSubs(const char*, shared_ptr<PublisherStub>);
+	void removeRemotePubFromLocalSubs(const char*, shared_ptr<PublisherStub>);
+
 private:
 	ZeroMQNode(const ZeroMQNode &other) {}
-	ZeroMQNode& operator= (const ZeroMQNode &other) { return *this; }
-	
-  static void initPubMgmtMsg(zmq_msg_t&, ZeroMQPublisher*);
-  
+	ZeroMQNode& operator= (const ZeroMQNode &other) {
+		return *this;
+	}
+
+	static void initPubMgmtMsg(zmq_msg_t&, ZeroMQPublisher*);
+
 	void* _zeroMQCtx;
 	void* _responder;
-  Mutex _mutex;
+	Mutex _mutex;
 	NodeQuery* _nodeQuery;
-	
+
 	map<string, shared_ptr<NodeStub> > _nodes;                                    // uuids to NodeStubs
-  map<string, void*> _sockets;                                                  // uuids to ZeroMQ Sockets
-  map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          // uuids to ports to remote publishers
-  map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; // remote publishers of undiscovered nodes
-  map<uint16_t, ZeroMQPublisher* > _localPubs;                       // local ports to local publishers
-  set<ZeroMQSubscriber* > _localSubs;                                // local subscribers
+	map<string, void*> _sockets;                                                  // uuids to ZeroMQ Sockets
+	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          // uuids to ports to remote publishers
+	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; // remote publishers of undiscovered nodes
+	map<uint16_t, ZeroMQPublisher* > _localPubs;                       // local ports to local publishers
+	set<ZeroMQSubscriber* > _localSubs;                                // local subscribers
 
 	static shared_ptr<ZeroMQNode> _instance;
-		
-	friend std::ostream& operator<<(std::ostream&, const ZeroMQNode*);		
-	
+
+	friend std::ostream& operator<<(std::ostream&, const ZeroMQNode*);
+
 };
-	
+
 }
 
 #endif /* end of include guard: ZEROMQDISPATCHER_H_XFMTSVLV */

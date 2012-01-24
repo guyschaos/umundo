@@ -1,0 +1,43 @@
+#ifndef PTHREAD_H_KU2YWI3W
+#define PTHREAD_H_KU2YWI3W
+
+#include "thread/Thread.h"
+#include <pthread.h>
+#include <errno.h>
+
+namespace umundo {
+
+class Thread : public ThreadBase {
+public:
+	Thread();
+	virtual ~Thread();
+	virtual void run() = 0;
+	void join();
+	void start();
+	void stop();
+	bool isStarted() { return _isStarted; }
+	
+	static void sleepMs(uint32_t ms);
+	
+protected:
+	bool _isStarted;
+	pthread_t _thread;
+	static void* runWrapper(void*);
+};
+
+class Mutex : public MutexBase {
+public:
+	Mutex();
+	virtual ~Mutex();
+	
+	void lock();
+	bool tryLock();
+	void unlock();
+
+private:
+  pthread_mutex_t _mutex;
+};
+
+}
+
+#endif /* end of include guard: PTHREAD_H_KU2YWI3W */

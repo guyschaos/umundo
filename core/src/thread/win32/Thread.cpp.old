@@ -1,0 +1,75 @@
+#include "thread/win32/Thread.h"
+
+namespace umundo {
+
+Thread::Thread() {
+	DEBUG_CTOR("Thread");
+	_isStarted = false;
+	_thread = NULL;
+}
+
+Thread::~Thread() {
+	DEBUG_DTOR("Thread");  
+	if (_isStarted) {
+		stop();
+		join();
+	}
+	if (_thread != NULL)
+    CloseHandle(_thread);	
+}
+
+void Thread::join() {
+	int err = 0;
+  DWORD dwCode;
+  dwCode = WaitForSingleObject(_thread, INFINITE);
+	assert(dwCode==WAIT_OBJECT_0);
+	GetExitCodeThread(_thread, &dwCode);
+	assert(dwCode != STILL_ACTIVE);
+}
+
+void Thread::start() {
+	if (_isStarted)
+		return;
+	_isStarted = true;
+  DWORD threadId;
+  _thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)runWrapper, this, 0, &threadId);
+	assert(_thread != NULL);
+}
+
+DWORD Thread::runWrapper(Thread *t) {
+  t->run();
+  return 0;
+}
+
+void Thread::stop() {
+	_isStarted = false;
+}
+
+void Thread::sleepMs(uint32_t ms) {
+	Sleep(1000 * ms);
+}
+
+Mutex::Mutex() {
+  _mutex = CreateMutex(NULL, FALSE, NULL);
+}
+
+Mutex::~Mutex() {
+  CloseHandle(_mutex);
+}
+
+void Mutex::lock() {
+  WaitForSingleObject(_mutex, INFINITE);
+}
+
+bool Mutex::tryLock() {
+  if(WaitForSingleObject(_mutex, 0) == WAIT_TIMEOUT) 
+		return false;
+  return true;
+}
+
+void Mutex::unlock() {
+  ReleaseMutex(_mutex);
+}
+
+
+}

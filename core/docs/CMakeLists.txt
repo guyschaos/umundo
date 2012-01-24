@@ -1,0 +1,1 @@
+ADD_CUSTOM_TARGET(docs doxygen WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMENT generate the documentation in the source directory using \"make doc\" - doxygen is required)

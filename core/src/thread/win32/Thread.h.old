@@ -1,0 +1,46 @@
+#ifndef WIN32THREAD_H_KU2YWI3W
+#define WIN32THREAD_H_KU2YWI3W
+
+#include "thread/Thread.h"
+
+#ifndef HANDLE
+#include <windows.h>
+#endif
+
+namespace umundo {
+
+class Thread : public ThreadBase {
+public:
+	Thread();
+	virtual ~Thread();
+	virtual void run() = 0;
+	void join();
+	void start();
+	void stop();
+	bool isStarted() { return _isStarted; }
+	
+	static void sleepMs(uint32_t ms);
+	
+protected:
+	static DWORD Thread::runWrapper(Thread *t);
+	bool _isStarted;
+  HANDLE _thread;
+	
+};
+
+class Mutex : public MutexBase {
+public:
+	Mutex();
+	virtual ~Mutex();
+	
+	void lock();
+	bool tryLock();
+	void unlock();
+
+private:
+  HANDLE _mutex;
+};
+
+}
+
+#endif /* end of include guard: PTHREAD_H_KU2YWI3W */

@@ -5,7 +5,7 @@
 #
 
 SDK_VER="5.0"
-DEST_DIR="../prebuilt/zeromq/ios/${SDK_VER}"
+DEST_DIR="../../prebuilt/zeromq/ios/${SDK_VER}"
 if [ ! -f configure ]; then
 	echo "Cannot find ./configure"
 	echo "Run from within zeroMQ directory"

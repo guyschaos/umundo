@@ -8,7 +8,7 @@ cd ../..
 
 if [ ! -f ../lib/iOS-5.0/arm/gnu/libumundo.a ]; then
 	echo "Could not find ../lib/iOS-5.0/arm/gnu/libumundo.a"
-	echo "Soething went wrong with building"
+	echo "Something went wrong with building"
 	exit
 fi
 

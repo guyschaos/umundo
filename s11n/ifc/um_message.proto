@@ -11,16 +11,16 @@ option java_outer_classname = "UMMessageProtos";
     of the specific type. Plus there is a general message {\p UM_message}, that
     consists of all of these messages as optional parts. uMundo messages are sent
     around using these {\p UM_messages}. For example, if a string should be sent
-    around, you would create a {\p ZM_string_message} and place it inside the {\p
-    ZM_message} that goes on the wire.
+    around, you would create a {\p UM_string_message} and place it inside the {\p
+    UM_message} that goes on the wire.
 
     Protobuf cannot distinguish between different message types by relying purely 
     on their binary representation. Therefore, only messages of the type {\p
-    ZM_message} are used in uMundo. Supplying user messages then would require
+    UM_message} are used in uMundo. Supplying user messages then would require
     using the magic number indicating a binary message. However, to avoid this 
-    problem, the extensions construct in protobuf is used in {\p ZM_message}. This
-    means, that custom messages can define an extension to {\p ZM_message},
-    specifying additional components. {\p ZM_message} allows the tag range 
+    problem, the extensions construct in protobuf is used in {\p UM_message}. This
+    means, that custom messages can define an extension to {\p UM_message},
+    specifying additional components. {\p UM_message} allows the tag range 
     {\code 16 to max\endcode} for user extensions.
 
     If a message transporting a custom message of a certain type is needed, this 
@@ -28,12 +28,12 @@ option java_outer_classname = "UMMessageProtos";
     {\link 
     http://code.google.com/intl/de-DE/apis/protocolbuffers/docs/proto.html#extensions
     here \endlink}. A generic way to achieve this is to use the {\p
-    ZM_typed_message}. This special message carries an embedded message and a
+    UM_typed_message}. This special message carries an embedded message and a
     string component describing the type of that message.
     
-    {\note Note that using the convenient {\p ZM_typed_message} comes at a cost:
+    {\note Note that using the convenient {\p UM_typed_message} comes at a cost:
     the on wire size of the message becomes bloated by the type identifier. In
-    case of performance critical applications, the denser {\p ZM_message} or a
+    case of performance critical applications, the denser {\p UM_message} or a
     binary payload should be used}
 
     In order to generate the sources to use this description, you hava to invoke
@@ -43,37 +43,37 @@ option java_outer_classname = "UMMessageProtos";
     {@author	Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>}
 */
 
-message ZMStringMessage {
+message UMStringMessage {
     repeated string payload = 1;
 }
 
-message ZMIntMessage {
+message UMIntMessage {
     repeated int32 payload = 1;
 }
 
-message ZMLongMessage {
+message UMLongMessage {
     repeated int64 payload = 1;
 }
 
-message ZMBoolMessage {
+message UMBoolMessage {
     repeated bool payload = 1;
 }
 
-message ZMFloatMessage {
+message UMFloatMessage {
     repeated float payload = 1;
 }
 
-message ZMDoubleMessage {
+message UMDoubleMessage {
     repeated double payload = 1;
 }
 
-message ZMMessage {
-    optional ZMStringMessage stringPayload = 1;
-    optional ZMIntMessage intPayload = 2;
-    optional ZMLongMessage longPayload = 3;
-    optional ZMBoolMessage boolPayload = 4;
-    optional ZMFloatMessage floatPayload = 5;
-    optional ZMDoubleMessage doublePayload = 6;
+message UMMessage {
+    optional UMStringMessage stringPayload = 1;
+    optional UMIntMessage intPayload = 2;
+    optional UMLongMessage longPayload = 3;
+    optional UMBoolMessage boolPayload = 4;
+    optional UMFloatMessage floatPayload = 5;
+    optional UMDoubleMessage doublePayload = 6;
 
     extensions 15 to max;
 }

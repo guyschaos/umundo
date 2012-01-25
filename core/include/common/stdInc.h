@@ -11,7 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-#ifdef UNIX
+#if defined UNIX || defined IOS || defined IOSSIM
 #include <stdlib.h>
 #include <netinet/in.h>
 #endif
@@ -29,12 +29,12 @@
 
 namespace umundo {
 
-	using std::string;
-	using std::map;
-	using std::set;
-	using boost::shared_ptr;
-	using boost::weak_ptr;
-	
+using std::string;
+using std::map;
+using std::set;
+using boost::shared_ptr;
+using boost::weak_ptr;
+
 }
 
 #endif /* end of include guard: STDINC_H_XA3W5TTL */

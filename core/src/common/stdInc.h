@@ -11,7 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-#ifdef UNIX
+#if defined UNIX || defined IOS || defined IOSSIM
 #include <stdlib.h>
 #include <netinet/in.h>
 #endif

@@ -27,16 +27,16 @@ public:
 	static BonjourNodeDiscovery* getInstance();
 
 	DiscoveryImpl* create();
-		
+
 	void remove(shared_ptr<Node> node);
 	void add(shared_ptr<Node> node);
-	
+
 	void browse(NodeQuery* discovery);
 	void unbrowse(NodeQuery* discovery);
-  void run();
+	void run();
 
 private:
-  // static callbacks for bonjour
+	// static callbacks for bonjour
 	static void DNSSD_API browseReply(
 	    DNSServiceRef sdref,
 	    const DNSServiceFlags flags,
@@ -57,17 +57,17 @@ private:
 	    const char* domain,
 	    void* context
 	);
-  
+
 	map<int, DNSServiceRef> _sockFD;                  // socket file descriptors to bonjour handle
 	map<intptr_t, NodeQuery* > _browsers;             // memory addresses of queries for static callbacks
 	map<intptr_t, shared_ptr<Node> > _nodes;	        // memory addresses of local nodes for static callbacks
 	map<intptr_t, DNSServiceRef> _dnsClients;	        // bonjour handles for local node registration
 
 	map<NodeQuery*, map<string, shared_ptr<BonjourNodeStub> > > _queryNodes;
-  Mutex _mutex;
-	
+	Mutex _mutex;
+
 	static BonjourNodeDiscovery* _instance;
-	
+
 	friend class BonjourNodeStub;
 	friend class Factory;
 };

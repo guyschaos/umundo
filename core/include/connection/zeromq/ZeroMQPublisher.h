@@ -13,30 +13,32 @@ namespace umundo {
 class ZeroMQPublisher : public PublisherImpl, public boost::enable_shared_from_this<ZeroMQPublisher>  {
 public:
 	PublisherImpl* create(std::string);
-  virtual ~ZeroMQPublisher();
+	virtual ~ZeroMQPublisher();
 
 	void send(char* buffer, size_t length);
 	uint16_t getPort();
 protected:
 	/**
-   * Constructor used for prototype in Factory only.
-   */
-  ZeroMQPublisher() {};
+	* Constructor used for prototype in Factory only.
+	*/
+	ZeroMQPublisher() {};
 
-  /**
-   * Actual instance as instantiated by create()
-   */
+	/**
+	 * Actual instance as instantiated by create()
+	 */
 	ZeroMQPublisher(string);
-	
+
 private:
 	ZeroMQPublisher(const ZeroMQPublisher &other) {}
-	ZeroMQPublisher& operator= (const ZeroMQPublisher &other) { return *this; }
-	
+	ZeroMQPublisher& operator= (const ZeroMQPublisher &other) {
+		return *this;
+	}
+
 	void* _socket;
 	void* _zeroMQCtx;
 	uint16_t _port;
 	string _transport;
-	
+
 	friend class Factory;
 };
 

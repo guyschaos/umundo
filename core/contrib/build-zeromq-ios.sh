@@ -4,11 +4,19 @@
 # build ZeroMQ for iOS and iOS simulator
 #
 
+# exit on error
+set -e
+
+ME=`basename $0`
 SDK_VER="5.0"
-DEST_DIR="../../prebuilt/zeromq/ios/${SDK_VER}"
-if [ ! -f configure ]; then
-	echo "Cannot find ./configure"
-	echo "Run from within zeroMQ directory"
+DEST_DIR="${PWD}/../../prebuilt/zeromq/ios/${SDK_VER}"
+
+if [ ! -f src/zmq.cpp ]; then
+	echo
+	echo "Cannot find src/zmq.cpp"
+	echo "Run script from within zeroMQ directory:"
+	echo "zeromq-3.1.0$ ../../${ME}"
+	echo
 	exit
 fi
 mkdir -p ${DEST_DIR} &> /dev/null
@@ -19,7 +27,19 @@ mkdir -p ${DEST_DIR} &> /dev/null
 
 SYSROOT="/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS${SDK_VER}.sdk"
 
-make clean
+if [ ! -d ${SYSROOT} ]; then
+	echo
+	echo "Cannot find iOS developer tools."
+	echo
+	exit	
+fi
+
+if [ -f Makefile ]; then
+	make clean
+fi
+
+mkdir -p ${DEST_DIR}/ios &> /dev/null
+
 ./configure \
 CPP="cpp" \
 CXXCPP="cpp" \
@@ -35,24 +55,23 @@ AR=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ar \
 AS=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/as \
 LIBTOOL=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/libtool \
 STRIP=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/strip \
-RANLIB=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ranlib
+RANLIB=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ranlib \
+--prefix=${DEST_DIR}/ios
 
-make -j2
+make -j2 install
 
-if [ ! -f ./src/.libs/libzmq.a ]; then
-	echo "Something went wrong while building for iOS device"
-	echo "Cannot find src/.libs/libzmq.a"
-	exit
-fi
-
-mkdir ${DEST_DIR}/ios
-cp ./src/.libs/libzmq.a ${DEST_DIR}/ios/
 
 #
 # Simulator
 #
 
 SYSROOT="/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator${SDK_VER}.sdk"
+
+if [ -f Makefile ]; then
+	make clean
+fi
+
+mkdir -p ${DEST_DIR}/ios-sim &> /dev/null
 
 make clean
 ./configure \
@@ -67,18 +86,24 @@ AR=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ar \
 AS=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/as \
 LIBTOOL=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/libtool \
 STRIP=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/strip \
-RANLIB=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ranlib
+RANLIB=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ranlib \
+--prefix=${DEST_DIR}/ios-sim
 
-make -j2
+make -j2 install
 
-if [ ! -f ./src/.libs/libzmq.a ]; then
-	echo "Something went wrong while building for iOS device"
-	echo "Cannot find src/.libs/libzmq.a"
-	exit
-fi
+# tidy up
+rm -rf ${DEST_DIR}/ios/include
+rm -rf ${DEST_DIR}/ios/share
+rm -rf ${DEST_DIR}/ios/lib/pkgconfig
+mv ${DEST_DIR}/ios/lib/* ${DEST_DIR}/ios
+rm -rf ${DEST_DIR}/ios/lib
 
-mkdir ${DEST_DIR}/ios-sim
-cp ./src/.libs/libzmq.a ${DEST_DIR}/ios-sim
+rm -rf ${DEST_DIR}/ios-sim/include
+rm -rf ${DEST_DIR}/ios-sim/share
+rm -rf ${DEST_DIR}/ios-sim/lib/pkgconfig
+mv ${DEST_DIR}/ios-sim/lib/* ${DEST_DIR}/ios-sim
+rm -rf ${DEST_DIR}/ios-sim/lib
+
 
 #
 # create universal library

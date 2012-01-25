@@ -41,9 +41,9 @@ wget http://git.savannah.gnu.org/cgit/config.git/plain/config.guess -O config.gu
 wget http://git.savannah.gnu.org/cgit/config.git/plain/config.sub -O config.sub
 cd ..
 
-# if [ -f Makefile ]; then
-# 	make clean
-# fi
+if [ -f Makefile ]; then
+	make clean
+fi
 
 # select and verify toolchain
 ANDROID_SYS_ROOT="${ANDROID_NDK}/standalone"
@@ -80,7 +80,7 @@ RANLIB="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-ranlib" \
 --host=arm-linux-androideabi \
 --prefix=${DEST_DIR}
 
-make install
+make -j2 install
 
 # tidy up
 rm -rf ${DEST_DIR}/include

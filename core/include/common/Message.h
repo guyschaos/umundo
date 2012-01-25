@@ -9,58 +9,58 @@
 #include <boost/enable_shared_from_this.hpp>
 
 namespace umundo {
-	class Message;
-	class Type;
-	
-	class MessageImpl {
-	public:
-		virtual char* getData() = 0;
-		virtual void setData(char*) = 0;
-		
-		virtual int getSize() = 0;
-		virtual void setSize(int) = 0;
+class Message;
+class Type;
 
-		virtual char* getRaw() = 0;
-		virtual void setRaw(char*) = 0;
-		
-		virtual int getInt(std::string) = 0;
-		virtual void setInt(std::string, int) = 0;
-		
-		virtual std::string getString(std::string) = 0;
-		virtual void setString(std::string, std::string) = 0;
-	};
-	
-	class Message : public boost::enable_shared_from_this<Message> {
-	public:
-		enum Type {
-			DATA          = 0x0000,
-			PUB_ADDED     = 0x0004,
-			PUB_REMOVED   = 0x0005,
-			NODE_INFO     = 0x0006,
-		};
-		
-		Message();
-		virtual ~Message();
-		
-		virtual char* getData();
-		virtual void setData(char*);
-		
-		virtual int getSize();
-		virtual void setSize(int);
+class MessageImpl {
+public:
+	virtual char* getData() = 0;
+	virtual void setData(char*) = 0;
 
-		virtual char* getRaw();
-		virtual void setRaw(char*);
-		
-		virtual int getInt(std::string);
-		virtual void setInt(std::string, int);
-		
-		virtual std::string getString(std::string);
-		virtual void setString(std::string, std::string);
-		
-	protected:
-		boost::shared_ptr<MessageImpl> _impl;
-		
+	virtual int getSize() = 0;
+	virtual void setSize(int) = 0;
+
+	virtual char* getRaw() = 0;
+	virtual void setRaw(char*) = 0;
+
+	virtual int getInt(std::string) = 0;
+	virtual void setInt(std::string, int) = 0;
+
+	virtual std::string getString(std::string) = 0;
+	virtual void setString(std::string, std::string) = 0;
+};
+
+class Message : public boost::enable_shared_from_this<Message> {
+public:
+	enum Type {
+	    DATA          = 0x0000,
+	    PUB_ADDED     = 0x0004,
+	    PUB_REMOVED   = 0x0005,
+	    NODE_INFO     = 0x0006,
 	};
+
+	Message();
+	virtual ~Message();
+
+	virtual char* getData();
+	virtual void setData(char*);
+
+	virtual int getSize();
+	virtual void setSize(int);
+
+	virtual char* getRaw();
+	virtual void setRaw(char*);
+
+	virtual int getInt(std::string);
+	virtual void setInt(std::string, int);
+
+	virtual std::string getString(std::string);
+	virtual void setString(std::string, std::string);
+
+protected:
+	boost::shared_ptr<MessageImpl> _impl;
+
+};
 }
 
 

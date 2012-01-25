@@ -12,10 +12,9 @@ class umundoListenerWrapper : public umundo::Receiver {
 public:
   umundoListenerWrapper(id<uSubscriberListener> listener) : _objcListener(listener) {}
   id<uSubscriberListener> _objcListener;
-  void receive(char* data, int length) {
+  void receive(char* data, size_t length) {
     NSData* nsData = [[NSData alloc] initWithBytes:data length:length];
     [_objcListener received:nsData];
-    return 0;
   }
 };
 
@@ -32,8 +31,7 @@ public:
     if(name == nil || listener == nil) {
       return nil;
     } else {
-      boost::shared_ptr<umundo::Receiver> cListener = 
-        boost::shared_ptr<umundo::Receiver>(new umundoListenerWrapper(listener));
+      umundo::Receiver* cListener = new umundoListenerWrapper(listener);
       std::string cppChannelName([name cStringUsingEncoding: NSASCIIStringEncoding]);
       _cppSub = 
         boost::shared_ptr<umundo::Subscriber>(new umundo::Subscriber(cppChannelName, cListener));

@@ -188,7 +188,9 @@ endforeach()
 # Generate wrappers for other languages
 ############################################################
 
-add_subdirectory(contrib/swig)  # build umundo JNI library
+if (NOT CMAKE_CROSSCOMPILING)
+	add_subdirectory(contrib/swig)  # build umundo JNI library
+endif()
 
 ############################################################
 # Miscellaneous

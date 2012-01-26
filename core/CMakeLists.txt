@@ -13,7 +13,7 @@ project(uMundo)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
 
 # Enable verbose Makefiles to debug the build process itself
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # enable testing and actual output with tests
 enable_testing()
@@ -60,7 +60,7 @@ file(GLOB_RECURSE HEADER_FILES src/*.h)
 ############################################################
 
 # select implementations for discovery and network connectivity
-if(UNIX AND NOT APPLE AND NOT IOS)
+if(UNIX AND NOT APPLE AND NOT IOS AND NOT ANDROID)
 	# build with avahi on all unices but macosx
 	OPTION(DISC_BONJOUR "Use bonjour for discovery" OFF) 
 	OPTION(DISC_AVAHI "Use avahi for discovery" ON) 
@@ -99,7 +99,11 @@ if(DISC_BONJOUR AND NOT APPLE AND NOT IOS)
 	find_package(Bonjour REQUIRED)
 	LIST(APPEND UMUNDO_LIBRARIES ${Bonjour_LIBRARY})
 	LIST(APPEND UMUNDO_LIBRARIES_DEBUG ${Bonjour_LIBRARY})
-	include_directories(${Bonjour_INCLUDE_DIR})
+	if (ANDROID)
+		include_directories(${CONTRIB_HEADERS}/bonjour)
+	else()
+		include_directories(${Bonjour_INCLUDE_DIR})
+	endif()
 endif()
 
 if(DISC_AVAHI)
@@ -109,19 +113,13 @@ if(DISC_AVAHI)
 	include_directories(${Avahi_INCLUDE_DIR})
 endif()
 
-# if(CMAKE_CROSSCOMPILING AND IOS)
-# 	find_package(BoostiOS REQUIRED)
-# 	include_directories(${Boost_INCLUDE_DIR})
-# else()
-# 	find_package(Boost REQUIRED)
-# 	include_directories(${Boost_INCLUDE_DIRS})
-# 	mark_as_advanced(Boost_DIR)
-# endif()
-
 FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
 	PATHS contrib/prebuilt/include
 )
 include_directories(${Boost_INCLUDE_DIR})
+# if (ANDROID)
+# 	add_definitions("-DBOOST_NO_EXCEPTIONS")
+# endif()
 
 if (WIN32)
 	LIST(APPEND UMUNDO_LIBRARIES Ws2_32)

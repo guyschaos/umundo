@@ -1,8 +1,13 @@
-#ifdef WIN32
-
 #include "stdInc.h"
 #include "portability.h"
 
+#ifdef ANDROID
+// size_t std::wcslen(const wchar_t *) {
+// 	return 1;
+// }
+#endif
+
+#ifdef WIN32
 int vasprintf(char **ret, const char *format, va_list args) {
 	va_list copy;
 	va_copy(copy, args);

@@ -1,3 +1,6 @@
+# To cross compile for android simulator:
+# build$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../contrib/cmake/CrossCompile-Android.cmake
+
 #
 # Android NDK toolchain file for CMake
 #
@@ -26,6 +29,7 @@ endif()
 # basic setup
 set(CMAKE_CROSSCOMPILING 1)
 set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_CROSSCOMPILING_TARGET android)
 
 # for convenience
 SET(ANDROID ON)
@@ -61,6 +65,7 @@ if("${ANDROID_NDK_ARCH}" STREQUAL "x86" )
 	set(ANDROID_NDK_ABI_EXT "x86")
 	set(ANDROID_NDK_GCC_PREFIX "i686-android-linux")
 endif()
+SET(CMAKE_SYSTEM_PROCESSOR ${ANDROID_NDK_ARCH})
 
 if(ANDROID_NDK_TOOLCHAIN_DEBUG)
 	message(STATUS "ANDROID_NDK_ABI - ${ANDROID_NDK_ABI}")
@@ -80,8 +85,9 @@ set_property(CACHE ANDROID_NDK_STL PROPERTY STRINGS ${ANDROID_NDK_STL_SUPPORTED}
 
 # set the Android Platform
 set(ANDROID_API_SUPPORTED "android-8;android-9;android-14")
-set(ANDROID_API "android-9" CACHE STRING "Android SDK API (${ANDROID_API_SUPPORTED})")
+set(ANDROID_API "android-14" CACHE STRING "Android SDK API (${ANDROID_API_SUPPORTED})")
 set_property(CACHE ANDROID_API PROPERTY STRINGS ${ANDROID_API_SUPPORTED})
+string(REGEX MATCH "[0-9]+$" CMAKE_SYSTEM_VERSION ${ANDROID_API})
 
 # set sysroot - in Android this in function of Android API and architecture
 set(ANDROID_NDK_SYSROOT)
@@ -104,7 +110,8 @@ if ("${ANDROID_NDK_STL}" STREQUAL "stlport")
 	set(ANDROID_NDK_STL_LIBRARYPATH "${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/libs/${ANDROID_NDK_ABI}")
 	set(ANDROID_NDK_STL_LDFLAGS "-lstdc++")
 else()
-	set(ANDROID_NDK_STL_CXXFLAGS "-I${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/include -I${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/libs/${ANDROID_NDK_ABI}/include  -fno-exceptions -fno-rtti ")
+	# set(ANDROID_NDK_STL_CXXFLAGS "-I${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/include -I${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/libs/${ANDROID_NDK_ABI}/include  -fno-exceptions -fno-rtti ")
+	set(ANDROID_NDK_STL_CXXFLAGS "-I${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/include -I${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/libs/${ANDROID_NDK_ABI}/include  -fexceptions -fno-rtti ")
 	set(ANDROID_NDK_STL_LIBRARYPATH "${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/libs/${ANDROID_NDK_ABI}")
 	set(ANDROID_NDK_STL_LDFLAGS "-lstdc++")
 endif()
@@ -130,7 +137,7 @@ get_filename_component(ANDROID_NDK_GCC_COMPANIONLIBRARY_PATH ${ANDROID_NDK_GCC_C
 #set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++ -lstlport_static ${ANDROID_NDK_GCC_COMPANIONLIBRARY}" CACHE STRING "Linker flags" FORCE)
 
 # some overrides (see docs/STANDALONE-TOOLCHAIN.html) 
-set(CMAKE_C_FLAGS "-v -MMD -MP -MF ${ANDROID_NDK_GLOBAL_CFLAGS} ${ANDROID_NDK_GLOBAL_LDFLAGS} --sysroot=${ANDROID_NDK_SYSROOT} -DANDROID ${ANDROID_NDK_ARCH_CFLAGS} ${ANDROID_NDK_ARCH_LDFLAGS} -nostdlib -landroid -llog -lc -lm -lgcc" CACHE STRING "C flags" FORCE)
+set(CMAKE_C_FLAGS "-MMD -MP -MF ${ANDROID_NDK_GLOBAL_CFLAGS} ${ANDROID_NDK_GLOBAL_LDFLAGS} --sysroot=${ANDROID_NDK_SYSROOT} ${ANDROID_NDK_ARCH_CFLAGS} ${ANDROID_NDK_ARCH_LDFLAGS} -nostdlib -landroid -llog -lc -lm -lgcc" CACHE STRING "C flags" FORCE)
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${ANDROID_NDK_STL_CXXFLAGS} -L${ANDROID_NDK_STL_LIBRARYPATH} ${ANDROID_NDK_STL_LDFLAGS}" CACHE STRING "C++ flags" FORCE)
 
 #message(STATUS "${ANDROID_NDK_GCC_COMPANIONLIBRARY_PATH}")

@@ -23,3 +23,5 @@ if [ ! -f ${ANDROID_NDK_ROOT}/ndk-build ]; then
 	fi
 	export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT}"
 fi
+
+echo ${ANDROID_NDK_ROOT}

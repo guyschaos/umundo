@@ -1,3 +1,11 @@
+#
+# Try to find the android sdk
+#
+# First look in the environment variable ANDROID_NDK_ROOT, then try some 
+# locations from different development deployments. Add your own elif 
+# block if you happen to use it often.
+#
+
 if [ ! -f ${ANDROID_NDK_ROOT}/ndk-build ]; then
 	# try some convinient default locations
 	if [ -d /opt/android-ndk-r7 ]; then

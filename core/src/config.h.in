@@ -16,6 +16,7 @@
 #cmakedefine APPLE
 #cmakedefine CYGWIN
 #cmakedefine IOS
+#cmakedefine ANDROID
 #cmakedefine PATH_SEPERATOR '@PATH_SEPERATOR@'
 
 /** Implementation macros */

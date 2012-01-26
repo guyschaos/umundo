@@ -1,0 +1,81 @@
+diff -rupN mDNSResponder-333.10/mDNSPosix/mDNSPosix.h mDNSResponder-333.10.android/mDNSPosix/mDNSPosix.h
+--- mDNSResponder-333.10/mDNSPosix/mDNSPosix.h	2012-01-26 02:26:42.000000000 +0100
++++ mDNSResponder-333.10.android/mDNSPosix/mDNSPosix.h	2012-01-26 02:13:48.000000000 +0100
+@@ -25,6 +25,10 @@
+     extern "C" {
+ #endif
+ 
++#ifdef TARGET_OS_ANDROID
++#include <fcntl.h>
++#endif
++
+ // PosixNetworkInterface is a record extension of the core NetworkInterfaceInfo
+ // type that supports extra fields needed by the Posix platform.
+ //
+diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c mDNSResponder-333.10.android/mDNSShared/dnssd_clientshim.c
+--- mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c	2012-01-26 02:26:42.000000000 +0100
++++ mDNSResponder-333.10.android/mDNSShared/dnssd_clientshim.c	2012-01-26 02:13:48.000000000 +0100
+@@ -25,6 +25,9 @@
+ 
+ #include "dns_sd.h"				// Defines the interface to the client layer above
+ #include "mDNSEmbeddedAPI.h"		// The interface we're building on top of
++#include <sys/socket.h>
++#include <netinet/in.h>
++
+ extern mDNS mDNSStorage;		// We need to pass the address of this storage to the lower-layer functions
+ 
+ #if MDNS_BUILDINGSHAREDLIBRARY || MDNS_BUILDINGSTUBLIBRARY
+@@ -71,6 +74,14 @@ typedef struct
+ typedef struct
+ 	{
+ 	mDNS_DirectOP_Dispose  *disposefn;
++	DNSServiceRef                aQuery;
++	DNSServiceGetAddrInfoReply   callback;
++	void                         *context;
++	} mDNS_DirectOP_GetAddrInfo;
++
++typedef struct
++	{
++	mDNS_DirectOP_Dispose  *disposefn;
+ 	DNSServiceResolveReply  callback;
+ 	void                   *context;
+ 	const ResourceRecord   *SRV;
+@@ -659,7 +670,7 @@ DNSServiceErrorType DNSServiceQueryRecor
+ 	x->q.ExpectUnique        = mDNSfalse;
+ 	x->q.ForceMCast          = (flags & kDNSServiceFlagsForceMulticast) != 0;
+ 	x->q.ReturnIntermed      = (flags & kDNSServiceFlagsReturnIntermediates) != 0;
+-	x->q.SuppressUnsable     = (flags & kDNSServiceFlagsSuppressUnusable) != 0;
++	x->q.SuppressUnusable    = (flags & kDNSServiceFlagsSuppressUnusable) != 0;
+ 	x->q.SearchListIndex     = 0;
+ 	x->q.AppendSearchDomains = 0;
+ 	x->q.RetryWithSearchDomains = mDNSfalse;
+diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_ipc.h mDNSResponder-333.10.android/mDNSShared/dnssd_ipc.h
+--- mDNSResponder-333.10/mDNSShared/dnssd_ipc.h	2012-01-26 02:26:42.000000000 +0100
++++ mDNSResponder-333.10.android/mDNSShared/dnssd_ipc.h	2012-01-26 02:13:48.000000000 +0100
+@@ -29,6 +29,11 @@
+ #ifndef DNSSD_IPC_H
+ #define DNSSD_IPC_H
+ 
++#ifdef TARGET_OS_ANDROID
++#include <sys/socket.h>
++#include <sys/un.h>
++#endif
++
+ #include "dns_sd.h"
+ 
+ //
+diff -rupN mDNSResponder-333.10/mDNSShared/uds_daemon.h mDNSResponder-333.10.android/mDNSShared/uds_daemon.h
+--- mDNSResponder-333.10/mDNSShared/uds_daemon.h	2012-01-26 02:26:42.000000000 +0100
++++ mDNSResponder-333.10.android/mDNSShared/uds_daemon.h	2012-01-26 02:13:48.000000000 +0100
+@@ -22,6 +22,11 @@
+ 
+  */
+ 
++#ifdef TARGET_OS_ANDROID
++#include <sys/socket.h>
++#include <sys/un.h>
++#endif
++
+ #include "mDNSEmbeddedAPI.h"
+ #include "dnssd_ipc.h"
+ 

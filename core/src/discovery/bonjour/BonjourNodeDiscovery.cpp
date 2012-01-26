@@ -77,7 +77,7 @@ void BonjourNodeDiscovery::add(shared_ptr<Node> node) {
 	          port,                            // port number, defaults to name-reserving/non-discoverable
 	          txtLength,                       // length of the txtRecord, in bytes
 	          txtRecord,                       // TXT record rdata: <length byte> <data> <length byte> <data> ...
-	          (DNSServiceRegisterReply)registerReply,   // called when the registration completes
+	          registerReply,                   // called when the registration completes
 	          (void*)address                   // context pointer which is passed to the callback
 	      );
 
@@ -139,7 +139,7 @@ void BonjourNodeDiscovery::browse(NodeQuery* query) {
 	          opinterface,                   // non-zero, specifies the interface
 	          regtype,                       // service type being browsed
 	          domain,                        // non-NULL, specifies the domain
-	          (DNSServiceBrowseReply)browseReply,                   // called when a service is found
+	          browseReply,                   // called when a service is found
 	          (void*)address
 	      );
 

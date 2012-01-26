@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit on error
+set -e
+
 mkdir -p build/ios
 cd build/ios
 cmake ../../../ -DCMAKE_TOOLCHAIN_FILE=../../cmake/CrossCompile-iOS.cmake 

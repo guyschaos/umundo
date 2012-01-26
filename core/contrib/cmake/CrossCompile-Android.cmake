@@ -7,7 +7,7 @@
 #
 
 # need to know where the NDK resides
-set(ANDROID_NDK_ROOT "/home/sradomski/Documents/android-dev/android-ndk-r7" CACHE PATH "Android Standalone Toolchain location")
+set(ANDROID_NDK_ROOT "$ENV{ANDROID_NDK_ROOT}" CACHE PATH "Android Standalone Toolchain location")
 
 # set(ANDROID_NDK_TOOLCHAIN_DEBUG ON)
 
@@ -28,7 +28,7 @@ set(CMAKE_CROSSCOMPILING 1)
 set(CMAKE_SYSTEM_NAME Linux)
 
 # for convenience
-set(ANDROID 1)
+SET(ANDROID ON)
 
 # set supported architecture
 set(ANDROID_NDK_ARCH_SUPPORTED "arm;armv7;x86")
@@ -150,5 +150,5 @@ set(CMAKE_FIND_ROOT_PATH ${ANDROID_NDK_SYSROOT})
 
 # search paths
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)

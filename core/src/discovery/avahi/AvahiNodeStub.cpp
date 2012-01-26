@@ -16,17 +16,17 @@ uint16_t AvahiNodeStub::getPort() {
 	return _port;
 }
 
-std::string AvahiNodeStub::getIP() {
+const string& AvahiNodeStub::getIP() {
 	resolve();
 	return (_interfaces.begin())->second;
 }
 
-std::string AvahiNodeStub::getDomain() {
+const string& AvahiNodeStub::getDomain() {
 	resolve();
 	return _domain;
 }
 
-std::string AvahiNodeStub::getHost() {
+const string& AvahiNodeStub::getHost() {
 	resolve();
 	return _host;
 }

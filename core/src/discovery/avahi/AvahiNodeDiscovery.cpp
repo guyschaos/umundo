@@ -2,18 +2,17 @@
 
 namespace umundo {
 
-boost::shared_ptr<umundo::DiscoveryImpl> AvahiNodeDiscovery::create() {
+DiscoveryImpl* AvahiNodeDiscovery::create() {
 	return getInstance();
 }
 
-boost::shared_ptr<AvahiNodeDiscovery> AvahiNodeDiscovery::getInstance() {
+AvahiNodeDiscovery* AvahiNodeDiscovery::getInstance() {
 	if (AvahiNodeDiscovery::_instance == NULL) {
-		AvahiNodeDiscovery::_instance = boost::shared_ptr<AvahiNodeDiscovery>(new AvahiNodeDiscovery());
-		boost::shared_ptr<AvahiNodeDiscovery> myself = AvahiNodeDiscovery::_instance;
+		AvahiNodeDiscovery::_instance = new AvahiNodeDiscovery();
 	}
-	return AvahiNodeDiscovery::_instance;
+	return _instance;
 }
-boost::shared_ptr<AvahiNodeDiscovery> AvahiNodeDiscovery::_instance;
+AvahiNodeDiscovery* AvahiNodeDiscovery::_instance;
 
 AvahiNodeDiscovery::AvahiNodeDiscovery() {
 	(_simplePoll = avahi_simple_poll_new()) || AVAHI_WARN("avahi_simple_poll_new", 0);
@@ -36,13 +35,13 @@ void AvahiNodeDiscovery::add(boost::shared_ptr<Node> node) {
 	getInstance()->start();
 }
 
-void AvahiNodeDiscovery::unbrowse(boost::shared_ptr<NodeQuery> discovery) {
+void AvahiNodeDiscovery::unbrowse(NodeQuery* discovery) {
 }
 
-void AvahiNodeDiscovery::browse(boost::shared_ptr<NodeQuery> discovery) {
+void AvahiNodeDiscovery::browse(NodeQuery* discovery) {
 	AvahiServiceBrowser *sb = NULL;
 	AvahiClient *client = NULL;
-	intptr_t address = (intptr_t)(discovery.get());
+	intptr_t address = (intptr_t)(discovery);
 	int error;
 
 	client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, browseClientCallback, (void*)address, &error);
@@ -103,8 +102,8 @@ void AvahiNodeDiscovery::browseCallback(
 	          << "]" << std::endl;
 #endif
 
-	boost::shared_ptr<AvahiNodeDiscovery> myself = AvahiNodeDiscovery::getInstance();
-	boost::shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)userdata];
+	AvahiNodeDiscovery* myself = getInstance();
+	NodeQuery* query = myself->_browsers[(intptr_t)userdata];
 	AvahiClient* client = myself->_avahiClients[(intptr_t)userdata];
 
 	switch (event) {
@@ -177,8 +176,8 @@ void AvahiNodeDiscovery::resolveCallback(
 	          << "]" << std::endl;
 #endif
 
-	boost::shared_ptr<AvahiNodeDiscovery> myself = AvahiNodeDiscovery::getInstance();
-	boost::shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)userdata];
+	AvahiNodeDiscovery* myself = getInstance();
+	NodeQuery* query = myself->_browsers[(intptr_t)userdata];
 	AvahiClient* client = myself->_avahiClients[(intptr_t)userdata];
 	boost::shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
 
@@ -217,7 +216,7 @@ void AvahiNodeDiscovery::resolveCallback(
 }
 
 void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupState state, void* userdata) {
-	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
+	AvahiNodeDiscovery* myself = getInstance();
 	boost::shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
 	AvahiEntryGroup* group = myself->_avahiGroups[(intptr_t)userdata];
 
@@ -258,7 +257,7 @@ void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupS
 void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, void* userdata) {
 	assert(c);
 	int err;
-	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
+	AvahiNodeDiscovery* myself = getInstance();
 	boost::shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
 	AvahiEntryGroup* group = myself->_avahiGroups[(intptr_t)userdata];
 	assert(node.get() != NULL);

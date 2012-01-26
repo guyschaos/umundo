@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 // #define DEBUG_CTOR(x) printf("Constructing %s\n", x);
 // #define DEBUG_DTOR(x) printf("Destructing %s\n", x);

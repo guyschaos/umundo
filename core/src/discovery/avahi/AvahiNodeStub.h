@@ -14,6 +14,9 @@ namespace umundo {
 
 class AvahiNodeStubDiscovery;
 
+/**
+ * Concrete nodestub implementor for avahi (bridge pattern).
+ */
 class AvahiNodeStub : public NodeStub {
 public:
 	AvahiNodeStub();

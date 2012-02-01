@@ -10,9 +10,12 @@
 
 namespace umundo {
 
+/**
+ * Concrete publisher implementor for 0MQ (bridge pattern).
+ */
 class ZeroMQPublisher : public PublisherImpl, public boost::enable_shared_from_this<ZeroMQPublisher>  {
 public:
-	PublisherImpl* create(std::string);
+	PublisherImpl* create(string);
 	virtual ~ZeroMQPublisher();
 
 	void send(char* buffer, size_t length);

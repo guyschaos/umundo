@@ -5,9 +5,7 @@
 
 namespace umundo {
 /**
- * An Endpoint is anything that has an address.
- *
- * At the moment this is only TCP/UDP on top of IP.
+ * Anything that is addressable in TCP/IP networks.
  */
 class EndPoint {
 public:

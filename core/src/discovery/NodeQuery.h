@@ -11,6 +11,13 @@
 
 namespace umundo {
 
+/**
+ * Representation of a query for discovery of nodes.
+ *
+ * Support for the additional query criteria of this class is rather limited in the concrete 
+ * discovery implementors. At the moment, this is just an extension point to allow more refined
+ * queries if we need such a feature.
+ */
 class NodeQuery : public boost::enable_shared_from_this<NodeQuery> {
 public:
 	NodeQuery(string domain, ResultSet<NodeStub>*);

@@ -15,6 +15,9 @@ namespace umundo {
 class Message;
 class Type;
 
+/**
+ * Message implementor basis class (bridge pattern).
+ */
 class MessageImpl {
 public:
 	virtual char* getData() = 0;
@@ -33,6 +36,11 @@ public:
 	virtual void setString(std::string, std::string) = 0;
 };
 
+/**
+ * Definition of message types and abstraction of message - not used (bridge pattern).
+ *
+ * We are still pondering whether we need an explicit message representation. At the moment, only the Type enum is used.
+ */
 class Message : public boost::enable_shared_from_this<Message> {
 public:
 	enum Type {

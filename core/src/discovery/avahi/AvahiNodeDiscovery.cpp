@@ -15,22 +15,22 @@ AvahiNodeDiscovery* AvahiNodeDiscovery::getInstance() {
 AvahiNodeDiscovery* AvahiNodeDiscovery::_instance;
 
 AvahiNodeDiscovery::AvahiNodeDiscovery() {
-	(_simplePoll = avahi_simple_poll_new()) || AVAHI_WARN("avahi_simple_poll_new", 0);
+	(_simplePoll = avahi_simple_poll_new()) || LOG_WARN("avahi_simple_poll_new", 0);
 }
 
 AvahiNodeDiscovery::~AvahiNodeDiscovery() {
 }
 
-void AvahiNodeDiscovery::remove(boost::shared_ptr<Node> node) {
+void AvahiNodeDiscovery::remove(shared_ptr<Node> node) {
 }
 
-void AvahiNodeDiscovery::add(boost::shared_ptr<Node> node) {
+void AvahiNodeDiscovery::add(shared_ptr<Node> node) {
 	int err;
 	intptr_t address = (intptr_t)(node.get());
 	getInstance()->_nodes[address] = node;
 
 	AvahiClient* client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, &clientCallback, (void*)address, &err);
-	if (!client) AVAHI_WARN("avahi_client_new", err);
+	if (!client) LOG_WARN("avahi_client_new", err);
 	getInstance()->_avahiClients[address] = client;
 	getInstance()->start();
 }
@@ -46,14 +46,14 @@ void AvahiNodeDiscovery::browse(NodeQuery* discovery) {
 
 	client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, browseClientCallback, (void*)address, &error);
 	if (client == NULL) {
-		AVAHI_WARN("avahi_client_new failed", error);
+		LOG_WARN("avahi_client_new failed", error);
 		return;
 	}
 	getInstance()->_avahiClients[address] = client;
 	getInstance()->_browsers[address] = discovery;
 
 	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", NULL, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
-		AVAHI_WARN("avahi_service_browser_new failed", error);
+		LOG_WARN("avahi_service_browser_new failed", error);
 	}
 }
 
@@ -62,19 +62,19 @@ void AvahiNodeDiscovery::browseClientCallback(AvahiClient *c, AvahiClientState s
 
 	switch(state) {
 	case AVAHI_CLIENT_CONNECTING:
-		AVAHI_WARN("Client still connecting", avahi_client_errno(c));
+		LOG_WARN("Client still connecting", avahi_client_errno(c));
 		break;
 	case AVAHI_CLIENT_FAILURE:
-		AVAHI_WARN("Server connection failure", avahi_client_errno(c));
+		LOG_WARN("Server connection failure", avahi_client_errno(c));
 		break;
 	case AVAHI_CLIENT_S_RUNNING:
-		//AVAHI_WARN("Server state: RUNNING", avahi_client_errno(c));
+		//LOG_WARN("Server state: RUNNING", avahi_client_errno(c));
 		break;
 	case AVAHI_CLIENT_S_REGISTERING:
-		AVAHI_WARN("Server state: REGISTERING", avahi_client_errno(c));
+		LOG_WARN("Server state: REGISTERING", avahi_client_errno(c));
 		break;
 	case AVAHI_CLIENT_S_COLLISION:
-		AVAHI_WARN("Server state: COLLISION", avahi_client_errno(c));
+		LOG_WARN("Server state: COLLISION", avahi_client_errno(c));
 		break;
 	}
 }
@@ -110,12 +110,12 @@ void AvahiNodeDiscovery::browseCallback(
 	case AVAHI_BROWSER_NEW: {
 		// someone is announcing a new node
 		assert(name != NULL);
-		boost::shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
+		shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
 		bool knownNode = (node.get() != NULL);
 
 		if (!knownNode) {
 			// we found ourselves a new node
-			node = boost::shared_ptr<AvahiNodeStub>(new AvahiNodeStub());
+			node = shared_ptr<AvahiNodeStub>(new AvahiNodeStub());
 			node->_transport = "tcp";
 			node->_uuid = name;
 			node->_domain = domain;
@@ -123,12 +123,12 @@ void AvahiNodeDiscovery::browseCallback(
 			myself->_queryNodes[query][name] = node;
 		}
 		if (!(avahi_service_resolver_new(client, interface, protocol, name, type, domain, AVAHI_PROTO_UNSPEC, (AvahiLookupFlags)0, resolveCallback, userdata)))
-			AVAHI_WARN("avahi_service_resolver_new failed", avahi_client_errno(client));
+			LOG_WARN("avahi_service_resolver_new failed", avahi_client_errno(client));
 		break;
 	}
 	case AVAHI_BROWSER_REMOVE: {
 		assert(name != NULL);
-		boost::shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
+		shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
 		query->removed(node);
 		// TODO: remove from query nodes
 		break;
@@ -140,7 +140,7 @@ void AvahiNodeDiscovery::browseCallback(
 		break;
 	}
 	case AVAHI_BROWSER_FAILURE:
-		AVAHI_WARN("avahi browser failure", avahi_client_errno(avahi_service_browser_get_client(b)));
+		LOG_WARN("avahi browser failure", avahi_client_errno(avahi_service_browser_get_client(b)));
 		break;
 	}
 }
@@ -179,15 +179,20 @@ void AvahiNodeDiscovery::resolveCallback(
 	AvahiNodeDiscovery* myself = getInstance();
 	NodeQuery* query = myself->_browsers[(intptr_t)userdata];
 	AvahiClient* client = myself->_avahiClients[(intptr_t)userdata];
-	boost::shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
+	shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
 
 	assert(query);
 	assert(client);
 	assert(node);
 
+	if (protocol == AVAHI_PROTO_INET6) {
+		LOG_WARN("Ignoring %s IPv6", host_name);
+		return;
+	}
+
 	switch (event) {
 	case AVAHI_RESOLVER_FAILURE:
-		AVAHI_WARN("resolving failed", avahi_client_errno(avahi_service_resolver_get_client(r)));
+		LOG_WARN("resolving failed", avahi_client_errno(avahi_service_resolver_get_client(r)));
 		break;
 
 	case AVAHI_RESOLVER_FOUND: {
@@ -209,7 +214,7 @@ void AvahiNodeDiscovery::resolveCallback(
 		break;
 	}
 	default:
-		AVAHI_WARN("Unknown event in resolveCallback", 0);
+		LOG_WARN("Unknown event in resolveCallback", 0);
 	}
 
 	avahi_service_resolver_free(r);
@@ -217,7 +222,7 @@ void AvahiNodeDiscovery::resolveCallback(
 
 void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupState state, void* userdata) {
 	AvahiNodeDiscovery* myself = getInstance();
-	boost::shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
+	shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
 	AvahiEntryGroup* group = myself->_avahiGroups[(intptr_t)userdata];
 
 	assert(g == group || group == NULL);
@@ -231,25 +236,25 @@ void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupS
 		break;
 
 	case AVAHI_ENTRY_GROUP_COLLISION :
-		AVAHI_WARN("AVAHI_ENTRY_GROUP_COLLISION", 0);
+		LOG_WARN("AVAHI_ENTRY_GROUP_COLLISION", 0);
 		assert(false);
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE :
-		AVAHI_WARN("AVAHI_ENTRY_GROUP_FAILURE", avahi_client_errno(avahi_entry_group_get_client(g)));
+		LOG_WARN("AVAHI_ENTRY_GROUP_FAILURE", avahi_client_errno(avahi_entry_group_get_client(g)));
 
 		/* Some kind of failure happened while we were registering our services */
 		avahi_simple_poll_quit(myself->_simplePoll);
 		break;
 
 	case AVAHI_ENTRY_GROUP_UNCOMMITED:
-		//AVAHI_WARN("AVAHI_ENTRY_GROUP_UNCOMMITED", 0);
+		//LOG_WARN("AVAHI_ENTRY_GROUP_UNCOMMITED", 0);
 		break;
 	case AVAHI_ENTRY_GROUP_REGISTERING:
-		//AVAHI_WARN("AVAHI_ENTRY_GROUP_REGISTERING", 0);
+		//LOG_WARN("AVAHI_ENTRY_GROUP_REGISTERING", 0);
 		break;
 	default:
-		AVAHI_WARN("entryGroupCallback default switch", 0);
+		LOG_WARN("entryGroupCallback default switch", 0);
 
 	}
 }
@@ -258,7 +263,7 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 	assert(c);
 	int err;
 	AvahiNodeDiscovery* myself = getInstance();
-	boost::shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
+	shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
 	AvahiEntryGroup* group = myself->_avahiGroups[(intptr_t)userdata];
 	assert(node.get() != NULL);
 
@@ -268,7 +273,7 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 		 * name on the network, so it's time to create our services */
 		if (!group) {
 			if (!(group = avahi_entry_group_new(c, entryGroupCallback, userdata))) {
-				AVAHI_WARN("avahi_entry_group_new failed ", avahi_client_errno(c));
+				LOG_WARN("avahi_entry_group_new failed ", avahi_client_errno(c));
 				avahi_simple_poll_quit(myself->_simplePoll);
 			} else {
 				myself->_avahiGroups[(intptr_t)userdata] = group;
@@ -279,44 +284,44 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 				if (err == AVAHI_ERR_COLLISION) {
 					assert(0); // we register uuids, there shouldn't be collisions
 				}
-				AVAHI_WARN("avahi_entry_group_add_service failed ", err);
+				LOG_WARN("avahi_entry_group_add_service failed ", err);
 				avahi_simple_poll_quit(myself->_simplePoll);
 			}
 
 			/* Tell the server to register the service */
 			if ((err = avahi_entry_group_commit(group)) < 0) {
-				AVAHI_WARN("avahi_entry_group_commit failed ", err);
+				LOG_WARN("avahi_entry_group_commit failed ", err);
 				avahi_simple_poll_quit(myself->_simplePoll);
 			}
 		}
 		break;
 
 	case AVAHI_CLIENT_FAILURE:
-		AVAHI_WARN("Client failure ", avahi_client_errno(c));
+		LOG_WARN("Client failure ", avahi_client_errno(c));
 		avahi_simple_poll_quit(myself->_simplePoll);
 		break;
 
 	case AVAHI_CLIENT_S_COLLISION:
-		AVAHI_WARN("AVAHI_CLIENT_S_COLLISION ", avahi_client_errno(c));
+		LOG_WARN("AVAHI_CLIENT_S_COLLISION ", avahi_client_errno(c));
 		break;
 	case AVAHI_CLIENT_S_REGISTERING:
 		/* The server records are now being established. This
 		 * might be caused by a host name change. We need to wait
 		 * for our own records to register until the host name is
 		 * properly esatblished. */
-		AVAHI_WARN("AVAHI_CLIENT_S_REGISTERING ", avahi_client_errno(c));
+		LOG_WARN("AVAHI_CLIENT_S_REGISTERING ", avahi_client_errno(c));
 		if (group)
 			avahi_entry_group_reset(group);
 		break;
 
 	case AVAHI_CLIENT_CONNECTING:
-		AVAHI_WARN("AVAHI_CLIENT_CONNECTING ", avahi_client_errno(c));
+		LOG_WARN("AVAHI_CLIENT_CONNECTING ", avahi_client_errno(c));
 		break;
 	}
 }
 
 void AvahiNodeDiscovery::run() {
-	while (_isStarted) {
+	while (isStarted()) {
 		avahi_simple_poll_loop(_simplePoll);
 	}
 }

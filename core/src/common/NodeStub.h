@@ -13,6 +13,9 @@
 
 namespace umundo {
 
+/**
+ * Representation of a remote umundo Node.
+ */
 class NodeStub : public EndPoint, public boost::enable_shared_from_this<NodeStub> {
 public:
 	/**

@@ -26,11 +26,11 @@ Factory::Factory() {
 #endif
 }
 
-PublisherImpl* Factory::createPublisher(std::string channelName) {
+PublisherImpl* Factory::createPublisher(string channelName) {
 	return getInstance()->_publisherImpl->create(channelName);
 }
 
-SubscriberImpl* Factory::createSubscriber(std::string channelName, Receiver* receiver) {
+SubscriberImpl* Factory::createSubscriber(string channelName, Receiver* receiver) {
 	return getInstance()->_subscriberImpl->create(channelName, receiver);
 }
 

@@ -13,6 +13,9 @@
 
 namespace umundo {
 
+/**
+ * Platform independant parallel control-flows.
+ */
 class Thread {
 public:
 	Thread();
@@ -27,7 +30,7 @@ public:
 
 	static void sleepMs(uint32_t ms);
 
-protected:
+private:
 	bool _isStarted;
 
 #ifdef THREAD_PTHREAD
@@ -41,6 +44,9 @@ protected:
 
 };
 
+/**
+ * Platform independant mutual exclusion.
+ */
 class Mutex {
 public:
 	Mutex();

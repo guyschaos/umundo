@@ -32,7 +32,7 @@ ZeroMQSubscriber::~ZeroMQSubscriber() {
 	DEBUG_DTOR("ZeroMQSubscriber finished");
 }
 
-string ZeroMQSubscriber::getChannelName() {
+const string& ZeroMQSubscriber::getChannelName() {
 	return _channelName;
 }
 

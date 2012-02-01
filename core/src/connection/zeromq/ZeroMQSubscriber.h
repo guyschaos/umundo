@@ -11,12 +11,15 @@
 
 namespace umundo {
 
+/**
+ * Concrete subscriber implementor for 0MQ (bridge pattern).
+ */
 class ZeroMQSubscriber : public SubscriberImpl, public ResultSet<PublisherStub>, public boost::enable_shared_from_this<ZeroMQSubscriber> {
 public:
 	SubscriberImpl* create(string, Receiver*);
 	virtual ~ZeroMQSubscriber();
 
-	string getChannelName();
+	const string& getChannelName();
 
 	void added(shared_ptr<PublisherStub>);
 	void removed(shared_ptr<PublisherStub>);

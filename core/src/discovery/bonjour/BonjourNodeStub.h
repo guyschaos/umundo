@@ -16,6 +16,9 @@
 
 namespace umundo {
 
+/**
+ * Concrete nodestub implementor for bonjour (bridge pattern).
+ */
 class BonjourNodeStub : public NodeStub {
 public:
 	BonjourNodeStub();

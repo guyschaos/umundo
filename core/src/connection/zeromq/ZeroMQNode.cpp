@@ -63,7 +63,7 @@ void ZeroMQNode::run() {
 	int64_t more;
 	size_t more_size = sizeof(more);
 
-	while(_isStarted) {
+	while(isStarted()) {
 		// read whole envelope
 		while (1) {
 			zmq_msg_t message;
@@ -165,7 +165,16 @@ void ZeroMQNode::processPubRemoved(const char* remoteId, zmq_msg_t message) {
 }
 
 /**
- * A node was added, connect to its router socket and list our publishers
+\msc
+  "Remote ZeroMQNode",Discovery,ZeroMQNode;
+  Discovery->"Remote ZeroMQNode" [label="discovered"];
+	Discovery->ZeroMQNode [label="added(NodeStub)", URL="\ref NodeStub"];
+	ZeroMQNode->"Remote ZeroMQNode" [label="establish connection on node socket"];
+	ZeroMQNode->"Remote ZeroMQNode" [label="List of all local publishers", URL="\ref Publisher" ];
+\endmsc
+ *
+ * This will cause processPubAdded() to be called for every Publisher we list.<br />
+ * Keep in mind that the remote node will do the same!
  */
 void ZeroMQNode::added(shared_ptr<NodeStub> node) {
 	assert(node);

@@ -20,23 +20,36 @@
 
 namespace umundo {
 
+/**
+ * Concrete discovery implementor for Bonjour (bridge pattern).
+ *
+ * This class is a concrete implementor (in the bridge pattern sense) for the Discovery subsystem. It uses
+ * Bonjour from Apple to realize node discovery within a multicast domain.
+ * \see
+ *	http://developer.apple.com/library/mac/#documentation/Networking/Reference/DNSServiceDiscovery_CRef/dns_sd_h/<br />
+ *  http://developer.apple.com/library/mac/#documentation/networking/Conceptual/dns_discovery_api/Introduction.html<br />
+ *  http://developer.apple.com/opensource/
+ */
 class BonjourNodeDiscovery : public DiscoveryImpl, public Thread {
 public:
-	BonjourNodeDiscovery();
 	virtual ~BonjourNodeDiscovery();
-	static BonjourNodeDiscovery* getInstance();
-
+	static BonjourNodeDiscovery* getInstance();  ///< Return the singleton instance.
+	
 	DiscoveryImpl* create();
 
-	void remove(shared_ptr<Node> node);
 	void add(shared_ptr<Node> node);
+	void remove(shared_ptr<Node> node);
 
 	void browse(NodeQuery* discovery);
 	void unbrowse(NodeQuery* discovery);
+
 	void run();
 
 private:
-	// static callbacks for bonjour
+	BonjourNodeDiscovery();
+	
+	/** @name Bonjour callbacks */
+  //@{
 	static void DNSSD_API browseReply(
 	    DNSServiceRef sdref,
 	    const DNSServiceFlags flags,
@@ -57,16 +70,19 @@ private:
 	    const char* domain,
 	    void* context
 	);
+  //@}
 
-	map<int, DNSServiceRef> _sockFD;                  // socket file descriptors to bonjour handle
-	map<intptr_t, NodeQuery* > _browsers;             // memory addresses of queries for static callbacks
-	map<intptr_t, shared_ptr<Node> > _nodes;	        // memory addresses of local nodes for static callbacks
-	map<intptr_t, DNSServiceRef> _dnsClients;	        // bonjour handles for local node registration
+	
+	map<int, DNSServiceRef> _sockFD;          ///< Socket file descriptors to bonjour handle.
+	map<intptr_t, NodeQuery* > _browsers;     ///< Memory addresses to node queries for static callbacks.
+	map<intptr_t, shared_ptr<Node> > _nodes;  ///< Memory addresses of local nodes for static callbacks.
+	map<intptr_t, DNSServiceRef> _dnsClients; ///< Bonjour handles for local node registration.
 
+	/// All the nodes a query was notified about.
 	map<NodeQuery*, map<string, shared_ptr<BonjourNodeStub> > > _queryNodes;
 	Mutex _mutex;
 
-	static BonjourNodeDiscovery* _instance;
+	static BonjourNodeDiscovery* _instance;  ///< The singleton instance.
 
 	friend class BonjourNodeStub;
 	friend class Factory;

@@ -5,6 +5,9 @@
 
 namespace umundo {
 
+/**
+ * Concrete message implementor for 0MQ - not used yet (bridge pattern).
+ */
 class ZeroMQMessage : public MessageImpl {
 public:
 	ZeroMQMessage();

@@ -9,7 +9,7 @@ PublisherImpl* ZeroMQPublisher::create(string channelName) {
 	return instance;
 }
 
-ZeroMQPublisher::ZeroMQPublisher(std::string channelname) : PublisherImpl(channelname) {
+ZeroMQPublisher::ZeroMQPublisher(string channelname) : PublisherImpl(channelname) {
 	DEBUG_CTOR("ZeroMQPublisher");
 
 	_transport = "tcp";
@@ -25,7 +25,7 @@ ZeroMQPublisher::ZeroMQPublisher(std::string channelname) : PublisherImpl(channe
 		case EADDRINUSE:
 			port++;
 			ss.clear();             // clear error bits
-			ss.str(std::string());  // reset string
+			ss.str(string());  // reset string
 			ss << _transport << "://*:" << port;
 			break;
 		default:

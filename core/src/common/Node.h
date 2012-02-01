@@ -9,6 +9,9 @@
 
 namespace umundo {
 
+/**
+ * The local umundo node implementor basis class (bridge pattern).
+ */
 class Node : public NodeStub {
 public:
 	Node() {
@@ -16,8 +19,7 @@ public:
 	}
 
 protected:
-
-	Node* _impl;
+//	NodeImpl* _impl;
 };
 
 }

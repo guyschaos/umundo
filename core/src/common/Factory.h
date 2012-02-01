@@ -23,6 +23,16 @@
 
 namespace umundo {
 
+/**
+ * Creates instances of implementations for subsystems at runtime (factory pattern).
+ *
+ * This class realizes the Factory pattern by instantiating objects form prototypes. If you want to implement a specific subsystem
+ * yourself, just inherit its base-class and register a prototype at the factory.
+ *
+ * \todo The *Impl classes need a destroy to delegate tidying up to the concrete implementors.
+ *
+ * \see PublisherImpl, SubscriberImpl, DiscoveryImpl
+ */
 class Factory {
 public:
 	static Factory* getInstance();

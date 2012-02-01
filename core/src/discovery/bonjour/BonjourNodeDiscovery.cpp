@@ -41,9 +41,6 @@ void BonjourNodeDiscovery::remove(shared_ptr<Node> node) {
 	_mutex.unlock();
 }
 
-/**
- * Add a local node to be discoverable
- */
 void BonjourNodeDiscovery::add(shared_ptr<Node> node) {
 	DNSServiceErrorType err;
 	DNSServiceRef dnsRegisterClient;
@@ -262,8 +259,16 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 }
 
 /**
- * Registration of a node at bonjour is finished
+ * Bonjour callback for registering a node.
+ * @param sdRef The bonjour handle.
+ * @param flags Only kDNSServiceFlagsAdd or not.
+ * @param errorCode The error if one occured or kDNSServiceErr_NoError.
+ * @param name The actual name the node succeeded to register with.
+ * @param regType At the moment this ought to be _mundo._tcp only.
+ * @param domain At the moment this ought to be .local only.
+ * @param context The address of the node we tried to register.
  */
+
 void DNSSD_API BonjourNodeDiscovery::registerReply(
     DNSServiceRef                       sdRef,
     DNSServiceFlags                     flags,

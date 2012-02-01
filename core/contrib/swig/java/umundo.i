@@ -7,13 +7,29 @@
 
 %{
 /* This ends up in the generated wrapper code */
-#include "../../src/common/EndPoint.h"
-#include "../../src/thread/Thread.h"
-#include "../../src/connection/Publisher.h"
-#include "../../src/connection/Subscriber.h"
+#include "../../../../src/common/EndPoint.h"
+#include "../../../../src/thread/Thread.h"
+#include "../../../../src/connection/Publisher.h"
+#include "../../../../src/connection/Subscriber.h"
+
+#ifdef ANDROID
+// google forgot imaxdiv in the android ndk r7 libc?!
+imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom) {
+	imaxdiv_t res;
+	res.quot=0; res.rem=0;
+	while(numer >= denom) {
+		res.quot++;
+		numer -= denom;
+	}
+	res.rem = numer;
+	return res;
+}
+
+#endif
 
 using std::string;
 using boost::shared_ptr;
+using namespace umundo;
 %}
 
 // allow Java receivers to act as callbacks from C++
@@ -30,8 +46,8 @@ typedef std::string string;
 %ignore Mutex;
 
 // Parse the header file to generate wrappers
-%include "../../src/common/EndPoint.h"
-%include "../../src/thread/Thread.h"
-%include "../../src/connection/Publisher.h"
-%include "../../src/connection/Subscriber.h"
+%include "../../../../src/common/EndPoint.h"
+%include "../../../../src/thread/Thread.h"
+%include "../../../../src/connection/Publisher.h"
+%include "../../../../src/connection/Subscriber.h"
 

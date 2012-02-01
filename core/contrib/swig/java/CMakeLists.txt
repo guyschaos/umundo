@@ -18,12 +18,11 @@ SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}")
 
 SWIG_ADD_MODULE(umundoSwig java umundo.i)
 
-# build and link the libOpenALPlayer JNI library
+# build and link the umundo JNI library
 SWIG_LINK_LIBRARIES(umundoSwig
-	${PTHREADS_LIBRARY}
-	${JNI_LIBRARIES}
-	${UMUNDO_LIBRARIES} 
+#	${JNI_LIBRARIES}
 	umundo
+	${UMUNDO_LIBRARIES} 
 )
 
 FIND_PACKAGE(Java)

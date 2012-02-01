@@ -16,12 +16,13 @@
 #include <avahi-common/defs.h>
 #include <avahi-common/malloc.h>
 
-#define AVAHI_WARN(x, err) AvahiNodeDiscovery::printWarn(__FILE__, __LINE__, x, err);
-
 #define DISC_AVAHI_DEBUG 0
 
 namespace umundo {
 
+/**
+ * Concrete discovery implementor for avahi (bridge pattern).
+ */
 class AvahiNodeDiscovery : public DiscoveryImpl, public Thread {
 public:
 	virtual ~AvahiNodeDiscovery();

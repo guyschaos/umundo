@@ -16,36 +16,46 @@
 
 namespace umundo {
 
+/**
+ * Concrete node implementor for 0MQ (bridge pattern).
+ */
 class ZeroMQNode : public Thread, public ResultSet<NodeStub>, public Node {
 public:
 	static shared_ptr<ZeroMQNode> getInstance();
 	virtual ~ZeroMQNode();
 
-	// pub sub maintenance
+	/** @name Publish / Subscriber Maintenance */
+  //@{	
 	static void addSubscriber(SubscriberImpl*);
 	static void removeSubscriber(SubscriberImpl*);
 	static void addPublisher(PublisherImpl*);
 	static void removePublisher(PublisherImpl*);
-
-	// ResultSet<NodeStub> from discovery
-	void added(shared_ptr<NodeStub>);
-	void removed(shared_ptr<NodeStub>);
-	void changed(shared_ptr<NodeStub>);
+  //@}
+	
+	/** @name Callbacks from Discovery */
+  //@{
+	void added(shared_ptr<NodeStub>);    ///< A node was added, connect to its router socket and list our publishers.
+	void removed(shared_ptr<NodeStub>);  ///< A node was removed, notify local subscribers and clean up.
+	void changed(shared_ptr<NodeStub>);  ///< Never happens.
+  //@}
 
 protected:
 	ZeroMQNode();
 
-	// Thread
-	void run();
+	void run(); ///< see Thread
 
-	// control message handling
+	/** @name Control message handling */
+  //@{
 	zmq_msg_t msgPubList();
 	void processPubAdded(const char*, zmq_msg_t);
 	void processPubRemoved(const char*, zmq_msg_t);
+  //@}
 
-	// local subscriber maintenance
-	void addRemotePubToLocalSubs(const char*, shared_ptr<PublisherStub>);
-	void removeRemotePubFromLocalSubs(const char*, shared_ptr<PublisherStub>);
+	/** @name Local subscriber maintenance */
+  //@{
+	void addRemotePubToLocalSubs(const char*, shared_ptr<PublisherStub>); ///< See if we have a local Subscriber interested in the remote Publisher.
+	void removeRemotePubFromLocalSubs(const char*, shared_ptr<PublisherStub>); ///< A remote Publisher was removed, notify Subscribe%s.
+  //@}
 
 private:
 	ZeroMQNode(const ZeroMQNode &other) {}
@@ -53,21 +63,21 @@ private:
 		return *this;
 	}
 
-	static void initPubMgmtMsg(zmq_msg_t&, ZeroMQPublisher*);
+	static void initPubMgmtMsg(zmq_msg_t&, ZeroMQPublisher*); ///< prepare a control message regarding a Publisher.
 
-	void* _zeroMQCtx;
-	void* _responder;
+	void* _zeroMQCtx; ///< 0MQ context - yes, we have a private one - not sure if we want one shared among all publishers as well.
+	void* _responder; ///< 0MQ node socket for administrative messages.
 	Mutex _mutex;
-	NodeQuery* _nodeQuery;
+	NodeQuery* _nodeQuery; ///< the NodeQuery which we registered at the Discovery sub-system.
 
-	map<string, shared_ptr<NodeStub> > _nodes;                                    // uuids to NodeStubs
-	map<string, void*> _sockets;                                                  // uuids to ZeroMQ Sockets
-	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          // uuids to ports to remote publishers
-	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; // remote publishers of undiscovered nodes
-	map<uint16_t, ZeroMQPublisher* > _localPubs;                       // local ports to local publishers
-	set<ZeroMQSubscriber* > _localSubs;                                // local subscribers
+	map<string, shared_ptr<NodeStub> > _nodes;                                    ///< UUIDs to NodeStub%s.
+	map<string, void*> _sockets;                                                  ///< UUIDs to ZeroMQ Sockets.
+	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          ///< UUIDs to ports to remote publishers.
+	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; ///< received publishers of yet undiscovered nodes.
+	map<uint16_t, ZeroMQPublisher* > _localPubs;                       ///< Local ports to local publishers.
+	set<ZeroMQSubscriber* > _localSubs;                                ///< Local subscribers.
 
-	static shared_ptr<ZeroMQNode> _instance;
+	static shared_ptr<ZeroMQNode> _instance; ///< Singleton instance.
 
 	friend std::ostream& operator<<(std::ostream&, const ZeroMQNode*);
 

@@ -1,4 +1,5 @@
 SET(ZEROMQ_PREBUILT ${CONTRIB_PREBUILT}/zeromq/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
+#SET(OLD_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 if(CMAKE_CROSSCOMPILING AND IOS)
 	SET(CMAKE_FIND_LIBRARY_SUFFIXES .a)
@@ -8,6 +9,7 @@ endif()
 if(CMAKE_CROSSCOMPILING AND ANDROID)
 	SET(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 	SET(ZEROMQ_PREBUILT ${CONTRIB_PREBUILT}/zeromq/android/${ANDROID_NDK_ABI_EXT})
+	message("ZEROMQ: ${ZEROMQ_PREBUILT}")
 endif()
 
 FIND_PATH(ZeroMQ_INCLUDE_DIR zmq.h
@@ -52,15 +54,9 @@ FIND_LIBRARY(ZeroMQ_LIBRARY_DEBUG
   /opt
 )
 
-message(${ZeroMQ_LIBRARY} - ${ZeroMQ_INCLUDE_DIR})
 
-if(NOT ZeroMQ_LIBRARY AND IPHONE)
-	message(" ")
-	message("    Could not find ZeroMQ for iOS.")
-	message("    run contrib/build_zeromq_iphone.sh from within the zeromq folder and make sure the following library is created:")
-	message("    ${PRE_BUILT_ZeroMQ_LIBRARY}/libzmq.a")
-	message(" ")
-endif()
+# message("ZeroMQ Headers: ${CONTRIB_HEADERS}/zeromq - ${ZeroMQ_INCLUDE_DIR}")
+# message("ZeroMQ Library: ${ZEROMQ_PREBUILT} - ${ZeroMQ_LIBRARY} - ${ZeroMQ_LIBRARY_DEBUG}")
 
 # handle the QUIETLY and REQUIRED arguments and set OPENAL_FOUND to TRUE if
 # all listed variables are TRUE

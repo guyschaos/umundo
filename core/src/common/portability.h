@@ -12,6 +12,7 @@ namespace std {
 #endif
 
 #ifdef WIN32
+#include <stdarg.h>
 
 #ifndef snprintf
 #define snprintf _snprintf

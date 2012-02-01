@@ -43,3 +43,14 @@ using boost::weak_ptr;
 }
 
 #endif /* end of include guard: STDINC_H_XA3W5TTL */
+
+/**
+ * \mainpage umundo-core
+ *
+ * This is the documentation of umundo-core, a leight-weight implementation of a pub/sub system. Its only responsibility
+ * is to deliver byte-arrays from publishers to subscribers on channels. Where a channel is nothing more than an agreed
+ * upon ASCII string.
+ */
+
+
+

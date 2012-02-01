@@ -13,7 +13,7 @@ project(uMundo)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
 
 # Enable verbose Makefiles to debug the build process itself
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # enable testing and actual output with tests
 enable_testing()
@@ -25,9 +25,9 @@ SET(BUILD_SHARED_LIBS OFF)
 # prefer static libraries for linking
 IF(WIN32)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ELSE(WIN32)
+ELSE()
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ENDIF(WIN32)
+ENDIF()
 
 # disable some warnings
 if (MSVC)
@@ -49,6 +49,8 @@ else()
 	SET(LIBRARY_OUTPUT_PATH 
 		${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
 endif()
+
+# set root directory for prebuilt libraries
 SET(CONTRIB_HEADERS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
 SET(CONTRIB_PREBUILT ${PROJECT_SOURCE_DIR}/contrib/prebuilt)
 
@@ -108,15 +110,29 @@ endif()
 
 if(DISC_AVAHI)
 	find_package(Avahi REQUIRED)
-	LIST(APPEND UMUNDO_LIBRARIES ${Avahi_LIBRARY})
-	LIST(APPEND UMUNDO_LIBRARIES_DEBUG ${Avahi_LIBRARY})
+	LIST(APPEND UMUNDO_LIBRARIES ${Avahi_LIBRARIES})
+	LIST(APPEND UMUNDO_LIBRARIES_DEBUG ${Avahi_LIBRARIES})	
 	include_directories(${Avahi_INCLUDE_DIR})
+endif()
+
+if(THREAD_PTHREAD AND NOT ANDROID)
+	LIST(APPEND UMUNDO_LIBRARIES "pthread")
+	LIST(APPEND UMUNDO_LIBRARIES_DEBUG "pthread")
 endif()
 
 FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
 	PATHS contrib/prebuilt/include
 )
-include_directories(${Boost_INCLUDE_DIR})
+include_directories("contrib/prebuilt/include")
+
+if (UNIX AND NOT APPLE AND NOT ANDROID)
+	LIST(APPEND UMUNDO_LIBRARIES rt)
+	LIST(APPEND UMUNDO_LIBRARIES_DEBUG rt)
+endif()
+
+LIST(APPEND UMUNDO_LIBRARIES umundo)
+LIST(APPEND UMUNDO_LIBRARIES_DEBUG umundo)
+
 # if (ANDROID)
 # 	add_definitions("-DBOOST_NO_EXCEPTIONS")
 # endif()
@@ -140,6 +156,7 @@ include_directories(./test)
 
 add_subdirectory(src)           # gather UMUNDO_FILES and add target umundo library
 add_subdirectory(test)          # build tests
+add_subdirectory(docs)          # build documentation
 
 ############################################################
 # Copy required header files to include/
@@ -186,7 +203,7 @@ endforeach()
 # Generate wrappers for other languages
 ############################################################
 
-if (NOT CMAKE_CROSSCOMPILING)
+if (NOT CMAKE_CROSSCOMPILING OR ANDROID)
 	add_subdirectory(contrib/swig)  # build umundo JNI library
 endif()
 

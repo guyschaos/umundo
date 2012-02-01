@@ -5,6 +5,9 @@ namespace umundo {
 
 template<class T>
 
+/**
+ * Interface to be notified about addition, removal or changes of entities.
+ */
 class ResultSet {
 public:
 	virtual void added(shared_ptr<T>) = 0;

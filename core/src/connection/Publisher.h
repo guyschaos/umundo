@@ -6,6 +6,10 @@
 
 namespace umundo {
 
+
+/**
+ * Publisher implementor basis class (bridge pattern)
+ */
 class PublisherImpl {
 public:
 	PublisherImpl() {}
@@ -22,6 +26,9 @@ public:
 	string _channelName;
 };
 
+/**
+ * Representation of a remote Publisher.
+ */
 class PublisherStub : public EndPoint {
 public:
 	PublisherStub(string channelName) : _channelName(channelName) {};
@@ -42,6 +49,9 @@ protected:
 	shared_ptr<NodeStub> _node;
 };
 
+/**
+ * Abstraction for publishing byte-arrays on channels (bridge pattern).
+ */
 class Publisher : public PublisherStub {
 public:
 	Publisher(const string& channelName);

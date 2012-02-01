@@ -78,7 +78,7 @@ void Thread::sleepMs(uint32_t ms) {
 	usleep(1000 * ms);
 #endif
 #ifdef THREAD_WIN32
-	Sleep(1000 * ms);
+	Sleep(ms);
 #endif
 }
 

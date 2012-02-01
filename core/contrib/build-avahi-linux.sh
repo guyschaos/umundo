@@ -4,11 +4,14 @@
 # build Avahi without all the pesky dependencies
 #
 
+echo "Deprecated - we expect system-wide libraries for avahi clients"
+exit
+
 # exit on error
 set -e
 
 ME=`basename $0`
-DEST_DIR="${PWD}/../../prebuilt/avahi/linux-i686/gcc"
+DEST_DIR="${PWD}/../../prebuilt/avahi/linux-i686/gnu"
 
 if [ ! -d avahi-core ]; then
 	echo
@@ -19,6 +22,8 @@ if [ ! -d avahi-core ]; then
 	exit
 fi
 mkdir -p ${DEST_DIR} &> /dev/null
+
+chmod 755 ./configure
 
 if [ -f Makefile ]; then
 	make clean
@@ -50,6 +55,8 @@ fi
 --enable-shared \
 --prefix=${DEST_DIR} \
 
+exit
+
 make -j2 install
 
 # tidy up
@@ -62,4 +69,5 @@ rm -rf ${DEST_DIR}/share
 rm -rf ${DEST_DIR}/var
 mkdir -p ${DEST_DIR}/../../../include/avahi
 mv ${DEST_DIR}/include/* ${DEST_DIR}/../../../include/avahi
+mv ${DEST_DIR}/lib/* ${DEST_DIR}
 rm -rf ${DEST_DIR}/include

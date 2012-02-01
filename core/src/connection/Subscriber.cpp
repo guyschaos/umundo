@@ -3,14 +3,14 @@
 
 namespace umundo {
 
-Subscriber::Subscriber(std::string channelName, Receiver* receiver) {
+Subscriber::Subscriber(string channelName, Receiver* receiver) {
 	_impl = Factory::createSubscriber(channelName, receiver);
 }
 
 Subscriber::~Subscriber() {
 }
 
-string Subscriber::getChannelName() {
+const string& Subscriber::getChannelName() {
 	return _impl->getChannelName();
 }
 

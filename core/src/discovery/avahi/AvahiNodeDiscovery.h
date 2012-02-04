@@ -26,15 +26,18 @@ namespace umundo {
 class AvahiNodeDiscovery : public DiscoveryImpl, public Thread {
 public:
 	virtual ~AvahiNodeDiscovery();
-	static AvahiNodeDiscovery* getInstance();
+	static shared_ptr<AvahiNodeDiscovery> getInstance();
 
-	DiscoveryImpl* create();
+	shared_ptr<Implementation> create();
+	void destroy();
+	void init(shared_ptr<Configuration>);
 
-	void remove(shared_ptr<Node> node);
-	void add(shared_ptr<Node> node);
+	void add(shared_ptr<NodeImpl> node);
+	void remove(shared_ptr<NodeImpl> node);
 
-	void browse(NodeQuery* discovery);
-	void unbrowse(NodeQuery* discovery);
+	void browse(shared_ptr<NodeQuery> discovery);
+	void unbrowse(shared_ptr<NodeQuery> discovery);
+
 	void run();
 
 private:
@@ -74,15 +77,15 @@ private:
 	    void* userdata
 	);
 
-	map<intptr_t, NodeQuery* > _browsers;       // memory addresses of queries for static callbacks
-	map<intptr_t, shared_ptr<Node> > _nodes;	             // memory addresses of local nodes for static callbacks
-	map<intptr_t, AvahiClient* > _avahiClients;            // memory addresses of local nodes to avahi clients
-	map<intptr_t, AvahiEntryGroup* > _avahiGroups;         // memory addresses of local nodes to avahi groups
-	map<intptr_t, AvahiServiceBrowser* > _avahiBrowser;        // memory addresses of local nodes to avahi service browsers
+	map<intptr_t, shared_ptr<NodeQuery> > _browsers;              ///< memory addresses of queries for static callbacks
+	map<intptr_t, shared_ptr<NodeImpl> > _nodes;	             ///< memory addresses of local nodes for static callbacks
+	map<intptr_t, AvahiClient* > _avahiClients;            ///< memory addresses of local nodes to avahi clients
+	map<intptr_t, AvahiEntryGroup* > _avahiGroups;         ///< memory addresses of local nodes to avahi groups
+	map<intptr_t, AvahiServiceBrowser* > _avahiBrowser;        ///< memory addresses of local nodes to avahi service browsers
 
-	map<NodeQuery*, map<string, shared_ptr<AvahiNodeStub> > > _queryNodes;
+	map<shared_ptr<NodeQuery>, map<string, shared_ptr<AvahiNodeStub> > > _queryNodes;
 
-	static AvahiNodeDiscovery* _instance;
+	static shared_ptr<AvahiNodeDiscovery> _instance;
 
 	static bool printWarn(const char* file, int line, const char* fct, int err);
 

@@ -2,29 +2,38 @@
 
 namespace umundo {
 
-DiscoveryImpl* AvahiNodeDiscovery::create() {
+shared_ptr<Implementation> AvahiNodeDiscovery::create() {
 	return getInstance();
 }
 
-AvahiNodeDiscovery* AvahiNodeDiscovery::getInstance() {
-	if (AvahiNodeDiscovery::_instance == NULL) {
-		AvahiNodeDiscovery::_instance = new AvahiNodeDiscovery();
+shared_ptr<AvahiNodeDiscovery> AvahiNodeDiscovery::getInstance() {
+	if (_instance.get() == NULL) {
+		_instance = shared_ptr<AvahiNodeDiscovery>(new AvahiNodeDiscovery());
+		_instance->start();
 	}
 	return _instance;
 }
-AvahiNodeDiscovery* AvahiNodeDiscovery::_instance;
+shared_ptr<AvahiNodeDiscovery> AvahiNodeDiscovery::_instance;
 
 AvahiNodeDiscovery::AvahiNodeDiscovery() {
+}
+
+void AvahiNodeDiscovery::destroy() {
+}
+
+void AvahiNodeDiscovery::init(shared_ptr<Configuration>) {
 	(_simplePoll = avahi_simple_poll_new()) || LOG_WARN("avahi_simple_poll_new", 0);
 }
 
 AvahiNodeDiscovery::~AvahiNodeDiscovery() {
 }
 
-void AvahiNodeDiscovery::remove(shared_ptr<Node> node) {
+void AvahiNodeDiscovery::remove(shared_ptr<NodeImpl> node) {
+	/// @todo Implement node removal for avahi discovery.
+	assert(false);
 }
 
-void AvahiNodeDiscovery::add(shared_ptr<Node> node) {
+void AvahiNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	int err;
 	intptr_t address = (intptr_t)(node.get());
 	getInstance()->_nodes[address] = node;
@@ -35,13 +44,13 @@ void AvahiNodeDiscovery::add(shared_ptr<Node> node) {
 	getInstance()->start();
 }
 
-void AvahiNodeDiscovery::unbrowse(NodeQuery* discovery) {
+void AvahiNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
 }
 
-void AvahiNodeDiscovery::browse(NodeQuery* discovery) {
+void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	AvahiServiceBrowser *sb = NULL;
 	AvahiClient *client = NULL;
-	intptr_t address = (intptr_t)(discovery);
+	intptr_t address = (intptr_t)(query.get());
 	int error;
 
 	client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, browseClientCallback, (void*)address, &error);
@@ -50,7 +59,7 @@ void AvahiNodeDiscovery::browse(NodeQuery* discovery) {
 		return;
 	}
 	getInstance()->_avahiClients[address] = client;
-	getInstance()->_browsers[address] = discovery;
+	getInstance()->_browsers[address] = query;
 
 	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", NULL, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
 		LOG_WARN("avahi_service_browser_new failed", error);
@@ -102,8 +111,8 @@ void AvahiNodeDiscovery::browseCallback(
 	          << "]" << std::endl;
 #endif
 
-	AvahiNodeDiscovery* myself = getInstance();
-	NodeQuery* query = myself->_browsers[(intptr_t)userdata];
+	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
+	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)userdata];
 	AvahiClient* client = myself->_avahiClients[(intptr_t)userdata];
 
 	switch (event) {
@@ -176,8 +185,8 @@ void AvahiNodeDiscovery::resolveCallback(
 	          << "]" << std::endl;
 #endif
 
-	AvahiNodeDiscovery* myself = getInstance();
-	NodeQuery* query = myself->_browsers[(intptr_t)userdata];
+	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
+	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)userdata];
 	AvahiClient* client = myself->_avahiClients[(intptr_t)userdata];
 	shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
 
@@ -221,8 +230,8 @@ void AvahiNodeDiscovery::resolveCallback(
 }
 
 void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupState state, void* userdata) {
-	AvahiNodeDiscovery* myself = getInstance();
-	shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
+	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
+	shared_ptr<NodeImpl> node = myself->_nodes[(intptr_t)userdata];
 	AvahiEntryGroup* group = myself->_avahiGroups[(intptr_t)userdata];
 
 	assert(g == group || group == NULL);
@@ -262,8 +271,8 @@ void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupS
 void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, void* userdata) {
 	assert(c);
 	int err;
-	AvahiNodeDiscovery* myself = getInstance();
-	shared_ptr<Node> node = myself->_nodes[(intptr_t)userdata];
+	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
+	shared_ptr<NodeImpl> node = myself->_nodes[(intptr_t)userdata];
 	AvahiEntryGroup* group = myself->_avahiGroups[(intptr_t)userdata];
 	assert(node.get() != NULL);
 

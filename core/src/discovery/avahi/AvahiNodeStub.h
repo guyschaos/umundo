@@ -32,6 +32,8 @@ private:
 
 	bool _isOurOwn;
 	bool _isWan;
+	map<int, string> _interfaces;
+	string _txtRecord;
 
 	friend std::ostream& operator<<(std::ostream&, const AvahiNodeStub*);
 	friend class AvahiNodeDiscovery;

@@ -105,6 +105,12 @@ planned to make all state explicit within a configuration so that we could move 
 for the moment, every implementation ignores its configuration and relies on the abstraction to call the setters for the relevant 
 fields prior to calling init() with an empty configuration.
 
+#### Things to note
+
+**Constructors of implementors**
+We are using the factory pattern for implementors, therefore the actual initialization of an implementor ought to be done in 
+create(). Keep in mind that the Factory will call the standard constructor once for when creating the prototype.
+
 ## Language Bindings
 
 The component itself is written in C/C++ and utilizes the STL and some header-only components

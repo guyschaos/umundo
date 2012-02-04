@@ -13,7 +13,7 @@ project(umundocore)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../contrib/cmake)
 
 # Enable verbose Makefiles to debug the build process itself
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # enable testing and actual output with tests
 enable_testing()
@@ -155,6 +155,13 @@ include_directories(./src)
 include_directories(./test)
 
 add_subdirectory(src)           # gather UMUNDO_FILES and add target umundo library
+
+# this is weird - gcc on debian stable will complain about unresolved symbols otherwise
+if (UNIX AND NOT APPLE)
+	message(STATUS "Duplicating all libraries")
+	LIST(APPEND UMUNDO_LIBRARIES ${UMUNDO_LIBRARIES})
+endif()
+
 add_subdirectory(test)          # build tests
 add_subdirectory(docs)          # build documentation
 
@@ -162,6 +169,7 @@ add_library(umundocore
 	${UMUNDO_FILES}
 	${HEADER_FILES}
 )
+
 
 ############################################################
 # Copy required header files to include/

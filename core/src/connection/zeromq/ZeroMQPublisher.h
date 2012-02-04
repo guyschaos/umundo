@@ -2,6 +2,7 @@
 #define ZEROMQPUBLISHER_H_AX5HLY5Q
 
 #include "common/stdInc.h"
+#include "common/Implementation.h"
 #include "connection/Publisher.h"
 
 #include <zmq.h>
@@ -15,32 +16,28 @@ namespace umundo {
  */
 class ZeroMQPublisher : public PublisherImpl, public boost::enable_shared_from_this<ZeroMQPublisher>  {
 public:
-	PublisherImpl* create(string);
 	virtual ~ZeroMQPublisher();
+	
+	shared_ptr<Implementation> create();
+	void init(shared_ptr<Configuration>);
+	void destroy();
 
-	void send(char* buffer, size_t length);
-	uint16_t getPort();
+	void send(const char* buffer, size_t length);
 protected:
 	/**
 	* Constructor used for prototype in Factory only.
 	*/
-	ZeroMQPublisher() {};
-
-	/**
-	 * Actual instance as instantiated by create()
-	 */
-	ZeroMQPublisher(string);
+	ZeroMQPublisher();
 
 private:
-	ZeroMQPublisher(const ZeroMQPublisher &other) {}
-	ZeroMQPublisher& operator= (const ZeroMQPublisher &other) {
-		return *this;
-	}
+	// ZeroMQPublisher(const ZeroMQPublisher &other) {}
+	// ZeroMQPublisher& operator= (const ZeroMQPublisher &other) {
+	// 	return *this;
+	// }
 
 	void* _socket;
 	void* _zeroMQCtx;
-	uint16_t _port;
-	string _transport;
+	shared_ptr<PublisherConfig> _config;
 
 	friend class Factory;
 };

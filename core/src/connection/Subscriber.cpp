@@ -3,15 +3,21 @@
 
 namespace umundo {
 
+shared_ptr<Configuration> SubscriberConfig::create() {
+	return shared_ptr<SubscriberConfig>(new SubscriberConfig());
+}
+
 Subscriber::Subscriber(string channelName, Receiver* receiver) {
-	_impl = Factory::createSubscriber(channelName, receiver);
+	_impl = boost::static_pointer_cast<SubscriberImpl>(Factory::create("subscriber"));
+	_config = boost::static_pointer_cast<SubscriberConfig>(Factory::config("subscriber"));
+//	_config->channelName = channelName;
+//	_config->receiver = receiver;
+  _impl->setChannelName(channelName);
+  _impl->setReceiver(receiver);
+	_impl->init(_config);
 }
 
 Subscriber::~Subscriber() {
-}
-
-const string& Subscriber::getChannelName() {
-	return _impl->getChannelName();
 }
 
 }

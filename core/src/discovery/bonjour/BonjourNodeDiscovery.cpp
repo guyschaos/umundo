@@ -6,24 +6,32 @@ BonjourNodeDiscovery::BonjourNodeDiscovery() {
 	DEBUG_CTOR("BonjourNodeDiscovery");
 }
 
-DiscoveryImpl* BonjourNodeDiscovery::create() {
+shared_ptr<Implementation> BonjourNodeDiscovery::create() {
 	return getInstance();
 }
 
-BonjourNodeDiscovery* BonjourNodeDiscovery::getInstance() {
-	if (_instance == NULL) {
-		_instance = new BonjourNodeDiscovery();
+void BonjourNodeDiscovery::destroy() {
+	// do nothing?
+}
+
+void BonjourNodeDiscovery::init(shared_ptr<Configuration>) {
+	// do nothing?
+}
+
+shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::getInstance() {
+	if (_instance.get() == NULL) {
+		_instance = shared_ptr<BonjourNodeDiscovery>(new BonjourNodeDiscovery());
 		_instance->start();
 	}
 	return _instance;
 }
-BonjourNodeDiscovery* BonjourNodeDiscovery::_instance;
+shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::_instance;
 
 BonjourNodeDiscovery::~BonjourNodeDiscovery() {
 	DEBUG_DTOR("BonjourNodeDiscovery");
 }
 
-void BonjourNodeDiscovery::remove(shared_ptr<Node> node) {
+void BonjourNodeDiscovery::remove(shared_ptr<NodeImpl> node) {
 	intptr_t address = (intptr_t)(node.get());
 
 	if (_nodes.find(address) == _nodes.end())
@@ -41,10 +49,12 @@ void BonjourNodeDiscovery::remove(shared_ptr<Node> node) {
 	_mutex.unlock();
 }
 
-void BonjourNodeDiscovery::add(shared_ptr<Node> node) {
+void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	DNSServiceErrorType err;
 	DNSServiceRef dnsRegisterClient;
 
+  assert(node->getUUID().length() > 0);
+  
 	DNSServiceFlags flags = 0; // kDNSServiceFlagsNoAutoRename;
 	uint32_t interfaceIndex = kDNSServiceInterfaceIndexAny;
 	const char* name = (node->getUUID().length() ? node->getUUID().c_str() : NULL);
@@ -52,6 +62,7 @@ void BonjourNodeDiscovery::add(shared_ptr<Node> node) {
 	char* regtype;
 	const char* transport = (node->getTransport().length() ? node->getTransport().c_str() : "tcp");
 	asprintf(&regtype, "_mundo._%s", transport);
+
 
 	const char* domain = (node->getDomain().length() ? node->getDomain().c_str() : "local.");
 	const char* host = (node->getHost().length() ? node->getHost().c_str() : NULL);
@@ -93,14 +104,14 @@ void BonjourNodeDiscovery::add(shared_ptr<Node> node) {
 	_mutex.unlock();
 }
 
-void BonjourNodeDiscovery::unbrowse(NodeQuery* query) {
-	intptr_t address = (intptr_t)(query);
+void BonjourNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
+	intptr_t address = (intptr_t)(query.get());
 
 	if (_dnsClients.find(address) == _dnsClients.end())
 		return;
 
 	_mutex.lock();
-	DNSServiceRef dnsRegisterClient = _dnsClients[(intptr_t)query];
+	DNSServiceRef dnsRegisterClient = _dnsClients[address];
 	assert(_sockFD.find(DNSServiceRefSockFD(dnsRegisterClient)) != _sockFD.end());
 	assert(_sockFD[DNSServiceRefSockFD(dnsRegisterClient)] == dnsRegisterClient);
 	_dnsClients.erase(address);
@@ -113,7 +124,7 @@ void BonjourNodeDiscovery::unbrowse(NodeQuery* query) {
 	_mutex.unlock();
 }
 
-void BonjourNodeDiscovery::browse(NodeQuery* query) {
+void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	DNSServiceErrorType err;
 	DNSServiceRef client = NULL;
 	DNSServiceFlags flags = 0;
@@ -125,7 +136,7 @@ void BonjourNodeDiscovery::browse(NodeQuery* query) {
 
 	const char* domain = query->getDomain().length() == 0 ? "local." : query->getDomain().c_str();
 
-	intptr_t address = (intptr_t)(query);
+	intptr_t address = (intptr_t)(query.get());
 
 	query->notifyImmediately(false);
 	getInstance()->_browsers[address] = query;
@@ -212,8 +223,8 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 	          << " domain:" << replyDomain
 	          << "]" << std::endl;
 #endif
-	BonjourNodeDiscovery* myself = getInstance();
-	NodeQuery* query = myself->_browsers[(intptr_t)context];
+	shared_ptr<BonjourNodeDiscovery> myself = getInstance();
+	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)context];
 
 	assert(myself != NULL);
 	assert(query != NULL);
@@ -291,7 +302,7 @@ void DNSSD_API BonjourNodeDiscovery::registerReply(
 	switch (errorCode) {
 	case kDNSServiceErr_NoError:
 		if (flags & kDNSServiceFlagsAdd) {
-			shared_ptr<Node> node = getInstance()->_nodes[(intptr_t)context];
+			shared_ptr<NodeImpl> node = getInstance()->_nodes[(intptr_t)context];
 			assert(node != NULL);
 			assert(name != NULL);
 			assert(domain != NULL);

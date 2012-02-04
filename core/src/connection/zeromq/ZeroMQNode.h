@@ -19,17 +19,23 @@ namespace umundo {
 /**
  * Concrete node implementor for 0MQ (bridge pattern).
  */
-class ZeroMQNode : public Thread, public ResultSet<NodeStub>, public Node {
+class ZeroMQNode : public Thread, public ResultSet<NodeStub>, public NodeImpl {
 public:
-	static shared_ptr<ZeroMQNode> getInstance();
 	virtual ~ZeroMQNode();
+
+	/** @name Implementor */
+  //@{	
+	shared_ptr<Implementation> create();
+	void destroy();
+	void init(shared_ptr<Configuration>);
+	//@}
 
 	/** @name Publish / Subscriber Maintenance */
   //@{	
-	static void addSubscriber(SubscriberImpl*);
-	static void removeSubscriber(SubscriberImpl*);
-	static void addPublisher(PublisherImpl*);
-	static void removePublisher(PublisherImpl*);
+	void addSubscriber(shared_ptr<SubscriberImpl>);
+	void removeSubscriber(shared_ptr<SubscriberImpl>);
+	void addPublisher(shared_ptr<PublisherImpl>);
+	void removePublisher(shared_ptr<PublisherImpl>);
   //@}
 	
 	/** @name Callbacks from Discovery */
@@ -39,6 +45,8 @@ public:
 	void changed(shared_ptr<NodeStub>);  ///< Never happens.
   //@}
 
+  static void* getZeroMQContext();
+  
 protected:
 	ZeroMQNode();
 
@@ -63,24 +71,25 @@ private:
 		return *this;
 	}
 
-	static void initPubMgmtMsg(zmq_msg_t&, ZeroMQPublisher*); ///< prepare a control message regarding a Publisher.
+	static void initPubMgmtMsg(zmq_msg_t&, shared_ptr<ZeroMQPublisher>); ///< prepare a control message regarding a Publisher.
 
-	void* _zeroMQCtx; ///< 0MQ context - yes, we have a private one - not sure if we want one shared among all publishers as well.
+	static void* _zmqContext; ///< global 0MQ context.
 	void* _responder; ///< 0MQ node socket for administrative messages.
 	Mutex _mutex;
-	NodeQuery* _nodeQuery; ///< the NodeQuery which we registered at the Discovery sub-system.
+	shared_ptr<NodeQuery> _nodeQuery; ///< the NodeQuery which we registered at the Discovery sub-system.
 
 	map<string, shared_ptr<NodeStub> > _nodes;                                    ///< UUIDs to NodeStub%s.
 	map<string, void*> _sockets;                                                  ///< UUIDs to ZeroMQ Sockets.
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          ///< UUIDs to ports to remote publishers.
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; ///< received publishers of yet undiscovered nodes.
-	map<uint16_t, ZeroMQPublisher* > _localPubs;                       ///< Local ports to local publishers.
-	set<ZeroMQSubscriber* > _localSubs;                                ///< Local subscribers.
+	map<uint16_t, shared_ptr<ZeroMQPublisher> > _localPubs;                       ///< Local ports to local publishers.
+	set<shared_ptr<ZeroMQSubscriber> > _localSubs;                                ///< Local subscribers.
+	shared_ptr<NodeConfig> _config;
 
 	static shared_ptr<ZeroMQNode> _instance; ///< Singleton instance.
 
 	friend std::ostream& operator<<(std::ostream&, const ZeroMQNode*);
-
+	friend class Factory;
 };
 
 }

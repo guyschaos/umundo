@@ -1,0 +1,33 @@
+/**
+ * Auto generated - edit config.h.in instead!
+ *
+ * This file is instantiated by cmake as config.h in the binary tree of 
+ * the out-of-source build. See cmake docs on CONFIGURE_FILE.
+ */
+
+#ifndef __S11N_CONFIG_H
+#define __S11N_CONFIG_H
+
+/** Platform macros */
+#cmakedefine UNIX
+// suppress warnings with eventual -DWIN32 on compiler invocation
+#ifndef WIN32
+#cmakedefine WIN32
+#endif
+#cmakedefine APPLE
+#cmakedefine CYGWIN
+#cmakedefine IOS
+#ifndef ANDROID
+#cmakedefine ANDROID
+#endif
+
+/** Implementation macros */
+#cmakedefine S11N_PROTOBUF
+
+/** Loglevels */
+#cmakedefine LOGLEVEL_S11N @LOGLEVEL_COMMON@
+
+/** miscellaneous */
+#cmakedefine PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
+
+#endif

@@ -3,18 +3,20 @@
 
 namespace umundo {
 
-PublisherImpl* ZeroMQPublisher::create(string channelName) {
-	PublisherImpl* instance = new ZeroMQPublisher(channelName);
-	ZeroMQNode::addPublisher(instance);
+shared_ptr<Implementation> ZeroMQPublisher::create() {
+	shared_ptr<Implementation> instance(new ZeroMQPublisher());
 	return instance;
 }
 
-ZeroMQPublisher::ZeroMQPublisher(string channelname) : PublisherImpl(channelname) {
-	DEBUG_CTOR("ZeroMQPublisher");
+void ZeroMQPublisher::destroy() {
+	delete(this);
+}
 
+void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
+
+	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
-	(_zeroMQCtx = zmq_init(1)) || LOG_WARN("zmq_init: %s",zmq_strerror(errno));
-	(_socket = zmq_socket(_zeroMQCtx, ZMQ_PUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
+	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_PUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
 	uint16_t port = 4242;
 
 	std::stringstream ss;
@@ -37,22 +39,20 @@ ZeroMQPublisher::ZeroMQPublisher(string channelname) : PublisherImpl(channelname
 //	zmq_setsockopt(_socket, ZMQ_HWM, &hwm, sizeof (hwm)) && ZMQWARN("zmq_setsockopt");
 
 	LOG_DEBUG("ZeroMQPublisher bound to %s", ss.str().c_str());
+}
 
+ZeroMQPublisher::ZeroMQPublisher() {
+	DEBUG_CTOR("ZeroMQPublisher");
 }
 
 ZeroMQPublisher::~ZeroMQPublisher() {
 	DEBUG_DTOR("ZeroMQPublisher start");
-	ZeroMQNode::removePublisher(this);
 	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 	zmq_term(_zeroMQCtx) && LOG_WARN("zmq_term: %s",zmq_strerror(errno));
 	DEBUG_DTOR("ZeroMQPublisher finished");
 }
 
-uint16_t ZeroMQPublisher::getPort() {
-	return _port;
-}
-
-void ZeroMQPublisher::send(char* buffer, size_t length) {
+void ZeroMQPublisher::send(const char* buffer, size_t length) {
 	LOG_DEBUG("ZeroMQPublisher sending %d bytes on %s", length, _channelName.c_str());
 
 	// topic name as envelope

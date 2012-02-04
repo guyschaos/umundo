@@ -3,37 +3,35 @@
 
 namespace umundo {
 
-SubscriberImpl* ZeroMQSubscriber::create(string channelName, Receiver* recv) {
-	SubscriberImpl* instance = new ZeroMQSubscriber(channelName, recv);
-	ZeroMQNode::addSubscriber(instance);
-	instance->start();
+shared_ptr<Implementation> ZeroMQSubscriber::create() {
+	shared_ptr<Implementation> instance(new ZeroMQSubscriber());
 	return instance;
+}
+
+void ZeroMQSubscriber::destroy() {
+	delete(this);
 }
 
 ZeroMQSubscriber::ZeroMQSubscriber() {
 	DEBUG_CTOR("ZeroMQSubscriber");
 }
 
-ZeroMQSubscriber::ZeroMQSubscriber(string channelName, Receiver* receiver) : _channelName(channelName), _receiver(receiver) {
-	DEBUG_CTOR("ZeroMQSubscriber");
-	(_zeroMQCtx = zmq_init(1)) || LOG_WARN("zmq_init: %s",zmq_strerror(errno));
-	(_socket = zmq_socket(_zeroMQCtx, ZMQ_SUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
-
-	std::string _uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
-	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, _channelName.c_str(), _channelName.size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
-	zmq_setsockopt (_socket, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
-}
-
 ZeroMQSubscriber::~ZeroMQSubscriber() {
 	DEBUG_DTOR("ZeroMQSubscriber start");
-	ZeroMQNode::removeSubscriber(this);
 	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 	zmq_term(_zeroMQCtx) && LOG_WARN("zmq_term: %s",zmq_strerror(errno));
 	DEBUG_DTOR("ZeroMQSubscriber finished");
 }
 
-const string& ZeroMQSubscriber::getChannelName() {
-	return _channelName;
+void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
+	_config = boost::static_pointer_cast<SubscriberConfig>(config);
+	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_SUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
+
+	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
+	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, _channelName.c_str(), _channelName.size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+	zmq_setsockopt (_socket, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+
+	start();
 }
 
 void ZeroMQSubscriber::run() {

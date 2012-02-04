@@ -4,6 +4,7 @@
 #include "config.h"
 #include "common/stdInc.h"
 
+#include "common/Implementation.h"
 #include "common/NodeStub.h"
 #include "common/ResultSet.h"
 #include "connection/Publisher.h"
@@ -29,25 +30,20 @@ namespace umundo {
  * This class realizes the Factory pattern by instantiating objects form prototypes. If you want to implement a specific subsystem
  * yourself, just inherit its base-class and register a prototype at the factory.
  *
- * \todo The *Impl classes need a destroy to delegate tidying up to the concrete implementors.
- *
- * \see PublisherImpl, SubscriberImpl, DiscoveryImpl
+ * \see PublisherImpl, SubscriberImpl, DiscoveryImpl, NodeImpl
  */
 class Factory {
 public:
 	static Factory* getInstance();
-	static PublisherImpl* createPublisher(string);
-	static SubscriberImpl* createSubscriber(string, Receiver*);
-	static DiscoveryImpl* createDiscovery();
-
-	PublisherImpl* _publisherImpl;
-	SubscriberImpl* _subscriberImpl;
-	DiscoveryImpl* _discoveryImpl;
+	static shared_ptr<Implementation> create(string);
+	static shared_ptr<Configuration> config(string);
 
 protected:
 	Factory();
 
 private:
+	map<string, Implementation*> _prototypes;
+	map<string, Configuration*> _configures;
 	static Factory* _instance;
 
 };

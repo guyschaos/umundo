@@ -16,31 +16,30 @@ namespace umundo {
 /**
  * Representation of a remote umundo Node.
  */
-class NodeStub : public EndPoint, public boost::enable_shared_from_this<NodeStub> {
+class NodeStub : public EndPoint {
 public:
-	/**
-	 * Universal Unique ID
-	 */
-	virtual const string& getUUID() {
-		return _uuid;
-	}
-	virtual void setUUID(string uuid) {
-		_uuid = uuid;
+	/** @name Remote Node */
+	//@{
+	virtual const string& getUUID() const       { return _uuid; }
+	virtual void setUUID(string uuid)           { _uuid = uuid; }
+	virtual const string& getHost() const       { return _host; }
+	virtual void setHost(string host)           { _host = host; }
+	virtual const string& getDomain() const     { return _domain; }
+	virtual void setDomain(string domain)       { _domain = domain; }
+	//@}
+
+	inline bool operator==(NodeStub* n) const {
+		return (getUUID().compare(n->getUUID()) == 0);
 	}
 
-	inline bool operator==(NodeStub n) const {
-		return (_uuid.compare(n._uuid) == 0);
+	inline bool operator!=(NodeStub* n) const {
+		return (getUUID().compare(n->getUUID()) != 0);
 	}
 
-	inline bool operator!=(NodeStub n) const {
-		return (_uuid.compare(n._uuid) != 0);
-	}
 protected:
-	std::string _uuid;
-	bool _isRemote;
-	bool _isAdded;
-	string _txtRecord;
-	map<int, string> _interfaces;               // interfaces to ip addresses
+	string _uuid;
+	string _host;
+	string _domain;
 
 private:
 	friend std::ostream& operator<<(std::ostream&, const NodeStub*);

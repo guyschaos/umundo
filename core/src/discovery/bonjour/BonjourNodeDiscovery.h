@@ -33,15 +33,17 @@ namespace umundo {
 class BonjourNodeDiscovery : public DiscoveryImpl, public Thread {
 public:
 	virtual ~BonjourNodeDiscovery();
-	static BonjourNodeDiscovery* getInstance();  ///< Return the singleton instance.
+	static shared_ptr<BonjourNodeDiscovery> getInstance();  ///< Return the singleton instance.
 	
-	DiscoveryImpl* create();
+	shared_ptr<Implementation> create();
+	void destroy();
+	void init(shared_ptr<Configuration>);
 
-	void add(shared_ptr<Node> node);
-	void remove(shared_ptr<Node> node);
+	void add(shared_ptr<NodeImpl> node);
+	void remove(shared_ptr<NodeImpl> node);
 
-	void browse(NodeQuery* discovery);
-	void unbrowse(NodeQuery* discovery);
+	void browse(shared_ptr<NodeQuery> discovery);
+	void unbrowse(shared_ptr<NodeQuery> discovery);
 
 	void run();
 
@@ -74,15 +76,15 @@ private:
 
 	
 	map<int, DNSServiceRef> _sockFD;          ///< Socket file descriptors to bonjour handle.
-	map<intptr_t, NodeQuery* > _browsers;     ///< Memory addresses to node queries for static callbacks.
-	map<intptr_t, shared_ptr<Node> > _nodes;  ///< Memory addresses of local nodes for static callbacks.
+	map<intptr_t, shared_ptr<NodeQuery> > _browsers;     ///< Memory addresses to node queries for static callbacks.
+	map<intptr_t, shared_ptr<NodeImpl> > _nodes;  ///< Memory addresses of local nodes for static callbacks.
 	map<intptr_t, DNSServiceRef> _dnsClients; ///< Bonjour handles for local node registration.
 
 	/// All the nodes a query was notified about.
-	map<NodeQuery*, map<string, shared_ptr<BonjourNodeStub> > > _queryNodes;
+	map<shared_ptr<NodeQuery>, map<string, shared_ptr<BonjourNodeStub> > > _queryNodes;
 	Mutex _mutex;
 
-	static BonjourNodeDiscovery* _instance;  ///< The singleton instance.
+	static shared_ptr<BonjourNodeDiscovery> _instance;  ///< The singleton instance.
 
 	friend class BonjourNodeStub;
 	friend class Factory;

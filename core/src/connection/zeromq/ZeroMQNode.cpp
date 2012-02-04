@@ -2,37 +2,44 @@
 
 namespace umundo {
 
-shared_ptr<ZeroMQNode> ZeroMQNode::_instance;
-
-shared_ptr<ZeroMQNode> ZeroMQNode::getInstance() {
-	if (ZeroMQNode::_instance == NULL) {
-		_instance = shared_ptr<ZeroMQNode>(new ZeroMQNode());
-		_instance->start();
-		// add us as a node
-		Discovery::add(_instance);
-		// add us as a node query
-		Discovery::browse(_instance->_nodeQuery);
-	}
-	return _instance;
-}
-
 ZeroMQNode::~ZeroMQNode() {
 	DEBUG_DTOR("ZeroMQNode");
 	stop();
 	join();
 	if (_responder)
 		zmq_close(_responder) || LOG_WARN("zmq_close: %s",zmq_strerror(errno));
-	if (_zeroMQCtx)
-		zmq_term(_zeroMQCtx) || LOG_WARN("zmq_term: %s",zmq_strerror(errno));
+//	if (_zmqContext)
+//		zmq_term(_zmqContext) || LOG_WARN("zmq_term: %s",zmq_strerror(errno));
 }
 
 ZeroMQNode::ZeroMQNode() {
 	DEBUG_CTOR("ZeroMQNode");
-	(_zeroMQCtx = zmq_init(1)) || LOG_ERR("zmq_init: %s",zmq_strerror(errno));
-	(_responder = zmq_socket(_zeroMQCtx, ZMQ_ROUTER))  || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));
+}
 
-	_nodeQuery = new NodeQuery("", this);
+shared_ptr<Implementation> ZeroMQNode::create() {
+	return shared_ptr<ZeroMQNode>(new ZeroMQNode());
+}
+
+void ZeroMQNode::destroy() {
+	delete(this);
+}
+
+void* ZeroMQNode::getZeroMQContext() {
+  if (_zmqContext == NULL) {
+    (_zmqContext = zmq_init(1)) || LOG_ERR("zmq_init: %s",zmq_strerror(errno));
+  }
+  return _zmqContext;
+}
+void* ZeroMQNode::_zmqContext = NULL;
+
+void ZeroMQNode::init(shared_ptr<Configuration> config) {
+	_config = boost::static_pointer_cast<NodeConfig>(config);
+
+	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
 	_transport = "tcp";
+
+	_nodeQuery = shared_ptr<NodeQuery>(new NodeQuery("", this));
+	(_responder = zmq_socket(getZeroMQContext(), ZMQ_ROUTER))  || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));
 
 	// start with 4242 and work your way up until we find a free port
 	int port = 4242;
@@ -56,6 +63,10 @@ ZeroMQNode::ZeroMQNode() {
 	}
 	_port = port;
 	LOG_INFO("Node %s listening as %s", _uuid.c_str(), ss.str().c_str());
+
+	start();
+	Discovery::browse(_nodeQuery);
+
 }
 
 void ZeroMQNode::run() {
@@ -131,7 +142,8 @@ void ZeroMQNode::processPubAdded(const char* remoteId, zmq_msg_t message) {
 		return;
 	}
 
-	shared_ptr<PublisherStub> pubStub = shared_ptr<PublisherStub>(new PublisherStub(pubName));
+	shared_ptr<PublisherStub> pubStub = shared_ptr<PublisherStub>(new PublisherStub());
+	pubStub->setChannelName(pubName);
 	pubStub->setPort(port);
 	_mutex.unlock();
 
@@ -193,10 +205,10 @@ void ZeroMQNode::added(shared_ptr<NodeStub> node) {
 
 		// connect a socket to the remote node port
 		void* client;
-		(client = zmq_socket(_zeroMQCtx, ZMQ_DEALER)) || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));
+		(client = zmq_socket(getZeroMQContext(), ZMQ_DEALER)) || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));
 
 		// give the socket an id for zeroMQ routing
-		zmq_setsockopt(client, ZMQ_IDENTITY, getUUID().c_str(), getUUID().length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+		zmq_setsockopt(client, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 		zmq_connect(client, ss.str().c_str()) && LOG_WARN("zmq_connect: %s",zmq_strerror(errno));
 
 		// remember node stub and socket
@@ -204,11 +216,11 @@ void ZeroMQNode::added(shared_ptr<NodeStub> node) {
 		_sockets[node->getUUID()] = client;
 
 		// send all our local publisher channelnames as "short PUB_ADDED:string CHANNELNAME:short PORT:\0"
-		map<uint16_t, ZeroMQPublisher* >::iterator pubIter;
+		map<uint16_t, shared_ptr<ZeroMQPublisher> >::iterator pubIter;
 		int hasMore = _localPubs.size() - 1;
 		for (pubIter = _localPubs.begin(); pubIter != _localPubs.end(); pubIter++, hasMore--) {
 
-			ZeroMQPublisher* zPub = pubIter->second;
+			shared_ptr<ZeroMQPublisher> zPub = pubIter->second;
 			assert(zPub);
 
 			// create a publisher added message from current publisher
@@ -276,13 +288,13 @@ void ZeroMQNode::addRemotePubToLocalSubs(const char* remoteId, shared_ptr<Publis
 
 	if (_nodes.find(remoteId) != _nodes.end() && _pendingPubAdditions.find(remoteId) != _pendingPubAdditions.end()) {
 		// we have discovered the node already
-		set<ZeroMQSubscriber* >::iterator subIter;
+		set<shared_ptr<ZeroMQSubscriber> >::iterator subIter;
 		map<uint16_t, shared_ptr<PublisherStub> >::iterator pubIter;
 		for (subIter = _localSubs.begin(); subIter != _localSubs.end(); subIter++) {
 			for (pubIter = _pendingPubAdditions[remoteId].begin(); pubIter != _pendingPubAdditions[remoteId].end(); pubIter++) {
 
-				ZeroMQSubscriber* zSub = *subIter;
-				assert(zSub);
+				shared_ptr<ZeroMQSubscriber> zSub = *subIter;
+				assert(zSub.get());
 
 				// copy pubStub from pendingPubs to remotePubs
 				_remotePubs[remoteId][pubIter->second->getPort()] = pubIter->second;
@@ -306,11 +318,11 @@ void ZeroMQNode::addRemotePubToLocalSubs(const char* remoteId, shared_ptr<Publis
 
 void ZeroMQNode::removeRemotePubFromLocalSubs(const char* remoteId, shared_ptr<PublisherStub> pub) {
 	_mutex.lock();
-	set<ZeroMQSubscriber* >::iterator subIter;
+	set<shared_ptr<ZeroMQSubscriber> >::iterator subIter;
 	for (subIter = _localSubs.begin(); subIter != _localSubs.end(); subIter++) {
 
-		ZeroMQSubscriber* zSub = *subIter;
-		assert(zSub);
+		shared_ptr<ZeroMQSubscriber> zSub = *subIter;
+		assert(zSub.get());
 
 		if (zSub->getChannelName().compare(pub->getChannelName()) == 0) {
 			zSub->removed(pub);
@@ -319,7 +331,7 @@ void ZeroMQNode::removeRemotePubFromLocalSubs(const char* remoteId, shared_ptr<P
 	_mutex.unlock();
 }
 
-void ZeroMQNode::initPubMgmtMsg(zmq_msg_t& msg, ZeroMQPublisher* pub) {
+void ZeroMQNode::initPubMgmtMsg(zmq_msg_t& msg, shared_ptr<ZeroMQPublisher> pub) {
 	zmq_msg_init(&msg) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
 	zmq_msg_init_size (&msg, pub->getChannelName().length() + 5) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
 
@@ -341,25 +353,24 @@ void ZeroMQNode::initPubMgmtMsg(zmq_msg_t& msg, ZeroMQPublisher* pub) {
  *
  * This will call added(pub) for every known publisher with a matching channelname.
  */
-void ZeroMQNode::addSubscriber(SubscriberImpl* sub) {
-	shared_ptr<ZeroMQNode> myself = getInstance();
-	ZeroMQSubscriber* zSub = (ZeroMQSubscriber*)(sub);
-	if (zSub == NULL)
+void ZeroMQNode::addSubscriber(shared_ptr<SubscriberImpl> sub) {
+	shared_ptr<ZeroMQSubscriber> zSub = boost::static_pointer_cast<ZeroMQSubscriber>(sub);
+	if (zSub.get() == NULL)
 		return;
 
-	myself->_mutex.lock();
+	_mutex.lock();
 
-	myself->_localSubs.insert(zSub);
+	_localSubs.insert(zSub);
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > >::iterator nodeIdIter;
 	map<uint16_t, shared_ptr<PublisherStub> >::iterator pubIter;
-	for (nodeIdIter = myself->_remotePubs.begin(); nodeIdIter != myself->_remotePubs.end(); nodeIdIter++) {
-		for (pubIter = myself->_remotePubs[nodeIdIter->first].begin(); pubIter != myself->_remotePubs[nodeIdIter->first].end(); pubIter++) {
+	for (nodeIdIter = _remotePubs.begin(); nodeIdIter != _remotePubs.end(); nodeIdIter++) {
+		for (pubIter = _remotePubs[nodeIdIter->first].begin(); pubIter != _remotePubs[nodeIdIter->first].end(); pubIter++) {
 			if (zSub->getChannelName().compare(pubIter->second->getChannelName()) == 0) {
 				zSub->added(pubIter->second);
 			}
 		}
 	}
-	myself->_mutex.unlock();
+	_mutex.unlock();
 }
 
 /**
@@ -367,47 +378,45 @@ void ZeroMQNode::addSubscriber(SubscriberImpl* sub) {
  *
  * This will call removed(pub) for every publisher with a matching channelname.
  */
-void ZeroMQNode::removeSubscriber(SubscriberImpl* sub) {
-	shared_ptr<ZeroMQNode> myself = getInstance();
-	ZeroMQSubscriber* zSub = (ZeroMQSubscriber*)(sub);
-	if (zSub == NULL)
+void ZeroMQNode::removeSubscriber(shared_ptr<SubscriberImpl> sub) {
+	shared_ptr<ZeroMQSubscriber> zSub = boost::static_pointer_cast<ZeroMQSubscriber>(sub);
+	if (zSub.get() == NULL)
 		return;
 
 	// do we know this subscriber?
-	if (myself->_localSubs.find(zSub) == myself->_localSubs.end())
+	if (_localSubs.find(zSub) == _localSubs.end())
 		return;
 
-	myself->_mutex.lock();
+	_mutex.lock();
 	// disconnect all publishers
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > >::iterator nodeIdIter;
 	map<uint16_t, shared_ptr<PublisherStub> >::iterator pubIter;
-	for (nodeIdIter = myself->_remotePubs.begin(); nodeIdIter != myself->_remotePubs.end(); nodeIdIter++) {
-		for (pubIter = myself->_remotePubs[nodeIdIter->first].begin(); pubIter != myself->_remotePubs[nodeIdIter->first].end(); pubIter++) {
+	for (nodeIdIter = _remotePubs.begin(); nodeIdIter != _remotePubs.end(); nodeIdIter++) {
+		for (pubIter = _remotePubs[nodeIdIter->first].begin(); pubIter != _remotePubs[nodeIdIter->first].end(); pubIter++) {
 			if (zSub->getChannelName().compare(pubIter->second->getChannelName()) == 0) {
 				zSub->removed(pubIter->second);
 			}
 		}
 	}
-	myself->_mutex.unlock();
+	_mutex.unlock();
 
 }
 
-void ZeroMQNode::addPublisher(PublisherImpl* pub) {
-	shared_ptr<ZeroMQNode> myself = getInstance();
-	ZeroMQPublisher* zPub = (ZeroMQPublisher*)(pub);
-	if (zPub == NULL) {
+void ZeroMQNode::addPublisher(shared_ptr<PublisherImpl> pub) {
+	shared_ptr<ZeroMQPublisher> zPub = boost::static_pointer_cast<ZeroMQPublisher>(pub);
+	if (zPub.get() == NULL) {
 		LOG_WARN("Given publisher cannot be cast to ZeroMQPublisher or is NULL");
 		return;
 	}
 
-	myself->_mutex.lock();
+	_mutex.lock();
 	// do we already now this publisher?
-	if (myself->_localPubs.find(zPub->getPort()) == myself->_localPubs.end()) {
+	if (_localPubs.find(zPub->getPort()) == _localPubs.end()) {
 		LOG_DEBUG("Publisher added %s", zPub->getChannelName().c_str());
-		myself->_localPubs[zPub->getPort()] = zPub;
+		_localPubs[zPub->getPort()] = zPub;
 
 		map<string, void*>::iterator sockIter;
-		for (sockIter = myself->_sockets.begin(); sockIter != myself->_sockets.end(); sockIter++) {
+		for (sockIter = _sockets.begin(); sockIter != _sockets.end(); sockIter++) {
 			zmq_msg_t msg;
 			initPubMgmtMsg(msg, zPub);
 			*(uint16_t*)((char*)zmq_msg_data(&msg) + 0) = htons(Message::PUB_ADDED);
@@ -417,26 +426,25 @@ void ZeroMQNode::addPublisher(PublisherImpl* pub) {
 		}
 
 	} else {
-		assert(zPub->getChannelName().compare(myself->_localPubs[zPub->getPort()]->getChannelName()) == 0);
+		assert(zPub->getChannelName().compare(_localPubs[zPub->getPort()]->getChannelName()) == 0);
 	}
 
-	myself->_mutex.unlock();
+	_mutex.unlock();
 }
 
-void ZeroMQNode::removePublisher(PublisherImpl* pub) {
-	shared_ptr<ZeroMQNode> myself = getInstance();
-	ZeroMQPublisher* zPub = (ZeroMQPublisher*)(pub);
-	if (zPub == NULL) {
+void ZeroMQNode::removePublisher(shared_ptr<PublisherImpl> pub) {
+	shared_ptr<ZeroMQPublisher> zPub = boost::static_pointer_cast<ZeroMQPublisher>(pub);
+	if (zPub.get() == NULL) {
 		LOG_WARN("Given publisher cannot be cast to ZeroMQPublisher or is NULL");
 		return;
 	}
 
-	myself->_mutex.lock();
+	_mutex.lock();
 
-	if (myself->_localPubs.find(zPub->getPort()) != myself->_localPubs.end()) {
+	if (_localPubs.find(zPub->getPort()) != _localPubs.end()) {
 		LOG_DEBUG("Publisher removed %s", zPub->getChannelName().c_str());
 		map<string, void*>::iterator sockIter;
-		for (sockIter = myself->_sockets.begin(); sockIter != myself->_sockets.end(); sockIter++) {
+		for (sockIter = _sockets.begin(); sockIter != _sockets.end(); sockIter++) {
 			zmq_msg_t msg;
 			initPubMgmtMsg(msg, zPub);
 			*(uint16_t*)((char*)zmq_msg_data(&msg) + 0) = htons(Message::PUB_REMOVED);
@@ -444,10 +452,10 @@ void ZeroMQNode::removePublisher(PublisherImpl* pub) {
 			zmq_sendmsg(sockIter->second, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 			zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 		}
-		myself->_localPubs.erase(zPub->getPort());
+		_localPubs.erase(zPub->getPort());
 	}
 
-	myself->_mutex.unlock();
+	_mutex.unlock();
 
 }
 

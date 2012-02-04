@@ -2,24 +2,27 @@
 #define DISCOVERY_H_PWR3M1QA
 
 #include "common/Node.h"
+#include "common/Implementation.h"
 #include "discovery/NodeQuery.h"
 
 namespace umundo {
+
+class DiscoveryConfig : public Configuration {
+	// at the moment, there is nothing we need to configure
+};
 
 /**
  * Discovery implementor basis class (bridge pattern).
  * \see Discovery
  */
-class DiscoveryImpl {
+class DiscoveryImpl : public Implementation {
 public:
-	/// Factory method to create instances from a prototype instance.
-	virtual DiscoveryImpl* create() = 0;
 
-	virtual void add(shared_ptr<Node> node) = 0;
-	virtual void remove(shared_ptr<Node> node) = 0;
+	virtual void add(shared_ptr<NodeImpl> node) = 0;
+	virtual void remove(shared_ptr<NodeImpl> node) = 0;
 
-	virtual void browse(NodeQuery* discovery) = 0;
-	virtual void unbrowse(NodeQuery* discovery) = 0;
+	virtual void browse(shared_ptr<NodeQuery> discovery) = 0;
+	virtual void unbrowse(shared_ptr<NodeQuery> discovery) = 0;
 
 };
 
@@ -45,18 +48,18 @@ public:
 
 	/** @name Management of local nodes */
   //@{
-	static void add(shared_ptr<Node> node);    ///< Add a Node to multicast domain discovery.
-	static void remove(shared_ptr<Node> node); ///< Remove a Node from multicast domain disc.
+	static void add(Node* node);    ///< Add a Node to multicast domain discovery.
+	static void remove(Node* node); ///< Remove a Node from multicast domain disc.
   //@}
 
 	/** @name Query for nodes */
   //@{
-	static void browse(NodeQuery* discovery);
-	static void unbrowse(NodeQuery* discovery);
+	static void browse(shared_ptr<NodeQuery> discovery);
+	static void unbrowse(shared_ptr<NodeQuery> discovery);
   //@}
 
 protected:
-	DiscoveryImpl* _impl; ///< The concrete implementor instance.
+	shared_ptr<DiscoveryImpl> _impl; ///< The concrete implementor instance.
 };
 
 }

@@ -7,35 +7,36 @@ Factory* Factory::_instance = NULL;
 Factory* Factory::getInstance() {
 	if (Factory::_instance == NULL) {
 		Factory::_instance = new Factory();
-		assert(_instance->_publisherImpl != NULL);
-		assert(_instance->_subscriberImpl != NULL);
-		assert(_instance->_discoveryImpl != NULL);
+		assert(_instance->_prototypes["publisher"] != NULL);
+		assert(_instance->_prototypes["subscriber"] != NULL);
+		assert(_instance->_prototypes["discovery"] != NULL);
+		assert(_instance->_prototypes["node"] != NULL);
 	}
 	return Factory::_instance;
 }
 
 Factory::Factory() {
 	DEBUG_CTOR("Factory");
-	_publisherImpl = new ZeroMQPublisher();
-	_subscriberImpl = new ZeroMQSubscriber();
+	_prototypes["publisher"] = new ZeroMQPublisher();
+	_configures["publisher"] = new PublisherConfig();
+	_prototypes["subscriber"] = new ZeroMQSubscriber();
+	_configures["subscriber"] = new SubscriberConfig();
+	_prototypes["node"] = new ZeroMQNode();
+	_configures["node"] = new NodeConfig();
 #ifdef DISC_BONJOUR
-	_discoveryImpl = new BonjourNodeDiscovery();
+	_prototypes["discovery"] = new BonjourNodeDiscovery();
 #endif
 #ifdef DISC_AVAHI
-	_discoveryImpl = new AvahiNodeDiscovery();
+	_prototypes["discovery"] = new AvahiNodeDiscovery();
 #endif
 }
 
-PublisherImpl* Factory::createPublisher(string channelName) {
-	return getInstance()->_publisherImpl->create(channelName);
+shared_ptr<Configuration> Factory::config(string name) {
+	return getInstance()->_configures[name]->create();
 }
 
-SubscriberImpl* Factory::createSubscriber(string channelName, Receiver* receiver) {
-	return getInstance()->_subscriberImpl->create(channelName, receiver);
-}
-
-DiscoveryImpl* Factory::createDiscovery() {
-	return getInstance()->_discoveryImpl->create();
+shared_ptr<Implementation> Factory::create(string name) {
+	return getInstance()->_prototypes[name]->create();
 }
 
 }

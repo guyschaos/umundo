@@ -12,29 +12,12 @@ BonjourNodeStub::BonjourNodeStub() {
 
 BonjourNodeStub::~BonjourNodeStub() {
 	DEBUG_DTOR("BonjourNodeStub");
-
 }
 
-uint16_t BonjourNodeStub::getPort() {
-	resolve();
-	return _port;
-}
-
-const string& BonjourNodeStub::getIP() {
-	resolve();
+const string& BonjourNodeStub::getIP() const {
 	// just return the first ip address
 	assert(_interfaces.size() > 0);
 	return (_interfaces.begin())->second;
-}
-
-const string& BonjourNodeStub::getDomain() {
-	resolve();
-	return _domain;
-}
-
-const string& BonjourNodeStub::getHost() {
-	resolve();
-	return _host;
 }
 
 void BonjourNodeStub::resolve() {
@@ -95,30 +78,6 @@ void BonjourNodeStub::resolve() {
 		LOG_WARN("DNSServiceQueryRecord returned error");
 	}
 
-#if 0
-	// This might be aan alternative to query the ip
-	rflags = kDNSServiceFlagsReturnIntermediates;
-	uint16_t rrtype = kDNSServiceType_A;
-	uint16_t rrclass = kDNSServiceClass_IN;
-	err = DNSServiceQueryRecord(
-	          &_dnsQueryClient,
-	          rflags,
-	          interfaceIndex,
-	          name,
-	          rrtype,
-	          rrclass,
-	          queryReply,
-	          (void*)address
-	      );
-
-	std::cout << "DNSServiceQueryRecord returned" << std::endl;
-	if (err == kDNSServiceErr_NoError && _dnsQueryClient) {
-		DNSServiceProcessResult(_dnsQueryClient);
-	} else {
-		printf("DNSServiceQueryRecord returned error %d\n", err);
-	}
-#endif
-
 	_ttl = time(NULL) + BONJOUR_RESOLVE_TTL;
 	free(regtype);
 	_mutex.unlock();
@@ -175,35 +134,6 @@ void DNSSD_API BonjourNodeStub::addrInfoReply(
 		node->_interfaces[interfaceIndex] = addr;
 	free(addr);
 }
-
-#if 0
-void BonjourNodeStub::queryReply(
-    DNSServiceRef sdRef,
-    DNSServiceFlags flags,
-    uint32_t interfaceIndex,
-    DNSServiceErrorType errorCode,
-    const char *fullname,   // resource record's full domain name
-    uint16_t rrtype,        // type (e.g. kDNSServiceType_PTR, kDNSServiceType_SRV, etc)
-    uint16_t rrclass,       // class of the resource record (usually kDNSServiceClass_IN)
-    uint16_t rdlen,         // length of resource record rdata
-    const void *rdata,      // raw rdata of the resource record
-    uint32_t ttl,           // how long to hold on to this result
-    void *context
-) {
-#if DISC_BONJ_DEBUG
-	std::cout << "queryReply["
-	          << "\n\tf:" << flags
-	          << " if:" << interfaceIndex
-	          << " err:" << errorCode
-	          << " fullname:" << fullname
-	          << " rrtype:" << rrtype
-	          << " rrclass:" << rrclass
-	          << " rdlen:" << rdlen
-	          << " ttl:" << ttl
-	          << "]" << std::endl;
-#endif
-}
-#endif
 
 void DNSSD_API BonjourNodeStub::resolveReply(
     DNSServiceRef sdref,

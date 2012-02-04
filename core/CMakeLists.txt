@@ -9,8 +9,8 @@ cmake_minimum_required(VERSION 2.8.2)
 # General setup
 ############################################################
 
-project(uMundo)
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
+project(umundocore)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../contrib/cmake)
 
 # Enable verbose Makefiles to debug the build process itself
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -51,8 +51,8 @@ else()
 endif()
 
 # set root directory for prebuilt libraries
-SET(CONTRIB_HEADERS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
-SET(CONTRIB_PREBUILT ${PROJECT_SOURCE_DIR}/contrib/prebuilt)
+SET(CONTRIB_HEADERS ${PROJECT_SOURCE_DIR}/../contrib/prebuilt/include)
+SET(CONTRIB_PREBUILT ${PROJECT_SOURCE_DIR}/../contrib/prebuilt)
 
 # gather all header files
 file(GLOB_RECURSE HEADER_FILES src/*.h)
@@ -123,15 +123,15 @@ endif()
 FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
 	PATHS contrib/prebuilt/include
 )
-include_directories("contrib/prebuilt/include")
+include_directories("../contrib/prebuilt/include")
 
 if (UNIX AND NOT APPLE AND NOT ANDROID)
 	LIST(APPEND UMUNDO_LIBRARIES rt)
 	LIST(APPEND UMUNDO_LIBRARIES_DEBUG rt)
 endif()
 
-LIST(APPEND UMUNDO_LIBRARIES umundo)
-LIST(APPEND UMUNDO_LIBRARIES_DEBUG umundo)
+LIST(APPEND UMUNDO_LIBRARIES umundocore)
+LIST(APPEND UMUNDO_LIBRARIES_DEBUG umundocore)
 
 # if (ANDROID)
 # 	add_definitions("-DBOOST_NO_EXCEPTIONS")
@@ -158,53 +158,58 @@ add_subdirectory(src)           # gather UMUNDO_FILES and add target umundo libr
 add_subdirectory(test)          # build tests
 add_subdirectory(docs)          # build documentation
 
+add_library(umundocore
+	${UMUNDO_FILES}
+	${HEADER_FILES}
+)
+
 ############################################################
 # Copy required header files to include/
 ############################################################
 
 # remove old include dir
-file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/include/)
+#file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/include/)
 
 # copy headers to include
-file(WRITE ${PROJECT_SOURCE_DIR}/include/umundo.h "/** auto-generated list of all headers */\n\n")
-foreach(HEADER_FILE ${HEADER_FILES})
-
-	# get relative path from project source dir
-	STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}/src/" "" REL_HEADER_FILE "${HEADER_FILE}")	
-	STRING(REGEX REPLACE "(.*)[/^](.*.h)" "\\1" REL_HEADER_PATH "${REL_HEADER_FILE}")
-	if (NOT ${REL_HEADER_PATH} MATCHES ".*/.*")
-
-		# copy only one directory deep, rest is implementation specific
-		if (${REL_HEADER_FILE} STREQUAL "config.h")
-			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/)
-		else()
-			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
-		endif()
-		file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
-	else()
-
-		# copy implementation specific headers
-		if (DISC_AVAHI AND REL_HEADER_PATH MATCHES ".*/avahi")
-			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
-			file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
-		endif()
-		if (DISC_BONJOUR AND REL_HEADER_PATH MATCHES ".*/bonjour")
-			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
-			file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
-		endif()
-		if (NET_ZEROMQ AND REL_HEADER_PATH MATCHES ".*/zeromq")
-			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
-			file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
-		endif()
-	endif()
-endforeach()
+# file(WRITE ${PROJECT_SOURCE_DIR}/include/umundo.h "/** auto-generated list of all headers */\n\n")
+# foreach(HEADER_FILE ${HEADER_FILES})
+# 
+# 	# get relative path from project source dir
+# 	STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}/src/" "" REL_HEADER_FILE "${HEADER_FILE}")	
+# 	STRING(REGEX REPLACE "(.*)[/^](.*.h)" "\\1" REL_HEADER_PATH "${REL_HEADER_FILE}")
+# 	if (NOT ${REL_HEADER_PATH} MATCHES ".*/.*")
+# 
+# 		# copy only one directory deep, rest is implementation specific
+# 		if (${REL_HEADER_FILE} STREQUAL "config.h")
+# 			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/)
+# 		else()
+# 			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
+# 		endif()
+# 		file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
+# 	else()
+# 
+# 		# copy implementation specific headers
+# 		if (DISC_AVAHI AND REL_HEADER_PATH MATCHES ".*/avahi")
+# 			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
+# 			file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
+# 		endif()
+# 		if (DISC_BONJOUR AND REL_HEADER_PATH MATCHES ".*/bonjour")
+# 			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
+# 			file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
+# 		endif()
+# 		if (NET_ZEROMQ AND REL_HEADER_PATH MATCHES ".*/zeromq")
+# 			file(COPY ${HEADER_FILE} DESTINATION ${PROJECT_SOURCE_DIR}/include/${REL_HEADER_PATH})
+# 			file(APPEND ${PROJECT_SOURCE_DIR}/include/umundo.h "#include \"${REL_HEADER_FILE}\"\n")
+# 		endif()
+# 	endif()
+# endforeach()
 
 ############################################################
 # Generate wrappers for other languages
 ############################################################
 
 if (NOT CMAKE_CROSSCOMPILING OR ANDROID)
-	add_subdirectory(contrib/swig)  # build umundo JNI library
+	add_subdirectory(contrib/swig)  # build umundocore JNI library
 endif()
 
 ############################################################
@@ -212,4 +217,6 @@ endif()
 ############################################################
 
 MARK_AS_ADVANCED(CMAKE_OSX_ARCHITECTURES CMAKE_OSX_DEPLOYMENT_TARGET CMAKE_OSX_SYSROOT)
+
+
 

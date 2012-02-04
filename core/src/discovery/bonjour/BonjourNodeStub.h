@@ -17,17 +17,15 @@
 namespace umundo {
 
 /**
- * Concrete nodestub implementor for bonjour (bridge pattern).
+ * Concrete nodestub implementor for bonjour.
  */
 class BonjourNodeStub : public NodeStub {
 public:
 	BonjourNodeStub();
 	virtual ~BonjourNodeStub();
 
-	uint16_t getPort();
-	const string& getDomain();
-	const string& getHost();
-	const string& getIP();
+	/// Overwritten from EndPoint.
+	const string& getIP() const;
 
 private:
 	void resolve();
@@ -45,22 +43,6 @@ private:
 	    void *context
 	);
 
-#if 0
-	static void queryReply(
-	    DNSServiceRef sdRef,
-	    DNSServiceFlags flags,
-	    uint32_t ifIndex,
-	    DNSServiceErrorType errorCode,
-	    const char *fullname,
-	    uint16_t rrtype,
-	    uint16_t rrclass,
-	    uint16_t rdlen,
-	    const void *rdata,
-	    uint32_t ttl,
-	    void *context
-	);
-#endif
-
 	static void DNSSD_API addrInfoReply(
 	    DNSServiceRef sdRef,
 	    DNSServiceFlags flags,
@@ -76,10 +58,13 @@ private:
 	DNSServiceRef _dnsResolveClient;
 	DNSServiceRef _dnsQueryClient;
 
-	std::set<std::string> _actualDomains;
-	std::string _regType;
-	std::string _bonjourDomain;
-	std::string _hostTarget;
+	bool _isAdded;
+	map<int, string> _interfaces;
+	
+	std::set<string> _actualDomains;
+	string _regType;
+	string _bonjourDomain;
+	string _hostTarget;
 	Mutex _mutex;
 	time_t _ttl;
 

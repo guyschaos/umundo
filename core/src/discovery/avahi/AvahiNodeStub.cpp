@@ -8,32 +8,10 @@ AvahiNodeStub::AvahiNodeStub() {
 };
 
 AvahiNodeStub::~AvahiNodeStub() {
-
 }
 
-uint16_t AvahiNodeStub::getPort() {
-	resolve();
-	return _port;
-}
-
-const string& AvahiNodeStub::getIP() {
-	resolve();
+const string& AvahiNodeStub::getIP() const {
 	return (_interfaces.begin())->second;
-}
-
-const string& AvahiNodeStub::getDomain() {
-	resolve();
-	return _domain;
-}
-
-const string& AvahiNodeStub::getHost() {
-	resolve();
-	return _host;
-}
-
-void AvahiNodeStub::resolve() {
-	if (!_isRemote)
-		return;
 }
 
 std::ostream& operator<<(std::ostream &out, const AvahiNodeStub* n) {

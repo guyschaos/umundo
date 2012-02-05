@@ -16,7 +16,7 @@
 #include <avahi-common/defs.h>
 #include <avahi-common/malloc.h>
 
-#define DISC_AVAHI_DEBUG 0
+#define DISC_AVAHI_DEBUG 1
 
 namespace umundo {
 

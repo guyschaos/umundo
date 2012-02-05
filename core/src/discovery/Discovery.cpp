@@ -4,7 +4,9 @@
 
 namespace umundo {
 
-
+/**
+ * @todo: This never gets called if we use the static functions - refactor
+ */
 Discovery::Discovery() {
 	_impl = boost::static_pointer_cast<DiscoveryImpl>(Factory::create("discovery"));
 	shared_ptr<DiscoveryConfig> config = boost::static_pointer_cast<DiscoveryConfig>(Factory::config("discovery"));

@@ -22,10 +22,8 @@ public:
 	AvahiNodeStub();
 	virtual ~AvahiNodeStub();
 
-	uint16_t getPort();
-	const string& getDomain();
-	const string& getHost();
-	const string& getIP();
+	/// Overwritten from EndPoint.
+	const string& getIP() const;
 
 private:
 	void resolve();

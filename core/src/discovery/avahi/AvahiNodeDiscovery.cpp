@@ -9,7 +9,7 @@ shared_ptr<Implementation> AvahiNodeDiscovery::create() {
 shared_ptr<AvahiNodeDiscovery> AvahiNodeDiscovery::getInstance() {
 	if (_instance.get() == NULL) {
 		_instance = shared_ptr<AvahiNodeDiscovery>(new AvahiNodeDiscovery());
-		_instance->start();
+		(_instance->_simplePoll = avahi_simple_poll_new()) || LOG_WARN("avahi_simple_poll_new", 0);
 	}
 	return _instance;
 }
@@ -22,7 +22,7 @@ void AvahiNodeDiscovery::destroy() {
 }
 
 void AvahiNodeDiscovery::init(shared_ptr<Configuration>) {
-	(_simplePoll = avahi_simple_poll_new()) || LOG_WARN("avahi_simple_poll_new", 0);
+	LOG_WARN("AvahiNodeDiscovery::init avahi_simple_poll_new")
 }
 
 AvahiNodeDiscovery::~AvahiNodeDiscovery() {
@@ -45,6 +45,8 @@ void AvahiNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 }
 
 void AvahiNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
+	/// @todo Implement query removal for avahi discovery.
+	assert(false);
 }
 
 void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
@@ -64,6 +66,7 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", NULL, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
 		LOG_WARN("avahi_service_browser_new failed", error);
 	}
+	getInstance()->start();	
 }
 
 void AvahiNodeDiscovery::browseClientCallback(AvahiClient *c, AvahiClientState state, void * userdata) {
@@ -331,6 +334,7 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 
 void AvahiNodeDiscovery::run() {
 	while (isStarted()) {
+		Thread::sleepMs(500);
 		avahi_simple_poll_loop(_simplePoll);
 	}
 }

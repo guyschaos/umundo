@@ -4,6 +4,7 @@
 #include "common/stdInc.h"
 #include "thread/Thread.h"
 #include "common/Implementation.h"
+#include "common/Message.h"
 
 namespace umundo {
 
@@ -15,7 +16,7 @@ class SubscriberImpl;
 class Receiver {
 public:
 	virtual ~Receiver() {}
-	virtual void receive(char* buffer, size_t length) = 0;
+	virtual void receive(Message* msg) = 0;
 	friend class Subscriber;
 };
 

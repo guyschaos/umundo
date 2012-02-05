@@ -32,11 +32,30 @@ Factory::Factory() {
 }
 
 shared_ptr<Configuration> Factory::config(string name) {
-	return getInstance()->_configures[name]->create();
+	Factory* factory = getInstance();
+	if (factory->_configures.find(name) == factory->_configures.end()) {
+		LOG_WARN("No configuration registered for %s", name.c_str());
+		return shared_ptr<Configuration>();
+	}
+	return factory->_configures[name]->create();
 }
 
 shared_ptr<Implementation> Factory::create(string name) {
-	return getInstance()->_prototypes[name]->create();
+	Factory* factory = getInstance();
+	if (factory->_prototypes.find(name) == factory->_prototypes.end()) {
+		LOG_WARN("No prototype registered for %s", name.c_str());
+		return shared_ptr<Implementation>();
+	}
+	return factory->_prototypes[name]->create();
+}
+
+void Factory::registerPrototype(string name, Implementation* prototype, Configuration* config) {
+	Factory* factory = getInstance();
+	if (factory->_prototypes.find(name) != factory->_prototypes.end()) {
+		LOG_WARN("Overwriting existing prototype for %s", name.c_str());
+	}
+	factory->_prototypes[name] = prototype;
+	factory->_configures[name] = config;
 }
 
 }

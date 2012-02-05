@@ -4,6 +4,7 @@
 #include "common/stdInc.h"
 #include "common/NodeStub.h"
 #include "common/Implementation.h"
+#include "common/Message.h"
 
 namespace umundo {
 
@@ -51,7 +52,7 @@ public:
 	PublisherImpl() {}
 	virtual ~PublisherImpl() {}
 
-	virtual void send(const char* buffer, size_t length) = 0;
+	virtual void send(Message* msg) = 0;
 
 };
 
@@ -67,7 +68,8 @@ public:
 
 	/** @name Functionality of local Publishers */
   //@{
-	void send(const char* buffer, size_t length)      { _impl->send(buffer, length); }
+	void send(Message* msg)       { _impl->send(msg); }
+	void send(const char* data, size_t length);
 	//@}
 
 	/** @name Overwrite PublisherStub */

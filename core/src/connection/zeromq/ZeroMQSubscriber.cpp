@@ -40,26 +40,41 @@ void ZeroMQSubscriber::run() {
 
 	while(isStarted()) {
 		// read whole envelope
+		Message* msg = new Message();
 		while (1) {
 			zmq_msg_t message;
 			zmq_msg_init(&message) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
 
-//      std::cout << "subscriber trying to read from socket" << std::endl;
 			zmq_recvmsg(_socket, &message, 0) >= 0 || LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
-			int msgSize = zmq_msg_size(&message);
+			size_t msgSize = zmq_msg_size(&message);
 
-			// send data to our receiver
-			_receiver->receive((char*)zmq_msg_data(&message), msgSize);
+			// last message contains actual data
 			zmq_getsockopt(_socket, ZMQ_RCVMORE, &more, &more_size) && LOG_WARN("zmq_getsockopt: %s",zmq_strerror(errno));
-			zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 
-			// std::cout << "received " << msgSize << "bytes:" << std::endl;
-			// for (int i = 0; i < msgSize; i++) {
-			//   std::cout << (int)((char*)zmq_msg_data(&message))[i] << ":";
-			// }
-			// std::cout << std::endl;
-
-			if (!more) {
+			if (more) {
+				char* key = (char*)zmq_msg_data(&message);
+				char* value = ((char*)zmq_msg_data(&message) + strlen(key) + 1);
+        zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+        
+        // is this the first message with the channelname?
+        if (strlen(value) == 0 && 
+            strlen(key) + 1 == msgSize &&
+            msg->getMeta().find(key) == msg->getMeta().end()) {
+          msg->setMeta("channelName", key);
+        } else {
+          if (strlen(key) + strlen(value) + 2 != msgSize) {
+            LOG_INFO("Received malformed message");
+            break;
+          } else {
+            msg->setMeta(key, value);
+          }
+        }
+        
+			} else {
+				msg->setData(string((char*)zmq_msg_data(&message), msgSize));
+        zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+				_receiver->receive(msg);
+				delete(msg);
 				break; // last message part
 			}
 		}

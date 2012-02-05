@@ -37,6 +37,7 @@ public:
 	static Factory* getInstance();
 	static shared_ptr<Implementation> create(string);
 	static shared_ptr<Configuration> config(string);
+	static void registerPrototype(string, Implementation*, Configuration*);
 
 protected:
 	Factory();

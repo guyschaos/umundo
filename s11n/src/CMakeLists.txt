@@ -8,11 +8,11 @@
 
 # build a list of all source files one directory beneath
 
-file(GLOB S11N_FILES *.cpp)
+file(GLOB S11N_FILES s11n/*.cpp)
 list(APPEND UMUNDO_FILES  ${S11N_FILES})
 
 if (S11N_PROTOBUF)
-	file(GLOB_RECURSE S11N_PROTOBUF_FILES protobuf/*.cpp)
+	file(GLOB_RECURSE S11N_PROTOBUF_FILES s11n/protobuf/*.cpp)
 	list(APPEND UMUNDO_FILES ${S11N_PROTOBUF_FILES})
 endif(S11N_PROTOBUF)
 

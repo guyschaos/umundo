@@ -52,8 +52,8 @@ ZeroMQPublisher::~ZeroMQPublisher() {
 	DEBUG_DTOR("ZeroMQPublisher finished");
 }
 
-void ZeroMQPublisher::send(const char* buffer, size_t length) {
-	LOG_DEBUG("ZeroMQPublisher sending %d bytes on %s", length, _channelName.c_str());
+void ZeroMQPublisher::send(Message* msg) {
+	LOG_DEBUG("ZeroMQPublisher sending msg on %s", _channelName.c_str());
 
 	// topic name as envelope
 	zmq_msg_t channelEnvlp;
@@ -63,11 +63,30 @@ void ZeroMQPublisher::send(const char* buffer, size_t length) {
 	zmq_sendmsg(_socket, &channelEnvlp, ZMQ_SNDMORE) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&channelEnvlp) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 
+	// all our meta information
+	map<string, string>::const_iterator metaIter;
+	for (metaIter = msg->getMeta().begin(); metaIter != msg->getMeta().end(); metaIter++) {
+		size_t metaSize = (metaIter->first).length() + (metaIter->second).length() + 2;
+		zmq_msg_t metaMsg;
+		zmq_msg_init(&metaMsg) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
+		zmq_msg_init_size (&metaMsg, metaSize) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
+		snprintf((char*)zmq_msg_data(&metaMsg), (metaIter->first).length() + 1, "%s", (metaIter->first).data());
+		snprintf(
+             (char*)zmq_msg_data(&metaMsg) + (metaIter->first).length() + 1, 
+             (metaIter->second).length() + 1, 
+             "%s", 
+             (metaIter->second).data());
+		
+		zmq_sendmsg(_socket, &metaMsg, ZMQ_SNDMORE) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
+		zmq_msg_close(&metaMsg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+		
+	}
+
 	// data as the second part of a multipart message
 	zmq_msg_t publication;
 	zmq_msg_init(&publication) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
-	zmq_msg_init_size (&publication, length) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
-	memcpy(zmq_msg_data(&publication), buffer, length);
+	zmq_msg_init_size (&publication, msg->getData().size()) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
+	memcpy(zmq_msg_data(&publication), msg->getData().data(), msg->getData().size());
 	zmq_sendmsg(_socket, &publication, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&publication) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 }

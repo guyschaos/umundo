@@ -34,8 +34,8 @@ class TestReceiver : public Receiver {
 public:
 	std::string _name;
 	TestReceiver(std::string name) : _name(name) {};
-	void receive(char* buffer, size_t length) {
-		std::cout << _name << " received " << length << "bytes:" << std::endl << buffer << std::endl;
+	void receive(Message* msg) {
+		std::cout << _name << " received " << msg->getData().size() << "bytes:" << std::endl << msg->getData() << std::endl;
 	}	
 };
 
@@ -61,6 +61,9 @@ int main(int argc, char** argv) {
 	
   while(1) {
     Thread::sleepMs(1000);
-    pubFoo->send(buffer, BUFFER_SIZE);
+    Message* msg = new Message();
+    msg->setData(string(buffer, BUFFER_SIZE));
+    msg->setMeta("type", "foo!");
+    pubFoo->send(msg);
   }
 }

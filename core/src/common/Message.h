@@ -16,32 +16,11 @@ class Message;
 class Type;
 
 /**
- * Message implementor basis class (bridge pattern).
- */
-class MessageImpl {
-public:
-	virtual char* getData() = 0;
-	virtual void setData(char*) = 0;
-
-	virtual int getSize() = 0;
-	virtual void setSize(int) = 0;
-
-	virtual char* getRaw() = 0;
-	virtual void setRaw(char*) = 0;
-
-	virtual int getInt(std::string) = 0;
-	virtual void setInt(std::string, int) = 0;
-
-	virtual std::string getString(std::string) = 0;
-	virtual void setString(std::string, std::string) = 0;
-};
-
-/**
  * Definition of message types and abstraction of message - not used (bridge pattern).
  *
  * We are still pondering whether we need an explicit message representation. At the moment, only the Type enum is used.
  */
-class Message : public boost::enable_shared_from_this<Message> {
+class Message {
 public:
 	enum Type {
 	    DATA          = 0x0000,
@@ -50,27 +29,20 @@ public:
 	    NODE_INFO     = 0x0006,
 	};
 
-	Message();
-	virtual ~Message();
+	Message() {}
+	Message(string data) : _data(data) {}
+	Message(const char* data, size_t length) : _data(data, length) {}
+	virtual ~Message() {}
 
-	virtual char* getData();
-	virtual void setData(char*);
-
-	virtual int getSize();
-	virtual void setSize(int);
-
-	virtual char* getRaw();
-	virtual void setRaw(char*);
-
-	virtual int getInt(std::string);
-	virtual void setInt(std::string, int);
-
-	virtual std::string getString(std::string);
-	virtual void setString(std::string, std::string);
+	virtual const string& getData()                                     { return _data; }
+	virtual void setData(const string& data)                            { _data = data; }
+	virtual const void setMeta(const string& key, const string& value)  { _meta[key] = value; }
+	virtual const map<string, string>& getMeta()                        { return _meta; }
+	virtual const string& getMeta(const string& key)                    { return _meta[key]; }
 
 protected:
-	boost::shared_ptr<MessageImpl> _impl;
-
+	string _data;
+	map<string, string> _meta;
 };
 }
 

@@ -22,7 +22,7 @@ public:
 	void init(shared_ptr<Configuration>);
 	void destroy();
 
-	void send(const char* buffer, size_t length);
+	void send(Message* msg);
 protected:
 	/**
 	* Constructor used for prototype in Factory only.

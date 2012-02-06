@@ -1,5 +1,17 @@
 #include "common/Factory.h"
 
+#include "connection/zeromq/ZeroMQNode.h"
+#include "connection/zeromq/ZeroMQPublisher.h"
+#include "connection/zeromq/ZeroMQSubscriber.h"
+
+#ifdef DISC_BONJOUR
+#include "discovery/bonjour/BonjourNodeDiscovery.h"
+#endif
+
+#ifdef DISC_AVAHI
+#include "discovery/avahi/AvahiNodeDiscovery.h"
+#endif
+
 namespace umundo {
 
 Factory* Factory::_instance = NULL;

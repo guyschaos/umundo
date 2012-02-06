@@ -1,5 +1,13 @@
 #include "connection/zeromq/ZeroMQSubscriber.h"
+
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include "connection/zeromq/ZeroMQNode.h"
+#include "connection/Publisher.h"
+#include "common/Message.h"
 
 namespace umundo {
 

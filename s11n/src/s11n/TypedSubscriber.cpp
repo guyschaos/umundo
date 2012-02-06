@@ -1,6 +1,7 @@
 #include "TypedSubscriber.h"
 #include "protobuf/PBDeserializer.h"
 #include "common/Factory.h"
+#include "common/Message.h"
 
 namespace umundo {
 

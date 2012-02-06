@@ -1,11 +1,10 @@
 #ifndef ZEROMQPUBLISHER_H_AX5HLY5Q
 #define ZEROMQPUBLISHER_H_AX5HLY5Q
 
-#include "common/stdInc.h"
-#include "common/Implementation.h"
-#include "connection/Publisher.h"
+#include <boost/enable_shared_from_this.hpp>
 
-#include <zmq.h>
+#include "common/Common.h"
+#include "connection/Publisher.h"
 
 #define ZEROMQ_PUB_HWM 16
 

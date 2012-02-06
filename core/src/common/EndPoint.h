@@ -1,7 +1,7 @@
 #ifndef ENDPOINT_H_2O8TQUBP
 #define ENDPOINT_H_2O8TQUBP
 
-#include "common/stdInc.h"
+#include "common/Common.h"
 
 namespace umundo {
 /**

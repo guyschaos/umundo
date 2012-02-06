@@ -1,28 +1,12 @@
 #ifndef FACTORY_H_BRZEE6H
 #define FACTORY_H_BRZEE6H
 
-#include "config.h"
-#include "common/stdInc.h"
-
-#include "common/Implementation.h"
-#include "common/NodeStub.h"
-#include "common/ResultSet.h"
-#include "connection/Publisher.h"
-#include "connection/Subscriber.h"
-
-#include "connection/zeromq/ZeroMQNode.h"
-#include "connection/zeromq/ZeroMQPublisher.h"
-#include "connection/zeromq/ZeroMQSubscriber.h"
-
-#ifdef DISC_BONJOUR
-#include "discovery/bonjour/BonjourNodeDiscovery.h"
-#endif
-
-#ifdef DISC_AVAHI
-#include "discovery/avahi/AvahiNodeDiscovery.h"
-#endif
+#include "common/Common.h"
 
 namespace umundo {
+
+class Implementation;
+class Configuration;
 
 /**
  * Creates instances of implementations for subsystems at runtime (factory pattern).

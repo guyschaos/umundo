@@ -51,6 +51,9 @@ OPTION(S11N_PROTOBUF "Use bonjour for discovery" ON)
 
 if(S11N_PROTOBUF)
 	find_package(Protobuf REQUIRED)
+	if (NOT PROTOBUF_PROTOC_EXECUTABLE)
+		message(FATAL_ERROR "Protobuf required for serialization")
+	endif()
 	include_directories(${PROTOBUF_INCLUDE_DIRS})
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 

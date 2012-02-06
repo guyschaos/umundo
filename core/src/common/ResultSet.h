@@ -1,6 +1,8 @@
 #ifndef RESULTSET_H_D2O6OBDA
 #define RESULTSET_H_D2O6OBDA
 
+#include "common/Common.h"
+
 namespace umundo {
 
 template<class T>

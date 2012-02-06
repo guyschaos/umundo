@@ -1,7 +1,7 @@
 #ifndef PORTABILITY_H_2L1YN201
 #define PORTABILITY_H_2L1YN201
 
-#include "config.h"
+#include "common/Common.h"
 
 #ifdef ANDROID
 #include <wchar.h>

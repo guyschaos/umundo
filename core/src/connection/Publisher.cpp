@@ -1,5 +1,7 @@
 #include "connection/Publisher.h"
+
 #include "common/Factory.h"
+#include "common/Message.h"
 
 namespace umundo {
 

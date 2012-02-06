@@ -1,6 +1,7 @@
 #include "TypedPublisher.h"
 #include "protobuf/PBSerializer.h"
 #include "common/Factory.h"
+#include "common/Message.h"
 
 namespace umundo {
 

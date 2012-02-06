@@ -1,16 +1,10 @@
 #ifndef BonjourNodeStub_H_WRJ8277D
 #define BonjourNodeStub_H_WRJ8277D
 
-#include "common/NodeStub.h"
-#include "thread/Thread.h"
 #include "dns_sd.h"
 
-#include "common/stdInc.h"
-
-#ifdef UNIX
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
+#include "common/NodeStub.h"
+#include "thread/Thread.h"
 
 #define BONJOUR_RESOLVE_TTL 120
 

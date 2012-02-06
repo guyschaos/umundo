@@ -1,15 +1,17 @@
 #ifndef NODEQUERY_H_3YGLQKC0
 #define NODEQUERY_H_3YGLQKC0
 
-#include "common/stdInc.h"
-
 #include <boost/enable_shared_from_this.hpp>
 
+#include "common/Common.h"
+
 #include "thread/Thread.h"
-#include "common/NodeStub.h"
 #include "common/ResultSet.h"
+// #include "common/NodeStub.h"
 
 namespace umundo {
+
+class NodeStub;
 
 /**
  * Representation of a query for discovery of nodes.

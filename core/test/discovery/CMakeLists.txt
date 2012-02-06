@@ -2,10 +2,6 @@
 # target_link_libraries(test-discovery ${UMUNDO_LIBRARIES})
 # target_link_libraries(test-discovery debug ${UMUNDO_LIBRARIES_DEBUG})
 
-foreach(f ${UMUNDO_LIBRARIES}) 
-    message(${f}) 
-endforeach(f) 
-
 add_executable(test-api test-api.cpp)
 target_link_libraries(test-api 
 	${UMUNDO_LIBRARIES}

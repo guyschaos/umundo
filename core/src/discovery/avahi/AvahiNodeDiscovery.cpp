@@ -1,5 +1,11 @@
 #include "discovery/avahi/AvahiNodeDiscovery.h"
 
+#include "common/Node.h"
+#include "discovery/NodeQuery.h"
+#include "discovery/avahi/AvahiNodeStub.h"
+#include <avahi-common/error.h>
+#include <avahi-common/malloc.h>
+
 namespace umundo {
 
 shared_ptr<Implementation> AvahiNodeDiscovery::create() {
@@ -337,11 +343,6 @@ void AvahiNodeDiscovery::run() {
 		Thread::sleepMs(500);
 		avahi_simple_poll_loop(_simplePoll);
 	}
-}
-
-bool AvahiNodeDiscovery::printWarn(const char* file, int line, const char* fct, int err) {
-	printf ("In %s:%d: Warning %s: %s  - continuing\n", file, line, fct, avahi_strerror(err));
-	return true;
 }
 
 }

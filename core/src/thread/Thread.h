@@ -1,7 +1,7 @@
 #ifndef PTHREAD_H_KU2YWI3W
 #define PTHREAD_H_KU2YWI3W
 
-#include "common/stdInc.h"
+#include "common/Common.h"
 
 #ifdef THREAD_PTHREAD
 #include <pthread.h>

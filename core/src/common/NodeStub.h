@@ -1,14 +1,7 @@
 #ifndef NODESTUB_H_20YUUS31
 #define NODESTUB_H_20YUUS31
 
-#include "config.h"
-#include "common/stdInc.h"
-
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
+#include "common/Common.h"
 #include "common/EndPoint.h"
 
 namespace umundo {

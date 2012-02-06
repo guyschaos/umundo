@@ -1,5 +1,17 @@
 #include "connection/zeromq/ZeroMQNode.h"
 
+#if defined UNIX || defined IOS || defined IOSSIM
+#include <arpa/inet.h>
+#endif
+
+#include <boost/lexical_cast.hpp>
+
+#include "common/Message.h"
+#include "discovery/Discovery.h"
+#include "discovery/NodeQuery.h"
+#include "connection/zeromq/ZeroMQPublisher.h"
+#include "connection/zeromq/ZeroMQSubscriber.h"
+
 namespace umundo {
 
 ZeroMQNode::~ZeroMQNode() {
@@ -34,8 +46,6 @@ void* ZeroMQNode::_zmqContext = NULL;
 
 void ZeroMQNode::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<NodeConfig>(config);
-
-	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
 	_transport = "tcp";
 
 	_nodeQuery = shared_ptr<NodeQuery>(new NodeQuery("", this));

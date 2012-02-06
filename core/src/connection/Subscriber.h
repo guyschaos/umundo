@@ -1,13 +1,13 @@
 #ifndef SUBSCRIBER_H_J64J09SP
 #define SUBSCRIBER_H_J64J09SP
 
-#include "common/stdInc.h"
-#include "thread/Thread.h"
+#include "common/Common.h"
 #include "common/Implementation.h"
-#include "common/Message.h"
+#include "thread/Thread.h"
 
 namespace umundo {
 
+class Message;
 class SubscriberImpl;
 
 /**

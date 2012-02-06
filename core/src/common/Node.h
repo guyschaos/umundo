@@ -1,16 +1,20 @@
 #ifndef NODE_H_AA94X8L6
 #define NODE_H_AA94X8L6
 
-#include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 
-#include "common/stdInc.h"
+#include "common/Common.h"
 
 #include "common/Implementation.h"
 #include "common/NodeStub.h"
-#include "connection/Publisher.h"
-#include "connection/Subscriber.h"
 
 namespace umundo {
+
+class Publisher;
+class PublisherImpl;
+class Subscriber;
+class SubscriberImpl;
+class NodeStub;
 
 class NodeConfig : public Configuration {
 public:

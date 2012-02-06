@@ -1,4 +1,3 @@
-#include "stdInc.h"
 #include "portability.h"
 
 #ifdef ANDROID

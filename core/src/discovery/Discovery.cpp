@@ -1,6 +1,7 @@
 #include "Discovery.h"
-#include "connection/Publisher.h"
+
 #include "common/Factory.h"
+#include "common/Node.h"
 
 namespace umundo {
 

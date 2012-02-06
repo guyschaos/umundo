@@ -1,24 +1,25 @@
 #ifndef DISCOVERER_H_94LKA4M1
 #define DISCOVERER_H_94LKA4M1
 
-#include "common/stdInc.h"
+#include "dns_sd.h"
+
 /**
  * Keep in mind that the bonjour concept of service differs from umundo's. Bonjour services are
  * things like printers or web-servers. In this sense, we provide a umundo node as a bonjour service.
  */
-#include "dns_sd.h"
 
-#include "common/Node.h"
+#include "common/Common.h"
 #include "thread/Thread.h"
 #include "discovery/Discovery.h"
-#include "discovery/NodeQuery.h"
-#include "discovery/bonjour/BonjourNodeStub.h"
 
 #define DISC_BONJ_DEBUG 0
 #define BONJOUR_REPOLL_USEC 10000
 #define BONJOUR_REPOLL_SEC 0
 
 namespace umundo {
+
+class NodeQuery;
+class BonjourNodeStub;
 
 /**
  * Concrete discovery implementor for Bonjour (bridge pattern).

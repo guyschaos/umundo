@@ -1,8 +1,8 @@
 #include "discovery/Discovery.h"
 #include "connection/Publisher.h"
 #include "connection/Subscriber.h"
+#include "common/Message.h"
 #include "common/Node.h"
-#include "common/stdInc.h"
 
 #include <iostream>
 

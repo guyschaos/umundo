@@ -1,7 +1,7 @@
 #ifndef PBDESERIALIZER_H_DD3C36Z7
 #define PBDESERIALIZER_H_DD3C36Z7
 
-#include "../TypedSubscriber.h"
+#include "s11n/TypedSubscriber.h"
 #include <google/protobuf/message_lite.h>
 
 using google::protobuf::MessageLite;

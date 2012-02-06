@@ -4,6 +4,7 @@
 #include "s11n/TypedPublisher.h"
 #include "s11n/TypedSubscriber.h"
 #include "common/Node.h"
+#include "common/Message.h"
 
 using namespace umundo;
 

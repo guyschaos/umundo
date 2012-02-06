@@ -1,15 +1,7 @@
 #ifndef MESSAGE_H_Y7TB6U8
 #define MESSAGE_H_Y7TB6U8
 
-#include "config.h"
-#include "common/stdInc.h"
-
-#include <sstream>
-
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "common/Common.h"
 
 namespace umundo {
 class Message;

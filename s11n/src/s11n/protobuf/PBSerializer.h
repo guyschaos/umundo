@@ -1,7 +1,7 @@
 #ifndef PBSERIALIZER_H_LQKL8UQG
 #define PBSERIALIZER_H_LQKL8UQG
 
-#include "../TypedPublisher.h"
+#include "s11n/TypedPublisher.h"
 #include <google/protobuf/message_lite.h>
 
 using google::protobuf::MessageLite;

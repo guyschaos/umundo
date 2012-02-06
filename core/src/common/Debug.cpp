@@ -1,11 +1,16 @@
 #include "common/Debug.h"
+#include <stdio.h>
+#include <string.h>
+#include "config.h"
+
+
 
 namespace umundo {
 
 const char* Debug::relFileName(const char* filename) {
 	const char* relPath = filename;
 	if(strstr(filename, PROJECT_SOURCE_DIR)) {
-		relPath =  filename + strlen(PROJECT_SOURCE_DIR) + 1;
+		relPath = filename + strlen(PROJECT_SOURCE_DIR) + 1;
 	}
 	return relPath;
 }
@@ -13,33 +18,20 @@ const char* Debug::relFileName(const char* filename) {
 bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int line, ...) {
 	// try to shorten filename
 	filename = relFileName(filename);
-	char* pathSepPos1 = (char*)filename;
-	char* pathSepPos2 = NULL;
-	char* pathSepPos3 = NULL;
-	char* logDomain = NULL;
+	char* pathSepPos = (char*)filename;
 	bool skip = false;
-	int i = 3;
-	/*	while((pathSepPos1 = strchr(pathSepPos1+1, PATH_SEPERATOR)) && --i > 0) {
-			pathSepPos3 = pathSepPos2;
-			pathSepPos2 = pathSepPos1;
-		}
-		if (pathSepPos3 != NULL && pathSepPos2 != NULL) {
-			int domainLength = pathSepPos2 - pathSepPos3 - 1;
-			logDomain = (char*)malloc(domainLength);
-			memcpy(logDomain, pathSepPos3 + 1, domainLength);
-			logDomain[domainLength] = 0;
-	//		printf("%d %s\n", domainLength, logDomain);
-			// do we want to skip this message?
-			if (strcmp(logDomain, "discovery") == 0 && lvl > LOGLEVEL_DISC)
-				skip = true;
-			if (strcmp(logDomain, "connection") == 0 && lvl > LOGLEVEL_NET)
-				skip = true;
-			if (strcmp(logDomain, "common") == 0 && lvl > LOGLEVEL_COMMON)
-				skip = true;
 
-			free(logDomain);
-		}
-		*/
+	while((pathSepPos = strchr(pathSepPos + 1, PATH_SEPERATOR))) {
+		if (strncmp(pathSepPos + 1, "common", 6) == 0 && lvl > LOGLEVEL_COMMON)
+			return false;
+		if (strncmp(pathSepPos + 1, "connection", 10) == 0 && lvl > LOGLEVEL_NET)
+			return false;
+		if (strncmp(pathSepPos + 1, "discovery", 9) == 0 && lvl > LOGLEVEL_DISC)
+			return false;
+		if (strncmp(pathSepPos + 1, "s11n", 9) == 0 && lvl > LOGLEVEL_S11N)
+			return false;
+	}
+
 	if (!skip) {
 		const char* severity = NULL;
 		if (lvl == 0) severity = "ERROR";

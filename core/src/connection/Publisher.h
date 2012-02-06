@@ -1,12 +1,14 @@
 #ifndef PUBLISHER_H_F3M1RWLN
 #define PUBLISHER_H_F3M1RWLN
 
-#include "common/stdInc.h"
-#include "common/NodeStub.h"
+#include "common/Common.h"
+#include "common/EndPoint.h"
 #include "common/Implementation.h"
-#include "common/Message.h"
 
 namespace umundo {
+
+class NodeStub;
+class Message;	
 
 class PublisherConfig : public Configuration {
 public:

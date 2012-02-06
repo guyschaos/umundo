@@ -1,12 +1,9 @@
 #ifndef DEBUG_H_Z6YNJLCS
 #define DEBUG_H_Z6YNJLCS
 
-#include "stdInc.h"
-#include <string.h>
+#include "common/Common.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <stdarg.h> ///< variadic functions
 
 // #define DEBUG_CTOR(x) printf("Constructing %s\n", x);
 // #define DEBUG_DTOR(x) printf("Destructing %s\n", x);
@@ -24,6 +21,13 @@
 //#define LOG_DEBUG
 
 namespace umundo {
+
+enum LogLevel {
+	ERR = 0,
+	WARN = 1,
+	INFO = 2,
+	DEBUG = 3
+};
 
 /**
  * Macros and static functions used for debugging.

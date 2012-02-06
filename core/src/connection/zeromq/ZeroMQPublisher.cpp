@@ -1,5 +1,7 @@
 #include "connection/zeromq/ZeroMQPublisher.h"
+
 #include "connection/zeromq/ZeroMQNode.h"
+#include "common/Message.h"
 
 namespace umundo {
 

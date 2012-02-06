@@ -1,20 +1,19 @@
 #ifndef ZEROMQDISPATCHER_H_XFMTSVLV
 #define ZEROMQDISPATCHER_H_XFMTSVLV
 
-#include "common/stdInc.h"
-
-#include <boost/lexical_cast.hpp>
 #include <zmq.h>
 
-#include "connection/zeromq/ZeroMQSubscriber.h"
-#include "connection/zeromq/ZeroMQPublisher.h"
-#include "common/Node.h"
-#include "common/Message.h"
-#include "discovery/NodeQuery.h"
-#include "discovery/Discovery.h"
+#include "common/Common.h"
+#include "thread/Thread.h"
 #include "common/ResultSet.h"
+#include "common/Node.h"
 
 namespace umundo {
+
+class PublisherStub;
+class ZeroMQPublisher;
+class ZeroMQSubscriber;
+class NodeQuery;
 
 /**
  * Concrete node implementor for 0MQ (bridge pattern).

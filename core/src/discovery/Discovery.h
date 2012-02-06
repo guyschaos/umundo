@@ -1,11 +1,13 @@
 #ifndef DISCOVERY_H_PWR3M1QA
 #define DISCOVERY_H_PWR3M1QA
 
-#include "common/Node.h"
 #include "common/Implementation.h"
-#include "discovery/NodeQuery.h"
 
 namespace umundo {
+
+class NodeImpl;
+class NodeQuery;
+class Node;
 
 class DiscoveryConfig : public Configuration {
 	// at the moment, there is nothing we need to configure

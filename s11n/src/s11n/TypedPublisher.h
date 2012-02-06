@@ -1,11 +1,11 @@
 #ifndef TYPEDPUBLISHER_H_9RTI6TXT
 #define TYPEDPUBLISHER_H_9RTI6TXT
 
-#include "connection/Publisher.h"
 #include "common/Implementation.h"
+#include "connection/Publisher.h"
 
 namespace umundo {
-	
+		
 	class TypeSerializerImpl : public Implementation {
 	public:
 		virtual string serialize(const string& type, void* obj) = 0;

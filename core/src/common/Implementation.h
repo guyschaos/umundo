@@ -1,6 +1,8 @@
 #ifndef IMPLEMENTATION_H_NZ2M9TXJ
 #define IMPLEMENTATION_H_NZ2M9TXJ
 
+#include "common/Common.h"
+
 namespace umundo {
 	class Configuration;
 	/**

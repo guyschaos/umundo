@@ -1,24 +1,20 @@
 #ifndef AVAHINODEDISCOVERY_H_GCM9GM15
 #define AVAHINODEDISCOVERY_H_GCM9GM15
 
-#include "common/stdInc.h"
-#include "common/Node.h"
-#include "thread/Thread.h"
-#include "discovery/Discovery.h"
-#include "discovery/NodeQuery.h"
-#include "discovery/avahi/AvahiNodeStub.h"
-
 #include <avahi-client/client.h>
 #include <avahi-client/publish.h>
 #include <avahi-client/lookup.h>
 #include <avahi-common/simple-watch.h>
-#include <avahi-common/error.h>
-#include <avahi-common/defs.h>
-#include <avahi-common/malloc.h>
+
+#include "common/Common.h"
+#include "thread/Thread.h"
+#include "discovery/Discovery.h"
 
 #define DISC_AVAHI_DEBUG 1
 
 namespace umundo {
+
+class AvahiNodeStub;
 
 /**
  * Concrete discovery implementor for avahi (bridge pattern).
@@ -86,8 +82,6 @@ private:
 	map<shared_ptr<NodeQuery>, map<string, shared_ptr<AvahiNodeStub> > > _queryNodes;
 
 	static shared_ptr<AvahiNodeDiscovery> _instance;
-
-	static bool printWarn(const char* file, int line, const char* fct, int err);
 
 	friend class AvahiNodeStub;
 	friend class Factory;

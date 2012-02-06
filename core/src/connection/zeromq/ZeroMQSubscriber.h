@@ -3,13 +3,13 @@
 
 #include <boost/enable_shared_from_this.hpp>
 
-#include "common/stdInc.h"
-
+#include "common/Common.h"
 #include "common/ResultSet.h"
 #include "connection/Subscriber.h"
-#include "connection/Publisher.h"
 
 namespace umundo {
+
+class PublisherStub;
 
 /**
  * Concrete subscriber implementor for 0MQ (bridge pattern).

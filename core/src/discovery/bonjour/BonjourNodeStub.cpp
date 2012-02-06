@@ -1,6 +1,11 @@
 #include "discovery/bonjour/BonjourNodeStub.h"
 #include "discovery/bonjour/BonjourNodeDiscovery.h"
 
+#ifdef UNIX
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
 namespace umundo {
 
 BonjourNodeStub::BonjourNodeStub() {

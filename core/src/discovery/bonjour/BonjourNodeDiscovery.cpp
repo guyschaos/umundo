@@ -1,5 +1,9 @@
 #include "discovery/bonjour/BonjourNodeDiscovery.h"
 
+#include "common/Node.h"
+#include "discovery/NodeQuery.h"
+#include "discovery/bonjour/BonjourNodeStub.h"
+
 namespace umundo {
 
 BonjourNodeDiscovery::BonjourNodeDiscovery() {

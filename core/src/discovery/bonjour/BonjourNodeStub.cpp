@@ -1,10 +1,19 @@
-#include "discovery/bonjour/BonjourNodeStub.h"
-#include "discovery/bonjour/BonjourNodeDiscovery.h"
+#include "config.h"
 
 #ifdef UNIX
 #include <sys/socket.h>
 #include <netinet/in.h>
 #endif
+#ifdef WIN32
+#include <time.h>
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#include <Windows.h>
+#endif
+
+// we cannot include dns_sd.h before WinSock2.h
+#include "discovery/bonjour/BonjourNodeStub.h"
+#include "discovery/bonjour/BonjourNodeDiscovery.h"
 
 namespace umundo {
 

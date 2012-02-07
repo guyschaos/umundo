@@ -1,5 +1,7 @@
 #include "discovery/bonjour/BonjourNodeDiscovery.h"
 
+#include <errno.h>
+
 #include "common/Node.h"
 #include "discovery/NodeQuery.h"
 #include "discovery/bonjour/BonjourNodeStub.h"
@@ -67,8 +69,13 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	const char* transport = (node->getTransport().length() ? node->getTransport().c_str() : "tcp");
 	asprintf(&regtype, "_mundo._%s", transport);
 
+	char* domain;
+  if (node->getDomain().length() > 0) {
+    asprintf(&domain, "%s.local.", node->getDomain().c_str());
+  } else {
+    asprintf(&domain, "local.");
+  }
 
-	const char* domain = (node->getDomain().length() ? node->getDomain().c_str() : "local.");
 	const char* host = (node->getHost().length() ? node->getHost().c_str() : NULL);
 	uint16_t port = (node->getPort() > 0 ? htons(node->getPort()) : 0);
 	const char* txtRecord = "";
@@ -94,6 +101,7 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	      );
 
 	free(regtype);
+	free(domain);
 
 	_mutex.lock();
 	if(dnsRegisterClient && err == 0) {
@@ -138,7 +146,12 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	const char* transport = (query->getTransport().length() ? query->getTransport().c_str() : "tcp");
 	asprintf(&regtype, "_mundo._%s", transport);
 
-	const char* domain = query->getDomain().length() == 0 ? "local." : query->getDomain().c_str();
+  char* domain;
+  if (query->getDomain().length() > 0) {
+    asprintf(&domain, "%s.local.", query->getDomain().c_str());
+  } else {
+    asprintf(&domain, "local.");
+  }
 
 	intptr_t address = (intptr_t)(query.get());
 
@@ -165,6 +178,7 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	}
 
 	free(regtype);
+	free(domain);
 }
 
 void BonjourNodeDiscovery::run() {
@@ -201,7 +215,7 @@ void BonjourNodeDiscovery::run() {
 		} else if (result == 0) {
 			// timeout
 		} else {
-			LOG_WARN("select failed %s", strerror(errno));
+			LOG_WARN("select failed %s - is the mDNS server started?", strerror(errno));
 			Thread::sleepMs(500);
 		}
 	}
@@ -241,10 +255,10 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 	shared_ptr<BonjourNodeStub> node = myself->_queryNodes[query][replyName];
 	if (node == NULL) {
 		node = shared_ptr<BonjourNodeStub>(new BonjourNodeStub());
-		node->_isRemote = true; // TODO: we also find ourselves ..
-		node->_transport = "tcp";
-		node->_uuid = replyName;
-		node->_domain = replyDomain;
+		node->setRemote(true); /// @todo: we also find ourselves ..
+		node->setTransport("tcp"); /// @todo: tcp hard coded
+		node->setUUID(replyName);
+		node->setDomain(replyDomain);
 		myself->_queryNodes[query][replyName] = node;
 	} else {
 	}

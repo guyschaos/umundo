@@ -5,6 +5,7 @@
 #include "common/Node.h"
 
 #include <iostream>
+#include <algorithm>
 
 #ifdef __GNUC__
 #include <stdio.h>
@@ -35,7 +36,13 @@ public:
 	std::string _name;
 	TestReceiver(std::string name) : _name(name) {};
 	void receive(Message* msg) {
-		std::cout << _name << " received " << msg->getData().size() << "bytes:" << std::endl << msg->getData() << std::endl;
+		std::cout << std::dec << _name << " received " << msg->getData().size() << "bytes" << std::endl;
+    const char* data = msg->getData().data();
+    for (int i = 0; i < ((msg->getData().size() < 32) ? msg->getData().size() : 32); i++) {
+      std::cout << std::hex << (int)data[i] << ":";
+    }
+    std::cout << " ..." << std::endl;
+    std::cout.clear();
 	}	
 };
 

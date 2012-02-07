@@ -1,7 +1,11 @@
 #include "connection/zeromq/ZeroMQNode.h"
 
+#include "config.h"
+
 #if defined UNIX || defined IOS || defined IOSSIM
-#include <arpa/inet.h>
+#include <arpa/inet.h> // htons
+#include <string.h> // strlen, memcpy
+#include <stdio.h> // snprintf
 #endif
 
 #include <boost/lexical_cast.hpp>
@@ -48,7 +52,7 @@ void ZeroMQNode::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<NodeConfig>(config);
 	_transport = "tcp";
 
-	_nodeQuery = shared_ptr<NodeQuery>(new NodeQuery("", this));
+	_nodeQuery = shared_ptr<NodeQuery>(new NodeQuery(_domain, this));
 	(_responder = zmq_socket(getZeroMQContext(), ZMQ_ROUTER))  || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));
 
 	// start with 4242 and work your way up until we find a free port

@@ -1,6 +1,7 @@
 #ifndef TYPEDPUBLISHER_H_9RTI6TXT
 #define TYPEDPUBLISHER_H_9RTI6TXT
 
+#include "common/Common.h"
 #include "common/Implementation.h"
 #include "connection/Publisher.h"
 

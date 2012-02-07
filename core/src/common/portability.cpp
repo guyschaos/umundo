@@ -1,4 +1,5 @@
 #include "portability.h"
+#include "config.h"
 
 #ifdef ANDROID
 // size_t std::wcslen(const wchar_t *) {

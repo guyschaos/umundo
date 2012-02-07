@@ -3,8 +3,6 @@
 #include <string.h>
 #include "config.h"
 
-
-
 namespace umundo {
 
 const char* Debug::relFileName(const char* filename) {

@@ -1,6 +1,7 @@
 #ifndef TYPEDSUBSCRIBER_H_ASH7AO4U
 #define TYPEDSUBSCRIBER_H_ASH7AO4U
 
+#include "common/Common.h"
 #include "connection/Subscriber.h"
 #include "common/Implementation.h"
 

@@ -1,7 +1,13 @@
 #include "TypedSubscriber.h"
-#include "protobuf/PBDeserializer.h"
 #include "common/Factory.h"
 #include "common/Message.h"
+
+#include "config.h"
+#ifdef S11N_PROTOBUF
+#include "protobuf/PBDeserializer.h"
+#else
+#error No serialization implementation choosen
+#endif
 
 namespace umundo {
 

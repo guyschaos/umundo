@@ -31,8 +31,9 @@ Node::Node() {
 Node::Node(string domain) {
 	_impl = boost::static_pointer_cast<NodeImpl>(Factory::create("node"));
 	shared_ptr<NodeConfig> config = boost::static_pointer_cast<NodeConfig>(Factory::config("node"));
-	config->domain = domain;
+	_impl->setDomain(domain);
 	_impl->init(config);
+	Discovery::add(this);
 }
 
 void Node::addSubscriber(Subscriber* sub) {

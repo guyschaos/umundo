@@ -3,6 +3,12 @@
 #include "connection/zeromq/ZeroMQNode.h"
 #include "common/Message.h"
 
+#include "config.h"
+#if defined UNIX || defined IOS || defined IOSSIM
+#include <string.h> // strlen, memcpy
+#include <stdio.h> // snprintf
+#endif
+
 namespace umundo {
 
 shared_ptr<Implementation> ZeroMQPublisher::create() {
@@ -19,6 +25,10 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
 	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_PUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
+
+  int hwm = NET_ZEROMQ_SND_HWM;
+	zmq_setsockopt(_socket, ZMQ_SNDHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+
 	uint16_t port = 4242;
 
 	std::stringstream ss;
@@ -37,8 +47,6 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 		}
 	}
 	_port = port;
-//	int64_t hwm = ZEROMQ_PUB_HWM;
-//	zmq_setsockopt(_socket, ZMQ_HWM, &hwm, sizeof (hwm)) && ZMQWARN("zmq_setsockopt");
 
 	LOG_DEBUG("ZeroMQPublisher bound to %s", ss.str().c_str());
 }
@@ -55,7 +63,7 @@ ZeroMQPublisher::~ZeroMQPublisher() {
 }
 
 void ZeroMQPublisher::send(Message* msg) {
-	LOG_DEBUG("ZeroMQPublisher sending msg on %s", _channelName.c_str());
+	//LOG_DEBUG("ZeroMQPublisher sending msg on %s", _channelName.c_str());
 
 	// topic name as envelope
 	zmq_msg_t channelEnvlp;

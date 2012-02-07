@@ -11,19 +11,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "config.h"
-#ifndef LOGLEVEL_S11N
-#define LOGLEVEL_S11N 4
-#endif
-
-#if defined UNIX || defined IOS || defined IOSSIM
-#include <string.h> // memcpy
-#include <stdio.h> // snprintf
-#endif
+// #if defined UNIX || defined IOS || defined IOSSIM
+// #include <string.h> // memcpy
+// #include <stdio.h> // snprintf
+// #endif
 
 #include "portability.h"
 #include "Debug.h"
-
 
 namespace umundo {
 

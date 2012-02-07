@@ -3,6 +3,21 @@
 
 #include "common/Common.h"
 
+//this is a hack until we get a compiler firewall per Pimpl
+#ifdef _WIN32 
+# if !(defined THREAD_PTHREAD || THREAD_WIN32)
+#   define THREAD_WIN32 1
+# endif
+#else
+# if !(defined THREAD_PTHREAD || THREAD_WIN32)
+#   define THREAD_PTHREAD 1
+# endif
+#endif
+
+#if !(defined THREAD_PTHREAD || THREAD_WIN32)
+#error No thread implementation choosen
+#endif
+
 #ifdef THREAD_PTHREAD
 #include <pthread.h>
 #include <errno.h>

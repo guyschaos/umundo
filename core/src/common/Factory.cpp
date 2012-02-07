@@ -3,6 +3,7 @@
 #include "connection/zeromq/ZeroMQNode.h"
 #include "connection/zeromq/ZeroMQPublisher.h"
 #include "connection/zeromq/ZeroMQSubscriber.h"
+#include "config.h"
 
 #ifdef DISC_BONJOUR
 #include "discovery/bonjour/BonjourNodeDiscovery.h"
@@ -10,6 +11,14 @@
 
 #ifdef DISC_AVAHI
 #include "discovery/avahi/AvahiNodeDiscovery.h"
+#endif
+
+#if !(defined DISC_AVAHI || defined DISC_BONJOUR)
+#error "No discovery implementation choosen"
+#endif
+
+#if !(defined NET_ZEROMQ)
+#error "No discovery implementation choosen"
 #endif
 
 namespace umundo {

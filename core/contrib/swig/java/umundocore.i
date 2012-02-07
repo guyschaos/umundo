@@ -2,7 +2,7 @@
 // import swig typemaps
 %include "arrays_java.i"
 %include "std_string.i"
-%include "inttypes.i" 
+#%include "inttypes.i" 
 # %include "boost_shared_ptr.i"
 
 %javaconst(1);

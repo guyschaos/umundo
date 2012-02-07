@@ -1,7 +1,13 @@
 #include "TypedPublisher.h"
-#include "protobuf/PBSerializer.h"
 #include "common/Factory.h"
 #include "common/Message.h"
+
+#include "config.h"
+#ifdef S11N_PROTOBUF
+#include "protobuf/PBSerializer.h"
+#else
+#error No serialization implementation choosen
+#endif
 
 namespace umundo {
 

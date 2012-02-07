@@ -34,7 +34,7 @@ for all officially supported platforms.
 <table>
     <tr><th>Dependency</th><th>Version</th><th>Comments</th></tr>
     <tr>
-	<td><a href="http://www.apple.com/support/bonjour/">Bonjour</a></td> 
+	<td><a href="http://support.apple.com/kb/DL999?viewlocale=en_US">Bonjour</a></td> 
 	<td>latest</td>
 	<td>Has to be installed globally; use avahi for linux</td>
     </tr>

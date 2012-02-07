@@ -21,7 +21,7 @@ SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
 # build and link the umundoCore JNI library
 SWIG_LINK_LIBRARIES(umundocoreSwig
 	${JNI_LIBRARIES}
-	${UMUNDO_LIBRARIES} 
+	${UMUNDOCORE_LIBRARIES} 
 )
 
 FIND_PACKAGE(Java)

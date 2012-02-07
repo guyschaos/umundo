@@ -1,5 +1,3 @@
-#include "connection/zeromq/ZeroMQSubscriber.h"
-
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -8,6 +6,14 @@
 #include "connection/zeromq/ZeroMQNode.h"
 #include "connection/Publisher.h"
 #include "common/Message.h"
+
+// include order matters with MSVC ...
+#include "connection/zeromq/ZeroMQSubscriber.h"
+
+#include "config.h"
+#if defined UNIX || defined IOS || defined IOSSIM
+#include <stdio.h> // snprintf
+#endif
 
 namespace umundo {
 
@@ -33,9 +39,12 @@ ZeroMQSubscriber::~ZeroMQSubscriber() {
 
 void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<SubscriberConfig>(config);
+	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
+
 	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_SUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
 
-	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
+	int hwm = NET_ZEROMQ_RCV_HWM;
+	zmq_setsockopt(_socket, ZMQ_RCVHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, _channelName.c_str(), _channelName.size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 	zmq_setsockopt (_socket, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 
@@ -66,12 +75,12 @@ void ZeroMQSubscriber::run() {
         
         // is this the first message with the channelname?
         if (strlen(value) == 0 && 
-            strlen(key) + 1 == msgSize &&
+            strlen(key) == msgSize &&
             msg->getMeta().find(key) == msg->getMeta().end()) {
           msg->setMeta("channelName", key);
         } else {
           if (strlen(key) + strlen(value) + 2 != msgSize) {
-            LOG_INFO("Received malformed message");
+            LOG_INFO("Received malformed message %d + %d + 2 != %d", strlen(key), strlen(value), msgSize);
             break;
           } else {
             msg->setMeta(key, value);

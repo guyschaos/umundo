@@ -1,10 +1,8 @@
 //#include "um_message.pb.h"
-#include "um_person.pb.h"
 //#include "um_typed_message.pb.h"
-#include "s11n/TypedPublisher.h"
-#include "s11n/TypedSubscriber.h"
-#include "common/Node.h"
-#include "common/Message.h"
+#include "um_person.pb.h"
+#include "umundo/s11n.h"
+#include "umundo/core.h"
 
 #ifdef __GNUC__
 #include <stdio.h>

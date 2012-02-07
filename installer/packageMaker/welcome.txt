@@ -1,0 +1,1 @@
+This package will install the uMundo publish/subscribe implementation for MacOSX.

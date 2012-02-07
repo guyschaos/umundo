@@ -2,12 +2,9 @@
 # To cross compile, choose a toolchain file (e.g. iOS):
 # build$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../contrib/cmake/CrossCompile-iOS.cmake
 #
-cmake_minimum_required(VERSION 2.8.2)
+cmake_minimum_required(VERSION 2.8.5)
 
-############################################################
-# General setup
-############################################################
-
+# build type has to be set first
 SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
 IF(DEFINED CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING ${BUILD_TYPE_HELP})
@@ -16,7 +13,38 @@ ELSE()
 ENDIF()
 
 project(umundo)
+
+############################################################
+# Macros we need later on for installation
+############################################################
+
+# Preserve directory structure for header files in distribution packages
+# adapted with authors permission from http://www.semipol.de/archives/251
+MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST COMPONENT)
+	FOREACH(HEADER ${${HEADER_LIST}})
+		STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}" "" REL_HEADER ${HEADER})
+		STRING(REGEX MATCH "umundo(.*)[/\\]" DIR ${REL_HEADER})
+		if (NOT DIR)
+			message(STATUS "Refusing to add header file ${REL_HEADER} for include in uppermost directory")
+		endif()
+		INSTALL(FILES ${HEADER} DESTINATION include/${DIR} COMPONENT ${COMPONENT})
+	ENDFOREACH()
+ENDMACRO()
+
+############################################################
+# General setup
+############################################################
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+	# best practices from scott meyers
+#	add_definitions(-Weffc++)
+	# all warnings as errors
+	add_definitions(-Werror -Wall)
+	# swig will throw a warning with optimization otherwise
+	add_definitions(-fno-strict-aliasing)
+endif()
 
 OPTION(BUILD_UMUNDO_CORE "Build umundo core" ON) 
 OPTION(BUILD_UMUNDO_S11N "Build umundo serialization" ON) 
@@ -83,20 +111,26 @@ if(BUILD_PREFER_PREBUILT)
 endif()
 
 # where should libraries end up?
+#
+# LIBRARY_ROOT_PATH is the path up to the Debug/Release directories
+# LIBRARY_OUTPUT_PATH is including the Debug/Release components, except for MSVS where it is added automatically
+#
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
 string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
-string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LC)
 if(CMAKE_CROSSCOMPILING)
 	string(TOLOWER ${CMAKE_CROSSCOMPILING_TARGET} CMAKE_CROSSCOMPILING_TARGET_LC)
-	SET(LIBRARY_OUTPUT_PATH 
-		${PROJECT_SOURCE_DIR}/lib/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}/${CMAKE_BUILD_TYPE_LC})
+	SET(LIBRARY_ROOT_PATH 
+		${PROJECT_SOURCE_DIR}/lib/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
+	SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH}/${CMAKE_BUILD_TYPE})
 else()
 	if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
-		SET(LIBRARY_OUTPUT_PATH 
+		SET(LIBRARY_ROOT_PATH 
 			${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
+		SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH})
 	else()
-		SET(LIBRARY_OUTPUT_PATH 
-			${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}/${CMAKE_BUILD_TYPE_LC})
+		SET(LIBRARY_ROOT_PATH 
+			${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
+		SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH}/${CMAKE_BUILD_TYPE})
 	endif()
 endif()
 
@@ -116,7 +150,7 @@ else()
 endif()
 
 # enable config.h style compile time options
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/umundo/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ############################################################
@@ -127,6 +161,7 @@ if (BUILD_UMUNDO_CORE)
 	SET(UMUNDOCORE_LIBRARIES)
 	SET(UMUNDOCORE_LIBRARIES_DEBUG)
 	SET(UMUNDOCORE_FILES)
+	SET(UMUNDOCORE_HEADER_FILES)
 	include_directories(core/src)
 	add_subdirectory(core)
 endif()
@@ -134,6 +169,7 @@ if (BUILD_UMUNDO_S11N)
 	SET(UMUNDOS11N_LIBRARIES)
 	SET(UMUNDOS11N_LIBRARIES_DEBUG)
 	SET(UMUNDOS11N_FILES)
+	SET(UMUNDOS11N_HEADER_FILES)
 	include_directories(core/s11n)
 	add_subdirectory(s11n)
 endif()
@@ -163,3 +199,13 @@ message(STATUS "umundo.s11n libraries: ")
 foreach(file ${UMUNDOS11N_LIBRARIES})
 	message(STATUS "  ${file}")
 endforeach()
+
+############################################################
+# Installation / Provide package target
+############################################################
+
+# see contrib/cmake/CPackInstallUMundo.cmake
+include(contrib/cmake/CPackInstallUMundo.cmake)
+
+# This must always be last!
+include(CPack)

@@ -1,4 +1,4 @@
-#include "discovery/Discovery.h"
+#include "umundo/core.h"
 #include "dns_sd.h"
 
 #include <iostream>

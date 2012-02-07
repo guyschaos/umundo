@@ -40,16 +40,33 @@ FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
 )
 include_directories(${Boost_INCLUDE_DIR})
 
-add_subdirectory(src)           # gather UMUNDOS11N_FILES and add target umundo library
+add_subdirectory(src/umundo)           # gather UMUNDOS11N_FILES and add target umundo library
 
-add_library(umundoserial
+# library name suffix depending on build type
+set(LIBRARY_NAME_BUILD_TYPE "umundoserial")
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+	set(LIBRARY_NAME_BUILD_TYPE "${LIBRARY_NAME_BUILD_TYPE}_d")
+	LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG ${LIBRARY_NAME_BUILD_TYPE})
+else()
+	LIST(APPEND UMUNDOS11N_LIBRARIES ${LIBRARY_NAME_BUILD_TYPE})
+endif()
+# add library as target
+add_library(${LIBRARY_NAME_BUILD_TYPE}
 	${UMUNDOS11N_FILES}
 	${UMUNDOS11N_HEADER_FILES}
 )
-LIST(APPEND UMUNDOS11N_LIBRARIES umundoserial)
+
+if (UNIX AND NOT APPLE)
+	# we need to duplicate the libraries on debian - is this a cmake bug?
+	LIST(APPEND UMUNDOS11N_LIBRARIES ${UMUNDOS11N_LIBRARIES})
+	LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG ${UMUNDOS11N_LIBRARIES_DEBUG})
+endif()
 
 add_subdirectory(test)          # build tests
+
+INSTALL_HEADERS_WITH_DIRECTORY("UMUNDOS11N_HEADER_FILES" headerS11N)
 
 set(UMUNDOS11N_FILES "${UMUNDOS11N_FILES}" PARENT_SCOPE)
 set(UMUNDOS11N_LIBRARIES "${UMUNDOS11N_LIBRARIES}" PARENT_SCOPE)
 set(UMUNDOS11N_LIBRARIES_DEBUG "${UMUNDOS11N_LIBRARIES_DEBUG}" PARENT_SCOPE)
+#set(UMUNDOS11N_HEADER_FILES "${UMUNDOS11N_HEADER_FILES}" PARENT_SCOPE)

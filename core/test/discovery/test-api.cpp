@@ -1,8 +1,8 @@
-#include "discovery/Discovery.h"
-#include "connection/Publisher.h"
-#include "connection/Subscriber.h"
-#include "common/Message.h"
-#include "common/Node.h"
+#include "umundo/discovery/Discovery.h"
+#include "umundo/connection/Publisher.h"
+#include "umundo/connection/Subscriber.h"
+#include "umundo/common/Message.h"
+#include "umundo/common/Node.h"
 
 #include <iostream>
 #include <algorithm>
@@ -38,7 +38,7 @@ public:
 	void receive(Message* msg) {
 		std::cout << std::dec << _name << " received " << msg->getData().size() << "bytes" << std::endl;
     const char* data = msg->getData().data();
-    for (int i = 0; i < ((msg->getData().size() < 32) ? msg->getData().size() : 32); i++) {
+    for (uint32_t i = 0; i < ((msg->getData().size() < 32) ? msg->getData().size() : 32); i++) {
       std::cout << std::hex << (int)data[i] << ":";
     }
     std::cout << " ..." << std::endl;

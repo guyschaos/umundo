@@ -1,8 +1,4 @@
-#include "discovery/Discovery.h"
-#include "connection/Publisher.h"
-#include "connection/Subscriber.h"
-#include "common/Message.h"
-#include "common/Node.h"
+#include "umundo/core.h"
 
 #include <iostream>
 

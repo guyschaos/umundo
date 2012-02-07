@@ -3,6 +3,9 @@
  *
  * This file is instantiated by cmake as config.h in the binary tree of 
  * the out-of-source build. See cmake docs on CONFIGURE_FILE.
+ *
+ * WARNING: This file may never be included by public headers as we cannot 
+ * ship prebuilt packages otherwise!
  */
 
 #ifndef __CONFIG_H

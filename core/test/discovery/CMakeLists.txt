@@ -1,5 +1,5 @@
-
 add_executable(test-core-api test-api.cpp)
+
 foreach(LIB ${UMUNDOCORE_LIBRARIES})
 	target_link_libraries(test-core-api ${LIB})
 endforeach()

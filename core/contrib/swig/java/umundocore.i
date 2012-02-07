@@ -9,11 +9,11 @@
 
 %{
 /* This ends up in the generated wrapper code */
-#include "../../../../core/src/common/EndPoint.h"
-#include "../../../../core/src/common/Node.h"
-#include "../../../../core/src/thread/Thread.h"
-#include "../../../../core/src/connection/Publisher.h"
-#include "../../../../core/src/connection/Subscriber.h"
+#include "../../../../core/src/umundo/common/EndPoint.h"
+#include "../../../../core/src/umundo/common/Node.h"
+#include "../../../../core/src/umundo/thread/Thread.h"
+#include "../../../../core/src/umundo/connection/Publisher.h"
+#include "../../../../core/src/umundo/connection/Subscriber.h"
 
 #ifdef ANDROID
 // google forgot imaxdiv in the android ndk r7 libc?!
@@ -61,11 +61,11 @@ typedef std::string string;
 %ignore Mutex;
 
 // Parse the header file to generate wrappers
-%include "../../../../core/src/thread/Thread.h"
-%include "../../../../core/src/common/Implementation.h"
-%include "../../../../core/src/common/EndPoint.h"
-%include "../../../../core/src/connection/Publisher.h"
-%include "../../../../core/src/connection/Subscriber.h"
-%include "../../../../core/src/common/NodeStub.h"
-%include "../../../../core/src/common/Node.h"
+%include "../../../../core/src/umundo/thread/Thread.h"
+%include "../../../../core/src/umundo/common/Implementation.h"
+%include "../../../../core/src/umundo/common/EndPoint.h"
+%include "../../../../core/src/umundo/connection/Publisher.h"
+%include "../../../../core/src/umundo/connection/Subscriber.h"
+%include "../../../../core/src/umundo/common/NodeStub.h"
+%include "../../../../core/src/umundo/common/Node.h"
 

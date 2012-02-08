@@ -72,18 +72,28 @@ include_directories(./test)
 add_subdirectory(src/umundo)    # gather UMUNDOCORE_FILES and add target umundo library
 
 # library name suffix depending on build type
-set(LIBRARY_NAME_BUILD_TYPE "umundocore")
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-	set(LIBRARY_NAME_BUILD_TYPE "${LIBRARY_NAME_BUILD_TYPE}_d")
-	LIST(APPEND UMUNDOCORE_LIBRARIES_DEBUG ${LIBRARY_NAME_BUILD_TYPE})
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+	add_library(umundocore
+		${UMUNDOCORE_FILES}
+		${UMUNDOCORE_HEADER_FILES}
+	)
+	LIST(APPEND UMUNDOCORE_LIBRARIES_DEBUG umundocore)
+	LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
 else()
-	LIST(APPEND UMUNDOCORE_LIBRARIES ${LIBRARY_NAME_BUILD_TYPE})
+	if (CMAKE_BUILD_TYPE MATCHES "Debug")
+		add_library(umundocore_d
+			${UMUNDOCORE_FILES}
+			${UMUNDOCORE_HEADER_FILES}
+		)
+		LIST(APPEND UMUNDOCORE_LIBRARIES_DEBUG umundocore_d)
+	else()
+		add_library(umundocore
+			${UMUNDOCORE_FILES}
+			${UMUNDOCORE_HEADER_FILES}
+		)
+		LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
+	endif()
 endif()
-# add library as target
-add_library(${LIBRARY_NAME_BUILD_TYPE}
-	${UMUNDOCORE_FILES}
-	${UMUNDOCORE_HEADER_FILES}
-)
 
 INSTALL_HEADERS_WITH_DIRECTORY("UMUNDOCORE_HEADER_FILES" headerCore)
 

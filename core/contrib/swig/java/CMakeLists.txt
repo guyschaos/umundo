@@ -16,19 +16,27 @@ SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES SWIG_FLAGS "-package;${UMUND
 SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES CPLUSPLUS ON)
 SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}")
 
-# build and link the umundoCore JNI library
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-	SWIG_ADD_MODULE(umundocoreSwig_d java umundocore.i)
-	SWIG_LINK_LIBRARIES(umundocoreSwig_d
-		${JNI_LIBRARIES}
-		${UMUNDOCORE_LIBRARIES_DEBUG} 
-	)
-else()
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
 	SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
-	SWIG_LINK_LIBRARIES(umundocoreSwig
+	SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARIES})
+	foreach(LIB ${UMUNDOCORE_LIBRARIES})
+		SWIG_LINK_LIBRARIES(umundocoreSwig general ${LIB})
+	endforeach()
+	foreach(LIB ${UMUNDOCORE_LIBRARIES_DEBUG})
+		SWIG_LINK_LIBRARIES(umundocoreSwig debug ${LIB})
+	endforeach()
+else()
+	if (CMAKE_BUILD_TYPE MATCHES "Debug")
+		SWIG_ADD_MODULE(umundocoreSwig_d java umundocore.i)
+		SWIG_LINK_LIBRARIES(umundocoreSwig_d
 		${JNI_LIBRARIES}
-		${UMUNDOCORE_LIBRARIES} 
-	)
+		${UMUNDOCORE_LIBRARIES_DEBUG})
+	else()
+		SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
+		SWIG_LINK_LIBRARIES(umundocoreSwig
+		${JNI_LIBRARIES}
+		${UMUNDOCORE_LIBRARIES})
+	endif()
 endif()
 
 FIND_PACKAGE(Java)
@@ -44,12 +52,11 @@ if(Java_JAVAC_EXECUTABLE AND CMAKE_PATCH_VERSION GREATER 5)
 			${CMAKE_CURRENT_BINARY_DIR}/umundocoreSwigJNI.jar
 			${LIBRARY_OUTPUT_PATH}
 	)
-	if (CMAKE_BUILD_TYPE MATCHES "Debug")
+	if (CMAKE_BUILD_TYPE MATCHES "Debug" AND NOT CMAKE_GENERATOR MATCHES "Visual Studio.*")
 		add_dependencies(umundocoreSwigJNI umundocoreSwig_d)
 	else()
 		add_dependencies(umundocoreSwigJNI umundocoreSwig)
 	endif()
-
 else()
 	message("Could not find javac or cmake not >= 2.8.6, not building jar")
 endif()

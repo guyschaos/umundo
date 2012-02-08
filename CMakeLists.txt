@@ -190,6 +190,11 @@ foreach(file ${UMUNDOCORE_LIBRARIES})
 	message(STATUS "  ${file}")
 endforeach()
 
+message(STATUS "umundo.core debug libraries: ")
+foreach(file ${UMUNDOCORE_LIBRARIES_DEBUG})
+	message(STATUS "  ${file}")
+endforeach()
+
 message(STATUS "umundo.s11n files: ")
 foreach(file ${UMUNDOS11N_FILES})
 	message(STATUS "  ${file}")
@@ -199,6 +204,12 @@ message(STATUS "umundo.s11n libraries: ")
 foreach(file ${UMUNDOS11N_LIBRARIES})
 	message(STATUS "  ${file}")
 endforeach()
+
+message(STATUS "umundo.s11n debug libraries: ")
+foreach(file ${UMUNDOS11N_LIBRARIES_DEBUG})
+	message(STATUS "  ${file}")
+endforeach()
+
 
 ############################################################
 # Installation / Provide package target

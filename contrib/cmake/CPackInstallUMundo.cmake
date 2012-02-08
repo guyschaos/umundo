@@ -63,14 +63,21 @@ foreach(PLATFORM_RELEASE_LIB ${PLATFORM_RELEASE_LIBS})
 endforeach()
 
 if (UNIX)
+	if (APPLE)
+		set(CPACK_GENERATOR "PackageMaker;TGZ")
+	else()
+		set(CPACK_GENERATOR "DEB;RPM;TGZ")
+	endif()
 	set(CPACK_PACKAGING_INSTALL_PREFIX "/usr/local")
 endif()
 if (WIN32)
+	set(CPACK_GENERATOR "NSIS;ZIP")
 	set(CPACK_PACKAGE_INSTALL_DIRECTORY "uMundo")
 endif()
 
 set(CPACK_PACKAGE_NAME "uMundo")
 set(CPACK_PACKAGE_VENDOR "Telecooperation Group - TU Darmstadt")
+set(CPACK_PACKAGE_CONTACT "radomski@tk.informatik.tu-darmstadt.de")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "uMundo - publish/subscribe since 2012")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/installer/description.txt")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/installer/license.txt")
@@ -79,7 +86,6 @@ set(CPACK_PACKAGE_VERSION "0.0.1")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "1")
-#set(CPACK_PACKAGE_INSTALL_DIRECTORY "umundoInstall")
 
 ###
 # Configuration for NSIS installer on Win32
@@ -99,10 +105,25 @@ endif()
 set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/installer/packageMaker/readme.txt")
 set(CPACK_RESOURCE_FILE_WELCOME "${PROJECT_SOURCE_DIR}/installer/packageMaker/welcome.txt")
 
+###
+# Configuration for debian packages
+#
+set(CPACK_DEBIAN_PACKAGE_NAME "umundo")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libavahi-client3")
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "swig2.0, protobuf-compiler")
 
+###
+# Configuration for RPM packages
+#
+set(CPACK_RPM_PACKAGE_NAME "umundo")
+set(CPACK_RPM_PACKAGE_LICENSE "BSD")
+
+###
+# Gather all components
+#
 set(CPACK_COMPONENTS_ALL 
-	applications
 	tools
+	samples
 	
 	librarySwig
 	libraryDebugSwig
@@ -119,8 +140,8 @@ set(CPACK_COMPONENTS_ALL
 ###
 # Description of components 
 #
-set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Sample Applications")
-set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION 
+set(CPACK_COMPONENT_SAMPLES_DISPLAY_NAME "Sample Applications")
+set(CPACK_COMPONENT_SAMPLES_DESCRIPTION 
   "Sample applications with source-code, illustrating the API and usage of the library.")
 
 set(CPACK_COMPONENT_TOOLS_DISPLAY_NAME "Command-line Tools")
@@ -155,7 +176,7 @@ set(CPACK_COMPONENT_HEADERS11N_DEPENDS headerCore)
 ###
 # Grouping
 #
-set(CPACK_COMPONENT_APPLICATIONS_GROUP "Applications")
+set(CPACK_COMPONENT_SAMPLES_GROUP "Applications")
 set(CPACK_COMPONENT_TOOLS_GROUP "Applications")
 
 set(CPACK_COMPONENT_LIBRARYSWIG_GROUP "Development")

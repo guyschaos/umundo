@@ -43,18 +43,28 @@ include_directories(${Boost_INCLUDE_DIR})
 add_subdirectory(src/umundo)           # gather UMUNDOS11N_FILES and add target umundo library
 
 # library name suffix depending on build type
-set(LIBRARY_NAME_BUILD_TYPE "umundoserial")
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-	set(LIBRARY_NAME_BUILD_TYPE "${LIBRARY_NAME_BUILD_TYPE}_d")
-	LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG ${LIBRARY_NAME_BUILD_TYPE})
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+	add_library(umundoserial
+		${UMUNDOS11N_FILES}
+		${UMUNDOS11N_HEADER_FILES}
+	)
+	LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG umundoserial)
+	LIST(APPEND UMUNDOS11N_LIBRARIES umundoserial)
 else()
-	LIST(APPEND UMUNDOS11N_LIBRARIES ${LIBRARY_NAME_BUILD_TYPE})
+	if (CMAKE_BUILD_TYPE MATCHES "Debug")
+		add_library(umundoserial_d
+			${UMUNDOS11N_FILES}
+			${UMUNDOS11N_HEADER_FILES}
+		)
+		LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG umundoserial_d)
+	else()
+		add_library(umundoserial
+			${UMUNDOS11N_FILES}
+			${UMUNDOS11N_HEADER_FILES}
+		)
+		LIST(APPEND UMUNDOS11N_LIBRARIES umundoserial)
+	endif()
 endif()
-# add library as target
-add_library(${LIBRARY_NAME_BUILD_TYPE}
-	${UMUNDOS11N_FILES}
-	${UMUNDOS11N_HEADER_FILES}
-)
 
 if (UNIX AND NOT APPLE)
 	# we need to duplicate the libraries on debian - is this a cmake bug?

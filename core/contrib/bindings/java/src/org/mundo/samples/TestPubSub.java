@@ -33,7 +33,12 @@ public class TestPubSub extends Receiver {
 		Node otherNode = new Node("someDomain");
 		otherNode.addSubscriber(fooSub);
 		
-		Message msg = new Message("This is a message");
+		byte[] data = new byte[1024];
+		for(int i = 0; i < 1024; i++) {
+			data[i] = (byte) (i%255);
+		}
+		String foo = new String(data);
+		Message msg = new Message(foo);
 		
 		while (true) {
 			fooPub.send(msg);

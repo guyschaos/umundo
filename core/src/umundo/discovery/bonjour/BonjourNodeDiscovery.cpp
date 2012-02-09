@@ -215,7 +215,7 @@ void BonjourNodeDiscovery::run() {
 		} else if (result == 0) {
 			// timeout
 		} else {
-			LOG_WARN("select failed %s - is the mDNS server started?", strerror(errno));
+			LOG_WARN("select failed %s", strerror(errno));
 			Thread::sleepMs(500);
 		}
 	}

@@ -156,6 +156,27 @@ of <tt>umundo-pingpong</tt> from the console or from within your installation di
 your system is setup correctly to run umundo programs. If you see some *ping* without having started a second instance, someone
 else in your multicast domain is running <tt>umundo-pingpong</tt> as well.
 
+### Basic Concept
+
+<table class="image" border="1px solid" style="float: right">
+<caption align="bottom">Figure 1: User visible object model of umundo.core</caption>
+<tr><td><img width="300px" src="docs/user-visible-object-model.png"></td></tr>
+</table>
+
+The basic idea with umundo is always to establish a set of object models as is given in figure 1.
+You start by instantiating a node and specify its domain in the constructor. Then you add
+publishers and subscribers specifying their channel name in the constructor. The subscriber
+also requires a receiver when invoking its constructor. There are some basic facts that you 
+can rely upon, or that we would at least consider bugs if observed otherwise:
+
+1. Two nodes can only see each other if they are in the same domain.
+	1. Using the default constructor of a node implicitly uses the default domain.
+2. A publisher will send messages to a subscriber if they have the same channel name <b>and</b> were added to at least
+one pair of nodes within the same domain.
+	1. Publishers will not send messages to subscribers within the same node.
+2. A publisher or subscriber can belong to several nodes in different domains.
+3. You can use the same receiver for many subscribers but only one receiver per subscriber.
+
 ### Using Java Bindings
 
 For umundo.core there is a [sample Eclipse project](https://github.com/tklab-tud/umundo/tree/master/core/contrib/bindings/java). You

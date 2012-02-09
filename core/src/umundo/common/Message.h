@@ -31,10 +31,20 @@ public:
 	virtual const void setMeta(const string& key, const string& value)  { _meta[key] = value; }
 	virtual const map<string, string>& getMeta()                        { return _meta; }
 	virtual const string& getMeta(const string& key)                    { return _meta[key]; }
+	/// Simplified access to keyset for Java, namespace qualifiers required for swig!
+	virtual const std::vector<std::string>& getKeys() {
+		map<string, string>::const_iterator metaIter;
+		_keys.clear();
+		for (metaIter = _meta.begin(); metaIter != _meta.end(); metaIter++) {
+			_keys.push_back(metaIter->first);
+		}
+		return _keys;
+	}
 
 protected:
 	string _data;
 	map<string, string> _meta;
+	vector<string> _keys;
 };
 }
 

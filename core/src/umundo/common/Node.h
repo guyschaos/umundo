@@ -82,8 +82,11 @@ public:
 	virtual void setDomain(string domain)       { _impl->setDomain(domain); }
 	//@{
 
+protected:
 	shared_ptr<NodeImpl> _impl;
 	shared_ptr<NodeConfig> _config;
+	
+	friend class Discovery;
 };
 
 }

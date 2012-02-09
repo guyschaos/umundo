@@ -6,6 +6,10 @@ if(JNI_FOUND)
 endif()
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+if (MSVC)
+	# MSVC does not include inttypes.h but SWIG needs it
+	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../msvc)
+endif()
 
 SET(CMAKE_SWIG_FLAGS "")
 SET(UMUNDO_JAVA_PACKAGE "org.umundo.core")

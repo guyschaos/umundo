@@ -3,6 +3,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -24,6 +25,7 @@ namespace umundo {
 using std::string;
 using std::map;
 using std::set;
+using std::vector;
 using boost::shared_ptr;
 using boost::weak_ptr;
 

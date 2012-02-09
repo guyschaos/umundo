@@ -2,36 +2,50 @@ package org.mundo.samples;
 
 import java.lang.reflect.Field;
 
-import org.umundo.Publisher;
-import org.umundo.Receiver;
-import org.umundo.Subscriber;
+import org.umundo.core.Message;
+import org.umundo.core.Node;
+import org.umundo.core.Publisher;
+import org.umundo.core.Receiver;
+import org.umundo.core.Subscriber;
 
 public class TestPubSub extends Receiver {
 
+	/**
+	 * We are a receiver.
+	 */
 	@Override
-	public void receive(byte[] data) {
-		System.out.println("Received " + data.length + "bytes");
+	public void receive(Message msg) {
+		System.out.println("Received " + msg.getData().length() + " bytes: " + msg.getData());
 	}
 
 	public static void main(String[] args) throws Exception {
 		// prepare library path and load jni library
-		System.setProperty("java.library.path", "../../../lib/darwin-i386/gnu");
+		System.setProperty("java.library.path", "../../../../lib/darwin-i386/gnu/Release/");
 		forceLibraryPathReload();
-		System.loadLibrary("umundoSwig");
+		System.loadLibrary("umundocoreSwig");
 
 		Subscriber fooSub = new Subscriber("fooChannel", new TestPubSub());
 		Publisher fooPub = new Publisher("fooChannel");
-		byte buffer[] = new byte[1024];
-		for (int i = 0; i < buffer.length; i++) {
-			buffer[i] = (byte) (i % 255);
-		}
 
+		Node mainNode = new Node("someDomain");
+		mainNode.addPublisher(fooPub);
+		
+		Node otherNode = new Node("someDomain");
+		otherNode.addSubscriber(fooSub);
+		
+		Message msg = new Message("This is a message");
+		
 		while (true) {
-			fooPub.send(buffer);
+			fooPub.send(msg);
 			Thread.sleep(200);
 		}
 	}
 
+	/**
+	 * Programmatically set the library path.
+	 * 
+	 * In a real application you would use -Djava.library.path="..."
+	 */
 	public static void forceLibraryPathReload() throws Exception {
 		// force reread of the library path
 		try {

@@ -11,6 +11,7 @@
 /* This ends up in the generated wrapper code */
 #include "../../../../core/src/umundo/common/EndPoint.h"
 #include "../../../../core/src/umundo/common/Node.h"
+#include "../../../../core/src/umundo/common/Message.h"
 #include "../../../../core/src/umundo/thread/Thread.h"
 #include "../../../../core/src/umundo/connection/Publisher.h"
 #include "../../../../core/src/umundo/connection/Subscriber.h"
@@ -61,6 +62,7 @@ typedef std::string string;
 %ignore Mutex;
 
 // Parse the header file to generate wrappers
+%include "../../../../core/src/umundo/common/Message.h"
 %include "../../../../core/src/umundo/thread/Thread.h"
 %include "../../../../core/src/umundo/common/Implementation.h"
 %include "../../../../core/src/umundo/common/EndPoint.h"

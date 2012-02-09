@@ -88,7 +88,7 @@ from scratch and runtime dependencies as the things you will need to run anythin
 <table>
     <tr><th>Platform</th><th>Dependency</th><th>Version</th><th>Comment</th></tr>
 	<tr>
-		<td rowspan="4">*Everyone*</td>
+		<td rowspan="5">*Everyone*</td>
 			<td><a href="http://www.cmake.org/cmake/resources/software.html">CMake</a><br />required</td>
 			<td>>=&nbsp;2.8.6</td>
 			<td>The build-system used to build umundo from sources.</td></tr>
@@ -106,7 +106,11 @@ from scratch and runtime dependencies as the things you will need to run anythin
 		<tr>
 			<td><a href="http://git-scm.com/">Git</a><br />required</td>
 			<td></td>
-			<td>Versioning control system.</td>
+			<td>Versioning control system.</td></tr>
+		<tr>
+			<td><a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a><br />optional</td>
+			<td></td>
+			<td>Used by <tt>make docs</tt> to generate documentation from source comments.</td>
 	</tr>
 	<tr>
 		<td rowspan="2">Mac OSX</td>
@@ -245,8 +249,8 @@ there.
 
 <dt><b>How many umundo nodes can I realistically start at once?</b></dt>
 <dd>Using the default ZeroMQ implementation and Bonjour discovery on MacOSX, I could start 32 umundo-pingpong instances before
-	getting an <tt>Assertion failed: s != retired_fd (tcp_connecter.cpp:278)</tt>. I guess this is due to the rather low ulimit
-	for open file-handles on MacOSX (<tt>ulimit -n</tt> gives 256).</dd>
+	getting an <tt>Assertion failed: s != retired_fd (tcp_connecter.cpp:278)</tt> within ZeroMQ. I guess this is due to the 
+	rather low ulimit for open file-handles on MacOSX (<tt>ulimit -n</tt> gives 256).</dd>
 
 <dt><b>Are these actually questions that are asked frequently?</b><dt>
 <dd>No, it's more like a set of questions I can imagine other people might have. It will eventually grow into a real FAQ.</dd>

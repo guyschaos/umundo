@@ -160,7 +160,7 @@ else in your multicast domain is running <tt>umundo-pingpong</tt> as well.
 
 <table class="image" border="1px solid" style="float: right">
 <caption align="bottom">Figure 1: User visible object model of umundo.core</caption>
-<tr><td><img width="300px" src="docs/user-visible-object-model.png"></td></tr>
+<tr><td><img width="300px" src="https://github.com/tklab-tud/umundo/raw/master/docs/user-visible-object-model.png"></td></tr>
 </table>
 
 The basic idea with umundo is always to establish a set of object models as is given in figure 1.

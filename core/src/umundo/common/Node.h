@@ -19,7 +19,8 @@ class NodeStub;
 class NodeConfig : public Configuration {
 public:
 	shared_ptr<Configuration> create();
-
+  virtual ~NodeConfig() {}
+  
 	string domain;
 	string transport;
 	string host;

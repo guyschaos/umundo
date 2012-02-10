@@ -13,7 +13,8 @@ class Message;
 class PublisherConfig : public Configuration {
 public:
 	shared_ptr<Configuration> create();
-	
+  virtual ~PublisherConfig() {}
+
 	string channelName;
 	string transport;
 	uint16_t port;

@@ -215,7 +215,8 @@ void BonjourNodeDiscovery::run() {
 		} else if (result == 0) {
 			// timeout
 		} else {
-			LOG_WARN("select failed %s", strerror(errno));
+			if (errno != 0)
+				LOG_WARN("select failed %s", strerror(errno));
 			Thread::sleepMs(500);
 		}
 	}

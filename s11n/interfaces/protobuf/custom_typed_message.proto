@@ -1,9 +1,9 @@
 package umundo;
 
-import "um_message.proto";
+import "typed_message.proto";
 
 option java_package = "org.umundo.msg";
-option java_outer_classname = "UMTypedMessageProtos";
+option java_outer_classname = "PBTypedMessageProtos";
 
 /*! {\brief {Defines the format of typed messages in umundo.}} 
     
@@ -27,10 +27,10 @@ option java_outer_classname = "UMTypedMessageProtos";
     {@author	Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>}
 */
 
-message UMTypedMessage {
+message PBCustomTypedMessage {
 
-    extend umundo.UMMessage {
-        optional UMTypedMessage typedMessage = 16;
+    extend umundo.PBTypedMessage {
+        optional PBCustomTypedMessage typedMessage = 16;
     }
 
     optional uint32 typeIndex = 1;

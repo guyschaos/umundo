@@ -18,6 +18,7 @@ namespace umundo {
 		virtual void init(shared_ptr<Configuration>);
 
 		virtual string serialize(const string& type, void* obj);
+		virtual string serialize(void* obj);
 		virtual void registerType(const string& type, void* serializer);
 		
 	private:

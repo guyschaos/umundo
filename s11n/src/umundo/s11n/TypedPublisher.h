@@ -10,6 +10,7 @@ namespace umundo {
 	class TypeSerializerImpl : public Implementation {
 	public:
 		virtual string serialize(const string& type, void* obj) = 0;
+		virtual string serialize(void* obj) = 0;
 		virtual void registerType(const string& type, void* serializer) = 0;
 	};
 	
@@ -17,6 +18,7 @@ namespace umundo {
 	public:
 		TypedPublisher(string channelName);
 		virtual ~TypedPublisher();
+		void sendObj(void* obj);
 		void sendObj(const string& type, void* obj);
 		void registerType(const string& type, void* serializer);
 	private:

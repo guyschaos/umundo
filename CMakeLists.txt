@@ -180,35 +180,35 @@ endif()
 
 message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
 
-message(STATUS "umundo.core files: ")
-foreach(file ${UMUNDOCORE_FILES})
-	message(STATUS "  ${file}")
-endforeach()
-
-message(STATUS "umundo.core libraries:")
-foreach(file ${UMUNDOCORE_LIBRARIES})
-	message(STATUS "  ${file}")
-endforeach()
-
-message(STATUS "umundo.core debug libraries: ")
-foreach(file ${UMUNDOCORE_LIBRARIES_DEBUG})
-	message(STATUS "  ${file}")
-endforeach()
-
-message(STATUS "umundo.s11n files: ")
-foreach(file ${UMUNDOS11N_FILES})
-	message(STATUS "  ${file}")
-endforeach()
-
-message(STATUS "umundo.s11n libraries: ")
-foreach(file ${UMUNDOS11N_LIBRARIES})
-	message(STATUS "  ${file}")
-endforeach()
-
-message(STATUS "umundo.s11n debug libraries: ")
-foreach(file ${UMUNDOS11N_LIBRARIES_DEBUG})
-	message(STATUS "  ${file}")
-endforeach()
+# message(STATUS "umundo.core files: ")
+# foreach(file ${UMUNDOCORE_FILES})
+# 	message(STATUS "  ${file}")
+# endforeach()
+# 
+# message(STATUS "umundo.core libraries:")
+# foreach(file ${UMUNDOCORE_LIBRARIES})
+# 	message(STATUS "  ${file}")
+# endforeach()
+# 
+# message(STATUS "umundo.core debug libraries: ")
+# foreach(file ${UMUNDOCORE_LIBRARIES_DEBUG})
+# 	message(STATUS "  ${file}")
+# endforeach()
+# 
+# message(STATUS "umundo.s11n files: ")
+# foreach(file ${UMUNDOS11N_FILES})
+# 	message(STATUS "  ${file}")
+# endforeach()
+# 
+# message(STATUS "umundo.s11n libraries: ")
+# foreach(file ${UMUNDOS11N_LIBRARIES})
+# 	message(STATUS "  ${file}")
+# endforeach()
+# 
+# message(STATUS "umundo.s11n debug libraries: ")
+# foreach(file ${UMUNDOS11N_LIBRARIES_DEBUG})
+# 	message(STATUS "  ${file}")
+# endforeach()
 
 
 ############################################################

@@ -34,6 +34,13 @@ void TypedPublisher::sendObj(const string& type, void* obj) {
 	send(msg);
 }
 
+void TypedPublisher::sendObj(void* obj) {
+	Message* msg = new Message();
+	string buffer(_impl->serialize(obj));
+	msg->setData(buffer);
+	send(msg);
+}
+
 void TypedPublisher::registerType(const string& type, void* serializer) {
 	_impl->registerType(type, serializer);	
 }

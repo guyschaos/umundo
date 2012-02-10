@@ -59,16 +59,16 @@ public class TestPubSub extends Receiver {
 	 */
 	public static void loadUMundoNative() throws Exception {
 		// force reread of the library path
-		System.setProperty("java.library.path", "../../../../lib/darwin-i386/gnu/Release/");
-		try {
-			Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
-			fieldSysPath.setAccessible(true);
-			fieldSysPath.set(null, null);
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
+//		System.setProperty("java.library.path", "../../../../lib/darwin-i386/gnu/Release/");
+//		try {
+//			Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+//			fieldSysPath.setAccessible(true);
+//			fieldSysPath.set(null, null);
+//		} catch (NoSuchFieldException e) {
+//			e.printStackTrace();
+//		} catch (IllegalAccessException e) {
+//			e.printStackTrace();
+//		}
 		System.loadLibrary("umundocoreSwig");
 	}
 }

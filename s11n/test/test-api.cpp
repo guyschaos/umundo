@@ -1,6 +1,8 @@
 //#include "um_message.pb.h"
 //#include "um_typed_message.pb.h"
-#include "um_person.pb.h"
+#include "interfaces/protobuf/custom_typed_message.pb.h"
+#include "interfaces/protobuf/typed_message.pb.h"
+#include "interfaces/protobuf/um_person.pb.h"
 #include "umundo/s11n.h"
 #include "umundo/core.h"
 
@@ -26,9 +28,21 @@ void handler(int sig) {
 
 using namespace umundo;
 
-class TestTypedSubscriber : public TypedReceiver {
+class TestTypedReceiver : public TypedReceiver {
 	void receive(void* obj, Message* msg) {
-		std::cout << "received " << msg->getMeta("type") << " " << ((Person*)obj)->name() << std::endl;
+    if (msg->getMeta("type").length() == 0) {
+      // standard message
+      PBTypedMessage* tMsg = (PBTypedMessage*)obj;
+      if (tMsg->has_intpayload()) {
+        std::cout << "Received int[]: ";
+        for (int i = 0; i < tMsg->intpayload().payload_size(); i++) {
+          std::cout << tMsg->intpayload().payload(i) << ", ";
+        }
+        std::cout << std::endl;
+      }
+    } else if (msg->getMeta("type").compare("person") == 0) {
+      std::cout << "received " << msg->getMeta("type") << " " << ((Person*)obj)->name() << std::endl;
+    }
 	}
 };
 
@@ -38,20 +52,35 @@ int main(int argc, char** argv) {
 #endif
 	
 	Node* mainNode = new Node();
-	TestTypedSubscriber* tts = new TestTypedSubscriber();
+	Node* otherNode = new Node();
+	TestTypedReceiver* tts = new TestTypedReceiver();
 	TypedPublisher* tPub = new TypedPublisher("fooChannel");
 	TypedSubscriber* tSub = new TypedSubscriber("fooChannel", tts);
-  tSub->registerType("person", new Person());
-  tPub->registerType("person", new Person());
 
 	mainNode->addPublisher(tPub);
-  mainNode->addSubscriber(tSub);
+  otherNode->addSubscriber(tSub);
+
+  // try a typed message for atomic types
+	PBTypedMessage* tMsg = new PBTypedMessage();
+  for (int i = 0; i < 32; i++) {
+    tMsg->mutable_intpayload()->add_payload(i);
+  }
   
-	Person* person = new Person();
-	person->set_id(234525);
-	person->set_name("Captain FooBar");
   while(true) {
     Thread::sleepMs(1000);
-    tPub->sendObj("person", person);
+    tPub->sendObj(tMsg);
   }
+  
+  
+//  tSub->registerType("person", new Person());
+//  tPub->registerType("person", new Person());
+//
+//  
+//	Person* person = new Person();
+//	person->set_id(234525);
+//	person->set_name("Captain FooBar");
+//  while(true) {
+//    Thread::sleepMs(1000);
+//    tPub->sendObj("person", person);
+//  }
 }

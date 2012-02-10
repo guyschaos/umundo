@@ -32,7 +32,13 @@ void TypedSubscriber::registerType(const string& type, void* deserializer) {
 }
 
 void TypedSubscriber::receive(Message* msg) {
-	_recv->receive(_impl->deserialize(msg->getMeta("type"), msg->getData()), msg);
+	if (msg->getMeta().find("type") != msg->getMeta().end()) {
+		// explicit type given
+		_recv->receive(_impl->deserialize(msg->getMeta("type"), msg->getData()), msg);
+	} else {
+		// self describing message
+		_recv->receive(_impl->deserialize(msg->getData()), msg);
+	}
 }
 
 }

@@ -22,6 +22,7 @@ public:
 
 class SubscriberConfig : public Configuration {
 public:
+  virtual ~SubscriberConfig() {}
 	shared_ptr<Configuration> create();
 	string channelName;
 	string uuid;

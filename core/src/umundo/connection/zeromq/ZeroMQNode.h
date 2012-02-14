@@ -2,6 +2,7 @@
 #define ZEROMQDISPATCHER_H_XFMTSVLV
 
 #include <zmq.h>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "umundo/common/Common.h"
 #include "umundo/thread/Thread.h"
@@ -18,7 +19,7 @@ class NodeQuery;
 /**
  * Concrete node implementor for 0MQ (bridge pattern).
  */
-class ZeroMQNode : public Thread, public ResultSet<NodeStub>, public NodeImpl {
+class ZeroMQNode : public Thread, public ResultSet<NodeStub>, public NodeImpl, public boost::enable_shared_from_this<ZeroMQNode> {
 public:
 	virtual ~ZeroMQNode();
 

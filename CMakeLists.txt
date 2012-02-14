@@ -14,6 +14,39 @@ ENDIF()
 
 project(umundo)
 
+# lower case version of system name and compiler for library paths
+string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
+string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
+
+############################################################
+# Search paths for cross compiling and prebuilds
+############################################################
+
+#
+# Setting the CMAKE_FIND_ROOT_PATH to a list of directories will cause all CMake modules
+# to look in these directories in addition to the system search paths:
+# http://www.vtk.org/Wiki/CMake_Cross_Compiling#Searching_and_finding_external_software
+#
+
+# search root for includes
+LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt")
+
+# find libraries
+if(CMAKE_CROSSCOMPILING)
+	SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "ONLY")
+	if (IOS)
+		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY")
+		LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/${CMAKE_SYSTEM_VERSION}")
+	elseif (ANDROID)
+		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY")
+		LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_NDK_ABI_EXT}")
+	endif ()
+else ()
+	LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
+endif()
+
+message(STATUS "CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH}")
+
 ############################################################
 # Macros we need later on for installation
 ############################################################
@@ -23,7 +56,7 @@ project(umundo)
 MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST COMPONENT)
 	FOREACH(HEADER ${${HEADER_LIST}})
 		STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}" "" REL_HEADER ${HEADER})
-		STRING(REGEX MATCH "umundo(.*)[/\\]" DIR ${REL_HEADER})
+		STRING(REGEX MATCH "[umundo|build](.*)[/\\]" DIR ${REL_HEADER})
 		if (NOT DIR)
 			message(STATUS "Refusing to add header file ${REL_HEADER} for include in uppermost directory")
 		endif()
@@ -35,21 +68,28 @@ ENDMACRO()
 # General setup
 ############################################################
 
+# where to find the cmake modules we distribute
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
 
+# some compiler flags
 if(CMAKE_COMPILER_IS_GNUCXX)
 	# best practices from scott meyers
 #	add_definitions(-Weffc++)
 	# all warnings as errors
-	add_definitions(-Werror -Wall)
+	add_definitions(-Werror)
+	add_definitions(-Wall)
 	# swig will throw a warning with optimization otherwise
 	add_definitions(-fno-strict-aliasing)
+elseif (MSVC)
+	add_definitions("-DZMQ_STATIC")	
+	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
 endif()
 
 OPTION(BUILD_UMUNDO_CORE "Build umundo core" ON) 
 OPTION(BUILD_UMUNDO_S11N "Build umundo serialization" ON) 
 OPTION(BUILD_STATIC_LIBRARIES "Build static libraries" ON) 
-OPTION(BUILD_PREFER_PREBUILT "Prefer prebuilt libraries contained in the distribution" ON) 
+OPTION(BUILD_PREFER_STATIC_LIBRARIES "Prefer static libraries when resolving dependencies" ON)
 
 # Enable verbose Makefiles to debug the build process itself
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -58,10 +98,10 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 enable_testing()
 SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
 
-SET(LOGLEVEL_S11N "3" CACHE STRING "Log-level for serialization - higher is more verbose")
-SET(LOGLEVEL_COMMON "1" CACHE STRING "Log-level for common - higher is more verbose")
-SET(LOGLEVEL_DISC "1" CACHE STRING "Log-level for discovery - higher is more verbose")
-SET(LOGLEVEL_NET "1" CACHE STRING "Log-level for networking - higher is more verbose")
+SET(LOGLEVEL_S11N "2" CACHE STRING "Log-level for serialization - higher is more verbose")
+SET(LOGLEVEL_COMMON "2" CACHE STRING "Log-level for common - higher is more verbose")
+SET(LOGLEVEL_DISC "2" CACHE STRING "Log-level for discovery - higher is more verbose")
+SET(LOGLEVEL_NET "2" CACHE STRING "Log-level for networking - higher is more verbose")
 SET_PROPERTY(CACHE LOGLEVEL_COMMON PROPERTY STRINGS 0 1 2 3)
 SET_PROPERTY(CACHE LOGLEVEL_DISC PROPERTY STRINGS 0 1 2 3)
 SET_PROPERTY(CACHE LOGLEVEL_NET PROPERTY STRINGS 0 1 2 3)
@@ -90,8 +130,8 @@ OPTION(NET_ZEROMQ "Use 0MQ for networking" ON)
 OPTION(S11N_PROTOBUF "Use protobuf object serialization" ON) 
 
 if (NET_ZEROMQ)
-	SET(NET_ZEROMQ_SND_HWM "1000" CACHE STRING "Maximum queue size for publishers")
-	SET(NET_ZEROMQ_RCV_HWM "1000" CACHE STRING "Maximum queue size for subscribers")
+	SET(NET_ZEROMQ_SND_HWM "10000" CACHE STRING "Maximum queue size for publishers")
+	SET(NET_ZEROMQ_RCV_HWM "10000" CACHE STRING "Maximum queue size for subscribers")
 endif()
 
 ############################################################
@@ -106,7 +146,7 @@ else()
 endif()
 
 # prefer static libraries for linking
-if(BUILD_PREFER_PREBUILT)
+if(PREFER_STATIC_LIBRARIES)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
 
@@ -115,8 +155,6 @@ endif()
 # LIBRARY_ROOT_PATH is the path up to the Debug/Release directories
 # LIBRARY_OUTPUT_PATH is including the Debug/Release components, except for MSVS where it is added automatically
 #
-string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
-string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
 if(CMAKE_CROSSCOMPILING)
 	string(TOLOWER ${CMAKE_CROSSCOMPILING_TARGET} CMAKE_CROSSCOMPILING_TARGET_LC)
 	SET(LIBRARY_ROOT_PATH 
@@ -134,14 +172,11 @@ else()
 	endif()
 endif()
 
-# set root directory for prebuilt libraries
-SET(CONTRIB_HEADERS ${PROJECT_SOURCE_DIR}/contrib/prebuilt/include)
-SET(CONTRIB_PREBUILT ${PROJECT_SOURCE_DIR}/contrib/prebuilt)
-
 ############################################################
 # Create config.h
 ############################################################
 
+# determine path seperator to shorten filenames in Debug.cpp
 if (WIN32)
 	LIST(APPEND UMUNDOCORE_LIBRARIES Ws2_32)
     SET(PATH_SEPERATOR "\\\\")
@@ -149,7 +184,7 @@ else()
 	SET(PATH_SEPERATOR "/")
 endif()
 
-# enable config.h style compile time options
+# enable config.h style compile time options and add as "umundo/config.h"
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/umundo/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -159,7 +194,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if (BUILD_UMUNDO_CORE)
 	SET(UMUNDOCORE_LIBRARIES)
-	SET(UMUNDOCORE_LIBRARIES_DEBUG)
 	SET(UMUNDOCORE_FILES)
 	SET(UMUNDOCORE_HEADER_FILES)
 	include_directories(core/src)
@@ -167,7 +201,6 @@ if (BUILD_UMUNDO_CORE)
 endif()
 if (BUILD_UMUNDO_S11N)
 	SET(UMUNDOS11N_LIBRARIES)
-	SET(UMUNDOS11N_LIBRARIES_DEBUG)
 	SET(UMUNDOS11N_FILES)
 	SET(UMUNDOS11N_HEADER_FILES)
 	include_directories(core/s11n)
@@ -180,35 +213,25 @@ endif()
 
 message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
 
-# message(STATUS "umundo.core files: ")
-# foreach(file ${UMUNDOCORE_FILES})
-# 	message(STATUS "  ${file}")
-# endforeach()
-# 
-# message(STATUS "umundo.core libraries:")
-# foreach(file ${UMUNDOCORE_LIBRARIES})
-# 	message(STATUS "  ${file}")
-# endforeach()
-# 
-# message(STATUS "umundo.core debug libraries: ")
-# foreach(file ${UMUNDOCORE_LIBRARIES_DEBUG})
-# 	message(STATUS "  ${file}")
-# endforeach()
-# 
-# message(STATUS "umundo.s11n files: ")
-# foreach(file ${UMUNDOS11N_FILES})
-# 	message(STATUS "  ${file}")
-# endforeach()
-# 
-# message(STATUS "umundo.s11n libraries: ")
-# foreach(file ${UMUNDOS11N_LIBRARIES})
-# 	message(STATUS "  ${file}")
-# endforeach()
-# 
-# message(STATUS "umundo.s11n debug libraries: ")
-# foreach(file ${UMUNDOS11N_LIBRARIES_DEBUG})
-# 	message(STATUS "  ${file}")
-# endforeach()
+message(STATUS "umundo.core files: ")
+foreach(file ${UMUNDOCORE_FILES})
+	message(STATUS "  ${file}")
+endforeach()
+
+message(STATUS "umundo.core libraries:")
+foreach(file ${UMUNDOCORE_LIBRARIES})
+	message(STATUS "  ${file}")
+endforeach()
+
+message(STATUS "umundo.s11n files: ")
+foreach(file ${UMUNDOS11N_FILES})
+	message(STATUS "  ${file}")
+endforeach()
+
+message(STATUS "umundo.s11n libraries: ")
+foreach(file ${UMUNDOS11N_LIBRARIES})
+	message(STATUS "  ${file}")
+endforeach()
 
 
 ############################################################

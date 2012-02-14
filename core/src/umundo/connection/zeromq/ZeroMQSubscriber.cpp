@@ -41,7 +41,8 @@ void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<SubscriberConfig>(config);
 	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
 
-	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_SUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
+	void* ctx = ZeroMQNode::getZeroMQContext();
+	(_socket = zmq_socket(ctx, ZMQ_SUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
 
 	int hwm = NET_ZEROMQ_RCV_HWM;
 	zmq_setsockopt(_socket, ZMQ_RCVHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
@@ -71,30 +72,31 @@ void ZeroMQSubscriber::run() {
 			if (more) {
 				char* key = (char*)zmq_msg_data(&message);
 				char* value = ((char*)zmq_msg_data(&message) + strlen(key) + 1);
-        zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
         
         // is this the first message with the channelname?
-        if (strlen(value) == 0 && 
-            strlen(key) == msgSize &&
+        if (strlen(key) + 1 == msgSize &&
             msg->getMeta().find(key) == msg->getMeta().end()) {
           msg->setMeta("channelName", key);
         } else {
+					assert(strlen(key) + strlen(value) + 2 == msgSize);
           if (strlen(key) + strlen(value) + 2 != msgSize) {
-            LOG_INFO("Received malformed message %d + %d + 2 != %d", strlen(key), strlen(value), msgSize);
+            LOG_WARN("Received malformed message %d + %d + 2 != %d", strlen(key), strlen(value), msgSize);
+            zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
             break;
           } else {
             msg->setMeta(key, value);
           }
         }
-        
+        zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));        
 			} else {
 				msg->setData(string((char*)zmq_msg_data(&message), msgSize));
         zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 				_receiver->receive(msg);
-				delete(msg);
 				break; // last message part
 			}
 		}
+		delete(msg);
+
 	}
 }
 

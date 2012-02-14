@@ -3,10 +3,10 @@
 ############################################################
 
 # gather all header files
-file(GLOB_RECURSE UMUNDOS11N_HEADER_FILES src/*.h)
+file(GLOB_RECURSE UMUNDOS11N_HEADER_FILES src-cpp/*.h)
 
 #########################################################################
-# Redefine PROTOBUF_GENERATE_CPP macro to allow subdirectories!
+# Redefine PROTOBUF_GENERATE_CPP macro to allow subdirectories and objc
 #########################################################################
 
 function(UMUNDO_PROTOBUF_GENERATE_CPP SRCS HDRS)
@@ -39,10 +39,6 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP SRCS HDRS)
     STRING(REPLACE ${CMAKE_CURRENT_SOURCE_DIR} "" WO_PREFIX ${FIL})
     STRING(REPLACE ${FIL_EXT} "" REL_PATH ${WO_PREFIX})
 
-    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.cc")
-    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.h")
-
-	#message("${PROTOBUF_PROTOC_EXECUTABLE} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}${REL_PATH} ${_protobuf_include_path} ${ABS_FIL}")
 	file( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}" )
 
     add_custom_command(
@@ -53,6 +49,10 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP SRCS HDRS)
       DEPENDS ${ABS_FIL}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
+
+   	list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.cc")
+   	list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.h")
+
   endforeach()
 
   set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
@@ -83,8 +83,8 @@ if(S11N_PROTOBUF)
 	list(APPEND UMUNDOS11N_HEADER_FILES ${PROTO_HDRS})	
 	list(APPEND UMUNDOS11N_FILES ${PROTO_SRCS})	
 
-	LIST(APPEND UMUNDOS11N_LIBRARIES ${PROTOBUF_LIBRARY})
-	LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG ${PROTOBUF_LIBRARY_DEBUG})
+	LIST(APPEND UMUNDOS11N_LIBRARIES optimized ${PROTOBUF_LIBRARY})
+	LIST(APPEND UMUNDOS11N_LIBRARIES debug ${PROTOBUF_LIBRARY_DEBUG})
 	
 endif(S11N_PROTOBUF)
 
@@ -108,7 +108,6 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
 		${UMUNDOS11N_FILES}
 		${UMUNDOS11N_HEADER_FILES}
 	)
-	LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG umundoserial)
 	LIST(APPEND UMUNDOS11N_LIBRARIES umundoserial)
 else()
 	if (CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -116,7 +115,7 @@ else()
 			${UMUNDOS11N_FILES}
 			${UMUNDOS11N_HEADER_FILES}
 		)
-		LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG umundoserial_d)
+		LIST(APPEND UMUNDOS11N_LIBRARIES debug umundoserial_d)
 	else()
 		add_library(umundoserial
 			${UMUNDOS11N_FILES}
@@ -129,7 +128,6 @@ endif()
 if (UNIX AND NOT APPLE)
 	# we need to duplicate the libraries on debian - is this a cmake bug?
 	LIST(APPEND UMUNDOS11N_LIBRARIES ${UMUNDOS11N_LIBRARIES})
-	LIST(APPEND UMUNDOS11N_LIBRARIES_DEBUG ${UMUNDOS11N_LIBRARIES_DEBUG})
 endif()
 
 add_subdirectory(test)          # build tests
@@ -139,4 +137,3 @@ INSTALL_HEADERS_WITH_DIRECTORY("UMUNDOS11N_HEADER_FILES" headerS11N)
 set(UMUNDOS11N_FILES "${UMUNDOS11N_FILES}" PARENT_SCOPE)
 set(UMUNDOS11N_LIBRARIES "${UMUNDOS11N_LIBRARIES}" PARENT_SCOPE)
 set(UMUNDOS11N_LIBRARIES_DEBUG "${UMUNDOS11N_LIBRARIES_DEBUG}" PARENT_SCOPE)
-#set(UMUNDOS11N_HEADER_FILES "${UMUNDOS11N_HEADER_FILES}" PARENT_SCOPE)

@@ -1,5 +1,9 @@
-#include "umundo/connection/zeromq/ZeroMQPublisher.h"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 
+#include "umundo/connection/zeromq/ZeroMQPublisher.h"
 #include "umundo/connection/zeromq/ZeroMQNode.h"
 #include "umundo/common/Message.h"
 
@@ -22,6 +26,7 @@ void ZeroMQPublisher::destroy() {
 
 void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 
+	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
 	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
 	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_PUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
@@ -68,25 +73,47 @@ void ZeroMQPublisher::send(Message* msg) {
 	// topic name as envelope
 	zmq_msg_t channelEnvlp;
 	zmq_msg_init(&channelEnvlp) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
-	zmq_msg_init_size (&channelEnvlp, _channelName.size()) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
+	zmq_msg_init_size (&channelEnvlp, _channelName.size() + 1) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
 	memcpy(zmq_msg_data(&channelEnvlp), _channelName.c_str(), _channelName.size());
+	((char*)zmq_msg_data(&channelEnvlp))[_channelName.size()] = '\0';
 	zmq_sendmsg(_socket, &channelEnvlp, ZMQ_SNDMORE) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&channelEnvlp) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+
+	// mandatory meta fields
+	msg->setMeta("publisher", _uuid);
+	msg->setMeta("proc", procUUID);
 
 	// all our meta information
 	map<string, string>::const_iterator metaIter;
 	for (metaIter = msg->getMeta().begin(); metaIter != msg->getMeta().end(); metaIter++) {
+		// string key(metaIter->first);
+		// string value(metaIter->second);
+		// std::cout << key << ": " << value << std::endl;
+
+		// string length of key + value + two null bytes as string delimiters
 		size_t metaSize = (metaIter->first).length() + (metaIter->second).length() + 2;
 		zmq_msg_t metaMsg;
 		zmq_msg_init(&metaMsg) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
 		zmq_msg_init_size (&metaMsg, metaSize) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
-		snprintf((char*)zmq_msg_data(&metaMsg), (metaIter->first).length() + 1, "%s", (metaIter->first).data());
-		snprintf(
-             (char*)zmq_msg_data(&metaMsg) + (metaIter->first).length() + 1, 
-             (metaIter->second).length() + 1, 
-             "%s", 
-             (metaIter->second).data());
+
+		char* writePtr = (char*)zmq_msg_data(&metaMsg);
 		
+		memcpy(writePtr, (metaIter->first).data(), (metaIter->first).length());
+		// indexes start at zero, so length is the byte after the string
+		((char*)zmq_msg_data(&metaMsg))[(metaIter->first).length()] = '\0';
+		assert(strlen((char*)zmq_msg_data(&metaMsg)) == (metaIter->first).length());
+		assert(strlen(writePtr) == (metaIter->first).length()); // just to be sure
+		
+		// increment write pointer
+		writePtr += (metaIter->first).length() + 1;
+		
+		memcpy(writePtr, 
+			(metaIter->second).data(), 
+			(metaIter->second).length());
+		// first string + null byte + second string
+		((char*)zmq_msg_data(&metaMsg))[(metaIter->first).length() + 1 + (metaIter->second).length()] = '\0';
+		assert(strlen(writePtr) == (metaIter->second).length());
+
 		zmq_sendmsg(_socket, &metaMsg, ZMQ_SNDMORE) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 		zmq_msg_close(&metaMsg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 		

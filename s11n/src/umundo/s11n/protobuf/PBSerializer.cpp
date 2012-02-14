@@ -26,9 +26,9 @@ string PBSerializer::serialize(const string& type, void* obj) {
   return pbObj->SerializeAsString();
 }
 
-string PBSerializer::serialize(void* obj) {
-  return serialize("", obj);
-}
+// string PBSerializer::serialize(void* obj) {
+//   return serialize("", obj);
+// }
 
 void PBSerializer::registerType(const string& type, void* serializer) {
 	_serializers[type] = (MessageLite*)serializer;

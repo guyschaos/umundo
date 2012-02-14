@@ -1,14 +1,7 @@
-add_subdirectory(discovery)
+#add_subdirectory(discovery)
 
 add_executable(umundo-pingpong test-pingpong.cpp)
-
-foreach(LIB ${UMUNDOCORE_LIBRARIES_DEBUG})
-	target_link_libraries(umundo-pingpong debug ${LIB})
-endforeach()
-foreach(LIB ${UMUNDOCORE_LIBRARIES})
-	target_link_libraries(umundo-pingpong optimized ${LIB})
-endforeach()
-
+target_link_libraries(umundo-pingpong ${UMUNDOCORE_LIBRARIES})
 
 install(
 	TARGETS umundo-pingpong

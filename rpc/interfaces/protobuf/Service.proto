@@ -1,0 +1,28 @@
+message ServiceQuery {
+	optional string name = 1;
+	optional string takes = 2;
+	optional string returns = 3;
+	optional string nodeID = 4;
+	optional string nodeID = 5;
+}
+
+message ServiceInfo {
+
+}
+
+message ServiceState {
+	
+}
+
+message InstantiationRequest {
+	required string serviceName = 1;
+	optional ServiceState = 2;
+}
+
+message InstantiationReply {
+	required string channelName = 1;
+}
+
+service ServiceManager {
+ 	rpc instantiate (InstantiationReply) returns (ServiceDescription);
+}

@@ -29,6 +29,8 @@ using std::vector;
 using boost::shared_ptr;
 using boost::weak_ptr;
 
+extern string procUUID;
+
 }
 
 #endif /* end of include guard: COMMON_H_ANPQOWX0 */

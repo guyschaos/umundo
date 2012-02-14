@@ -16,7 +16,7 @@ namespace umundo {
 		void init(shared_ptr<Configuration>);
 		shared_ptr<Implementation> create();
 		void* deserialize(const string& type, const string& data);
-		void* deserialize(const std::string& data);
+//		void* deserialize(const std::string& data);
 
 		void registerType(const std::string&, void*);
 

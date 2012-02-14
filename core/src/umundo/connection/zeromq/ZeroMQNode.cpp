@@ -278,7 +278,7 @@ void ZeroMQNode::removed(shared_ptr<NodeStub> node) {
 		_nodes.erase(node->getUUID());                 // remove node itself
 		_pendingPubAdditions.erase(node->getUUID());   // I don't know whether this is needed, but it cant be wrong
 
-		assert(_sockets.size() == _remotePubs.size());
+//		assert(_sockets.size() == _remotePubs.size());
 		assert(_sockets.size() == _nodes.size());
 		_mutex.unlock();
 
@@ -314,7 +314,7 @@ void ZeroMQNode::addRemotePubToLocalSubs(const char* remoteId, shared_ptr<Publis
 				_remotePubs[remoteId][pubIter->second->getPort()] = pubIter->second;
 
 				// set publisherstub endpoint data from node
-				pubIter->second->setNode(_nodes[remoteId]);
+				// publishers are not bound to a node as they can be added to multiple nodes
 				pubIter->second->setHost(_nodes[remoteId]->getHost());
 				pubIter->second->setDomain(_nodes[remoteId]->getDomain());
 				pubIter->second->setTransport(_nodes[remoteId]->getTransport());

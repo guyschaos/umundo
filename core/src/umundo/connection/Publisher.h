@@ -32,17 +32,14 @@ public:
   //@{
 	virtual const string& getChannelName() const      { return _channelName; }
 	virtual void setChannelName(string channelName)   { _channelName = channelName; }
-	virtual shared_ptr<NodeStub> getNode() const      { return _node; }
-	virtual void setNode(shared_ptr<NodeStub> node)   { _node = node; }
 	virtual const string& getHost() const             { return _host; }
 	virtual void setHost(string host)                 { _host = host; }
 	virtual const string& getDomain() const           { return _domain; }
 	virtual void setDomain(string domain)             { domain = _domain; }
 	//@}
-	
+
 protected:
 	string _channelName;
-	shared_ptr<NodeStub> _node;
 	string _host;
 	string _domain;
 };
@@ -56,6 +53,10 @@ public:
 	virtual ~PublisherImpl() {}
 
 	virtual void send(Message* msg) = 0;
+	virtual const string& getUUID()                  { return _uuid; }
+	virtual void setUUID(string uuid)                { _uuid = uuid; }
+
+	string _uuid;
 
 };
 
@@ -79,8 +80,6 @@ public:
   //@{
 	virtual const string& getChannelName() const      { return _impl->getChannelName(); }
 	virtual void setChannelName(string channelName)   { _impl->setChannelName(channelName); }
-	virtual shared_ptr<NodeStub> getNode() const      { return _impl->getNode(); }
-	virtual void setNode(shared_ptr<NodeStub> node)   { _impl->setNode(node); }
 	//@}
 
 	/** @name Overwrite EndPoint */

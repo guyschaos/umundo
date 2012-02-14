@@ -1,7 +1,7 @@
 #include "umundo/config.h"
 
-#ifdef UNIX
-#include <sys/socket.h>
+#if (defined UNIX || defined IOS)
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #endif
 #ifdef WIN32

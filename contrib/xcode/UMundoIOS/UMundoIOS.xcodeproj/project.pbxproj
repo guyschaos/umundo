@@ -1,0 +1,420 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9530DC4E14E6D04E00D28C16 /* UMTypedPublisher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9530DC4B14E6D04E00D28C16 /* UMTypedPublisher.mm */; };
+		9530DC4F14E6D04E00D28C16 /* UMTypedSubscriber.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9530DC4D14E6D04E00D28C16 /* UMTypedSubscriber.mm */; };
+		95EB927D14E5E93B0098660E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB927C14E5E93B0098660E /* UIKit.framework */; };
+		95EB927F14E5E93B0098660E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB927E14E5E93B0098660E /* Foundation.framework */; };
+		95EB928114E5E93B0098660E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB928014E5E93B0098660E /* CoreGraphics.framework */; };
+		95EB928314E5E93B0098660E /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB928214E5E93B0098660E /* CoreData.framework */; };
+		95EB928914E5E93B0098660E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 95EB928714E5E93B0098660E /* InfoPlist.strings */; };
+		95EB928B14E5E93B0098660E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 95EB928A14E5E93B0098660E /* main.m */; };
+		95EB928F14E5E93B0098660E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 95EB928E14E5E93B0098660E /* AppDelegate.m */; };
+		95EB929214E5E93B0098660E /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 95EB929014E5E93B0098660E /* MainStoryboard_iPhone.storyboard */; };
+		95EB929514E5E93B0098660E /* MainStoryboard_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 95EB929314E5E93B0098660E /* MainStoryboard_iPad.storyboard */; };
+		95EB929814E5E93B0098660E /* UMundoIOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 95EB929614E5E93B0098660E /* UMundoIOS.xcdatamodeld */; };
+		95EB929B14E5E93B0098660E /* MasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 95EB929A14E5E93B0098660E /* MasterViewController.m */; };
+		95EB929E14E5E93B0098660E /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 95EB929D14E5E93B0098660E /* DetailViewController.m */; };
+		95EB92A914E5E9920098660E /* UMPublisher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 95EB92A614E5E9920098660E /* UMPublisher.mm */; };
+		95EB92AA14E5E9920098660E /* UMSubscriber.mm in Sources */ = {isa = PBXBuildFile; fileRef = 95EB92A814E5E9920098660E /* UMSubscriber.mm */; };
+		95EB92AF14E5EBDE0098660E /* libprotobuf-lite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB92AB14E5EBDE0098660E /* libprotobuf-lite.a */; };
+		95EB92B014E5EBDE0098660E /* libprotobuf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB92AC14E5EBDE0098660E /* libprotobuf.a */; };
+		95EB92B114E5EBDE0098660E /* libprotoc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB92AD14E5EBDE0098660E /* libprotoc.a */; };
+		95EB92B214E5EBDE0098660E /* libzmq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB92AE14E5EBDE0098660E /* libzmq.a */; };
+		95EB92B514E5EBEC0098660E /* libumundocore_d.ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB92B314E5EBEC0098660E /* libumundocore_d.ios.a */; };
+		95EB92B614E5EBEC0098660E /* libumundoserial_d.ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95EB92B414E5EBEC0098660E /* libumundoserial_d.ios.a */; };
+		95EB92B914E5EEA80098660E /* UMNode.mm in Sources */ = {isa = PBXBuildFile; fileRef = 95EB92B814E5EEA80098660E /* UMNode.mm */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		9530DC4A14E6D04E00D28C16 /* UMTypedPublisher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UMTypedPublisher.h; path = "../../../s11n/src-objc/umundo/s11n/UMTypedPublisher.h"; sourceTree = "<group>"; };
+		9530DC4B14E6D04E00D28C16 /* UMTypedPublisher.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = UMTypedPublisher.mm; path = "../../../s11n/src-objc/umundo/s11n/UMTypedPublisher.mm"; sourceTree = "<group>"; };
+		9530DC4C14E6D04E00D28C16 /* UMTypedSubscriber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UMTypedSubscriber.h; path = "../../../s11n/src-objc/umundo/s11n/UMTypedSubscriber.h"; sourceTree = "<group>"; };
+		9530DC4D14E6D04E00D28C16 /* UMTypedSubscriber.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = UMTypedSubscriber.mm; path = "../../../s11n/src-objc/umundo/s11n/UMTypedSubscriber.mm"; sourceTree = "<group>"; };
+		95EB927814E5E93B0098660E /* UMundoIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UMundoIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		95EB927C14E5E93B0098660E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		95EB927E14E5E93B0098660E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		95EB928014E5E93B0098660E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		95EB928214E5E93B0098660E /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		95EB928614E5E93B0098660E /* UMundoIOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "UMundoIOS-Info.plist"; sourceTree = "<group>"; };
+		95EB928814E5E93B0098660E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		95EB928A14E5E93B0098660E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		95EB928C14E5E93B0098660E /* UMundoIOS-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UMundoIOS-Prefix.pch"; sourceTree = "<group>"; };
+		95EB928D14E5E93B0098660E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		95EB928E14E5E93B0098660E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		95EB929114E5E93B0098660E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
+		95EB929414E5E93B0098660E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPad.storyboard; sourceTree = "<group>"; };
+		95EB929714E5E93B0098660E /* UMundoIOS.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = UMundoIOS.xcdatamodel; sourceTree = "<group>"; };
+		95EB929914E5E93B0098660E /* MasterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MasterViewController.h; sourceTree = "<group>"; };
+		95EB929A14E5E93B0098660E /* MasterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MasterViewController.m; sourceTree = "<group>"; };
+		95EB929C14E5E93B0098660E /* DetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
+		95EB929D14E5E93B0098660E /* DetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		95EB92A514E5E9920098660E /* UMPublisher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UMPublisher.h; sourceTree = "<group>"; };
+		95EB92A614E5E9920098660E /* UMPublisher.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UMPublisher.mm; sourceTree = "<group>"; };
+		95EB92A714E5E9920098660E /* UMSubscriber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UMSubscriber.h; sourceTree = "<group>"; };
+		95EB92A814E5E9920098660E /* UMSubscriber.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UMSubscriber.mm; sourceTree = "<group>"; };
+		95EB92AB14E5EBDE0098660E /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../../prebuilt/ios/5.0/lib/libprotobuf-lite.a"; sourceTree = "<group>"; };
+		95EB92AC14E5EBDE0098660E /* libprotobuf.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libprotobuf.a; path = ../../prebuilt/ios/5.0/lib/libprotobuf.a; sourceTree = "<group>"; };
+		95EB92AD14E5EBDE0098660E /* libprotoc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libprotoc.a; path = ../../prebuilt/ios/5.0/lib/libprotoc.a; sourceTree = "<group>"; };
+		95EB92AE14E5EBDE0098660E /* libzmq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzmq.a; path = ../../prebuilt/ios/5.0/lib/libzmq.a; sourceTree = "<group>"; };
+		95EB92B314E5EBEC0098660E /* libumundocore_d.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libumundocore_d.ios.a; path = "../../../lib/ios-5.0/libumundocore_d.ios.a"; sourceTree = "<group>"; };
+		95EB92B414E5EBEC0098660E /* libumundoserial_d.ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libumundoserial_d.ios.a; path = "../../../lib/ios-5.0/libumundoserial_d.ios.a"; sourceTree = "<group>"; };
+		95EB92B714E5EEA80098660E /* UMNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UMNode.h; sourceTree = "<group>"; };
+		95EB92B814E5EEA80098660E /* UMNode.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UMNode.mm; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		95EB927514E5E93B0098660E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95EB92B514E5EBEC0098660E /* libumundocore_d.ios.a in Frameworks */,
+				95EB92B614E5EBEC0098660E /* libumundoserial_d.ios.a in Frameworks */,
+				95EB92AF14E5EBDE0098660E /* libprotobuf-lite.a in Frameworks */,
+				95EB92B014E5EBDE0098660E /* libprotobuf.a in Frameworks */,
+				95EB92B114E5EBDE0098660E /* libprotoc.a in Frameworks */,
+				95EB92B214E5EBDE0098660E /* libzmq.a in Frameworks */,
+				95EB927D14E5E93B0098660E /* UIKit.framework in Frameworks */,
+				95EB927F14E5E93B0098660E /* Foundation.framework in Frameworks */,
+				95EB928114E5E93B0098660E /* CoreGraphics.framework in Frameworks */,
+				95EB928314E5E93B0098660E /* CoreData.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9530DC5114E6D3E100D28C16 /* protobuf */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = protobuf;
+			sourceTree = "<group>";
+		};
+		95EB926D14E5E93B0098660E = {
+			isa = PBXGroup;
+			children = (
+				95EB928414E5E93B0098660E /* UMundoIOS */,
+				95EB927B14E5E93B0098660E /* Frameworks */,
+				95EB927914E5E93B0098660E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		95EB927914E5E93B0098660E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				95EB927814E5E93B0098660E /* UMundoIOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		95EB927B14E5E93B0098660E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				95EB92B314E5EBEC0098660E /* libumundocore_d.ios.a */,
+				95EB92B414E5EBEC0098660E /* libumundoserial_d.ios.a */,
+				95EB92AB14E5EBDE0098660E /* libprotobuf-lite.a */,
+				95EB92AC14E5EBDE0098660E /* libprotobuf.a */,
+				95EB92AD14E5EBDE0098660E /* libprotoc.a */,
+				95EB92AE14E5EBDE0098660E /* libzmq.a */,
+				95EB927C14E5E93B0098660E /* UIKit.framework */,
+				95EB927E14E5E93B0098660E /* Foundation.framework */,
+				95EB928014E5E93B0098660E /* CoreGraphics.framework */,
+				95EB928214E5E93B0098660E /* CoreData.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		95EB928414E5E93B0098660E /* UMundoIOS */ = {
+			isa = PBXGroup;
+			children = (
+				9530DC5114E6D3E100D28C16 /* protobuf */,
+				95EB92A414E5E9920098660E /* umundo */,
+				95EB928D14E5E93B0098660E /* AppDelegate.h */,
+				95EB928E14E5E93B0098660E /* AppDelegate.m */,
+				95EB929014E5E93B0098660E /* MainStoryboard_iPhone.storyboard */,
+				95EB929314E5E93B0098660E /* MainStoryboard_iPad.storyboard */,
+				95EB929914E5E93B0098660E /* MasterViewController.h */,
+				95EB929A14E5E93B0098660E /* MasterViewController.m */,
+				95EB929C14E5E93B0098660E /* DetailViewController.h */,
+				95EB929D14E5E93B0098660E /* DetailViewController.m */,
+				95EB929614E5E93B0098660E /* UMundoIOS.xcdatamodeld */,
+				95EB928514E5E93B0098660E /* Supporting Files */,
+			);
+			path = UMundoIOS;
+			sourceTree = "<group>";
+		};
+		95EB928514E5E93B0098660E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				95EB928614E5E93B0098660E /* UMundoIOS-Info.plist */,
+				95EB928714E5E93B0098660E /* InfoPlist.strings */,
+				95EB928A14E5E93B0098660E /* main.m */,
+				95EB928C14E5E93B0098660E /* UMundoIOS-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		95EB92A414E5E9920098660E /* umundo */ = {
+			isa = PBXGroup;
+			children = (
+				9530DC4A14E6D04E00D28C16 /* UMTypedPublisher.h */,
+				9530DC4B14E6D04E00D28C16 /* UMTypedPublisher.mm */,
+				9530DC4C14E6D04E00D28C16 /* UMTypedSubscriber.h */,
+				9530DC4D14E6D04E00D28C16 /* UMTypedSubscriber.mm */,
+				95EB92A514E5E9920098660E /* UMPublisher.h */,
+				95EB92A614E5E9920098660E /* UMPublisher.mm */,
+				95EB92A714E5E9920098660E /* UMSubscriber.h */,
+				95EB92A814E5E9920098660E /* UMSubscriber.mm */,
+				95EB92B714E5EEA80098660E /* UMNode.h */,
+				95EB92B814E5EEA80098660E /* UMNode.mm */,
+			);
+			name = umundo;
+			path = ../../../bindings/objc;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		95EB927714E5E93B0098660E /* UMundoIOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95EB92A114E5E93B0098660E /* Build configuration list for PBXNativeTarget "UMundoIOS" */;
+			buildPhases = (
+				95EB927414E5E93B0098660E /* Sources */,
+				95EB927514E5E93B0098660E /* Frameworks */,
+				95EB927614E5E93B0098660E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = UMundoIOS;
+			productName = UMundoIOS;
+			productReference = 95EB927814E5E93B0098660E /* UMundoIOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		95EB926F14E5E93B0098660E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = 95EB927214E5E93B0098660E /* Build configuration list for PBXProject "UMundoIOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 95EB926D14E5E93B0098660E;
+			productRefGroup = 95EB927914E5E93B0098660E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				95EB927714E5E93B0098660E /* UMundoIOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		95EB927614E5E93B0098660E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95EB928914E5E93B0098660E /* InfoPlist.strings in Resources */,
+				95EB929214E5E93B0098660E /* MainStoryboard_iPhone.storyboard in Resources */,
+				95EB929514E5E93B0098660E /* MainStoryboard_iPad.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		95EB927414E5E93B0098660E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95EB928B14E5E93B0098660E /* main.m in Sources */,
+				95EB928F14E5E93B0098660E /* AppDelegate.m in Sources */,
+				95EB929814E5E93B0098660E /* UMundoIOS.xcdatamodeld in Sources */,
+				95EB929B14E5E93B0098660E /* MasterViewController.m in Sources */,
+				95EB929E14E5E93B0098660E /* DetailViewController.m in Sources */,
+				95EB92A914E5E9920098660E /* UMPublisher.mm in Sources */,
+				95EB92AA14E5E9920098660E /* UMSubscriber.mm in Sources */,
+				95EB92B914E5EEA80098660E /* UMNode.mm in Sources */,
+				9530DC4E14E6D04E00D28C16 /* UMTypedPublisher.mm in Sources */,
+				9530DC4F14E6D04E00D28C16 /* UMTypedSubscriber.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		95EB928714E5E93B0098660E /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				95EB928814E5E93B0098660E /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		95EB929014E5E93B0098660E /* MainStoryboard_iPhone.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				95EB929114E5E93B0098660E /* en */,
+			);
+			name = MainStoryboard_iPhone.storyboard;
+			sourceTree = "<group>";
+		};
+		95EB929314E5E93B0098660E /* MainStoryboard_iPad.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				95EB929414E5E93B0098660E /* en */,
+			);
+			name = MainStoryboard_iPad.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		95EB929F14E5E93B0098660E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		95EB92A014E5E93B0098660E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		95EB92A214E5E93B0098660E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "UMundoIOS/UMundoIOS-Prefix.pch";
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					../../prebuilt/include,
+					../../../core/src,
+					../../prebuilt/ios/5.0/include,
+				);
+				INFOPLIST_FILE = "UMundoIOS/UMundoIOS-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../prebuilt/ios/5.0/lib\"",
+					"\"$(SRCROOT)/../../../lib/ios-5.0\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../prebuilt/include ../../../core/src ../../prebuilt/include/protobuf-objc";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		95EB92A314E5E93B0098660E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "UMundoIOS/UMundoIOS-Prefix.pch";
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					../../prebuilt/include,
+					../../../core/src,
+					../../prebuilt/ios/5.0/include,
+				);
+				INFOPLIST_FILE = "UMundoIOS/UMundoIOS-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../prebuilt/ios/5.0/lib\"",
+					"\"$(SRCROOT)/../../../lib/ios-5.0\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../prebuilt/include ../../../core/src ../../prebuilt/include/protobuf-objc";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		95EB927214E5E93B0098660E /* Build configuration list for PBXProject "UMundoIOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95EB929F14E5E93B0098660E /* Debug */,
+				95EB92A014E5E93B0098660E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		95EB92A114E5E93B0098660E /* Build configuration list for PBXNativeTarget "UMundoIOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95EB92A214E5E93B0098660E /* Debug */,
+				95EB92A314E5E93B0098660E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		95EB929614E5E93B0098660E /* UMundoIOS.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				95EB929714E5E93B0098660E /* UMundoIOS.xcdatamodel */,
+			);
+			currentVersion = 95EB929714E5E93B0098660E /* UMundoIOS.xcdatamodel */;
+			path = UMundoIOS.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 95EB926F14E5E93B0098660E /* Project object */;
+}

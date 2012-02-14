@@ -1,4 +1,5 @@
 #include "umundo/s11n/protobuf/PBDeserializer.h"
+
 #include "interfaces/protobuf/custom_typed_message.pb.h"
 #include "interfaces/protobuf/typed_message.pb.h"
 
@@ -13,12 +14,12 @@ shared_ptr<Implementation> PBDeserializer::create() {
 	return instance;
 }
 
-void* PBDeserializer::deserialize(const string& data) {
-	MessageLite* pbObj = new PBTypedMessage();
-	pbObj->ParseFromString(data);
-	// \todo: unpack eventual custom type
-	return pbObj;
-}
+// void* PBDeserializer::deserialize(const string& data) {
+// 	MessageLite* pbObj = new PBTypedMessage();
+// 	pbObj->ParseFromString(data);
+// 	// \todo: unpack eventual custom type
+// 	return pbObj;
+// }
 
 void* PBDeserializer::deserialize(const string& type, const string& data) {
   if (_deserializers.find(type) == _deserializers.end()) {

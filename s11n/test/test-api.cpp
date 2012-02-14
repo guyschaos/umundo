@@ -62,13 +62,14 @@ int main(int argc, char** argv) {
 
   // try a typed message for atomic types
 	PBTypedMessage* tMsg = new PBTypedMessage();
+	tSub->registerType("PBTypedMessage", new PBTypedMessage());
   for (int i = 0; i < 32; i++) {
     tMsg->mutable_intpayload()->add_payload(i);
   }
   
   while(true) {
     Thread::sleepMs(1000);
-    tPub->sendObj(tMsg);
+    tPub->sendObj("PBTypedMessage", tMsg);
   }
   
   

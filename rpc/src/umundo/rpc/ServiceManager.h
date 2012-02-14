@@ -1,0 +1,6 @@
+#ifndef SERVICEMANAGER_H_D2RP19OS
+#define SERVICEMANAGER_H_D2RP19OS
+
+
+
+#endif /* end of include guard: SERVICEMANAGER_H_D2RP19OS */

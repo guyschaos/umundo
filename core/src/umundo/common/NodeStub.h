@@ -11,6 +11,8 @@ namespace umundo {
  */
 class NodeStub : public EndPoint {
 public:
+  virtual ~NodeStub() {}
+  
 	/** @name Remote Node */
 	//@{
 	virtual const string& getUUID() const       { return _uuid; }

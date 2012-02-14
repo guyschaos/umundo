@@ -37,7 +37,7 @@ void TypedSubscriber::receive(Message* msg) {
 		_recv->receive(_impl->deserialize(msg->getMeta("type"), msg->getData()), msg);
 	} else {
 		// self describing message
-		_recv->receive(_impl->deserialize(msg->getData()), msg);
+		//_recv->receive(_impl->deserialize(msg->getData()), msg);
 	}
 }
 

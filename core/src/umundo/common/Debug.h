@@ -22,13 +22,6 @@
 
 namespace umundo {
 
-enum LogLevel {
-	ERR = 0,
-	WARN = 1,
-	INFO = 2,
-	DEBUG = 3
-};
-
 /**
  * Macros and static functions used for debugging.
  *

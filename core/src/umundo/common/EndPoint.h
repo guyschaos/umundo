@@ -9,6 +9,8 @@ namespace umundo {
  */
 class EndPoint {
 public:
+  virtual ~EndPoint() {}
+  
 	virtual const string& getIP() const           { return _ip; }
 	virtual void setIP(string ip)                 { _ip = ip; }
 	virtual const string& getTransport() const    { return _transport; }

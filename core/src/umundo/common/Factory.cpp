@@ -1,5 +1,10 @@
 #include "umundo/common/Factory.h"
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include "umundo/connection/zeromq/ZeroMQNode.h"
 #include "umundo/connection/zeromq/ZeroMQPublisher.h"
 #include "umundo/connection/zeromq/ZeroMQSubscriber.h"
@@ -23,6 +28,8 @@
 
 namespace umundo {
 
+string procUUID = boost::lexical_cast<string>(boost::uuids::random_generator()());
+//procUUID = "saf";
 Factory* Factory::_instance = NULL;
 
 Factory* Factory::getInstance() {

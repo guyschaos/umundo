@@ -27,8 +27,7 @@ for sure, that is not to say that umundo won't run on variations of these system
 
 	<tr><td>iOS 5.x</td><td>
 		<ul>
-			<li>umundo.core compiled and runs without problems but prebuild libraries are missing.
-			<li>umundo.s11n still needs cross-compiled protobuf.
+			<li>umundo.core compiled and runs without problems but prebuild libraries are not yet packaged into installers.
 			<li>Haven't bothered with older iOS releases.
 		</ul>
 	</td></tr>

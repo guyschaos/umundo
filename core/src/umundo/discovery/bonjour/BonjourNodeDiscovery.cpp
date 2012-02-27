@@ -1,6 +1,20 @@
+#include "umundo/config.h"
+
+#ifdef DISC_BONJOUR_EMBED
+extern "C" {
+	int embedded_mDNS_Init();
+}
+#endif
+
 #include "umundo/discovery/bonjour/BonjourNodeDiscovery.h"
 
 #include <errno.h>
+
+#if defined ANDROID
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#endif
+
 
 #include "umundo/common/Node.h"
 #include "umundo/discovery/NodeQuery.h"
@@ -10,6 +24,9 @@ namespace umundo {
 
 BonjourNodeDiscovery::BonjourNodeDiscovery() {
 	DEBUG_CTOR("BonjourNodeDiscovery");
+#ifdef DISC_BONJOUR_EMBED
+	embedded_mDNS_Init();
+#endif
 }
 
 shared_ptr<Implementation> BonjourNodeDiscovery::create() {
@@ -174,7 +191,7 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 		getInstance()->_dnsClients[address] = client;
 		getInstance()->_sockFD[sockFD] = client;
 	} else {
-		LOG_WARN("DNSServiceBrowse returned error");
+		LOG_WARN("DNSServiceBrowse returned error %d", err);
 	}
 
 	free(regtype);
@@ -254,38 +271,51 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 
 	// do we already know this node?
 	shared_ptr<BonjourNodeStub> node = myself->_queryNodes[query][replyName];
-	if (node == NULL) {
-		node = shared_ptr<BonjourNodeStub>(new BonjourNodeStub());
-		node->setRemote(true); /// @todo: we also find ourselves ..
-		node->setTransport("tcp"); /// @todo: tcp hard coded
-		node->setUUID(replyName);
-		node->setDomain(replyDomain);
-		myself->_queryNodes[query][replyName] = node;
-	} else {
-	}
-	node->_actualDomains.insert(replyDomain);
 
-	if (flags & (kDNSServiceFlagsAdd)) {
-		node->resolve();
-		if (node->_isAdded) {
-			query->changed(node);
-		} else {
-			query->added(node);
-			node->_isAdded = true;
-		}
-	} else {
-		query->removed(node);
-	}
+  if (flags & (kDNSServiceFlagsAdd)) {
+    // we have a node to add
+    if (node == NULL) {
+      node = shared_ptr<BonjourNodeStub>(new BonjourNodeStub());
+      node->setRemote(true); /// @todo: we also find ourselves ..
+      if (strncmp(replyType + strlen(replyType) - 4, "tcp", 3) == 0) {
+        node->setTransport("tcp");
+      } else if (strncmp(replyType + strlen(replyType) - 4, "udp", 3) == 0) {
+        node->setTransport("udp");
+      } else {
+        LOG_WARN("Unknown transport %s, defaulting to tcp", replyType + strlen(replyType) - 4);
+        node->setTransport("tcp");
+      }
+      node->setUUID(replyName);
+      node->setDomain(replyDomain);
+      // remember node
+      myself->_queryNodes[query][replyName] = node;
 
-	if (flags & (kDNSServiceFlagsMoreComing)) {
-		return;
-	} else {
-		query->notifyResultSet();
-		if (!(flags & (kDNSServiceFlagsAdd))) {
-			myself->_queryNodes[query].erase(replyName);
-		}
-	}
+    }
+    node->_domains.insert(replyDomain);
+    node->_interfaceIndices.insert(ifIndex);
 
+    if (!(flags & kDNSServiceFlagsMoreComing)) {
+      // no more info on the node
+      query->added(node);
+      node->resolve();
+      query->notifyResultSet();
+    }
+  } else {
+    // remove the node or an interface
+    assert(node != NULL);
+    node->_interfaceIndices.erase(ifIndex);
+    if (!(flags & kDNSServiceFlagsMoreComing)) {
+      if (node->_interfaceIndices.empty()) {
+        query->removed(node);
+        query->notifyResultSet();
+        myself->_queryNodes[query].erase(replyName);
+      } else {
+        node->resolve();
+        query->changed(node);
+        query->notifyResultSet();
+      }
+    }
+  }
 }
 
 /**

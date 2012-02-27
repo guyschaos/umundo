@@ -5,7 +5,7 @@ set -e
 
 ME=`basename $0`
 TARGET_DEVICE="arm-linux-androideabi"
-DEST_DIR="${PWD}/../../prebuilt/bonjour/android/${TARGET_DEVICE}"
+DEST_DIR="${PWD}/../../prebuilt/android/${TARGET_DEVICE}/lib"
 
 if [ ! -d mDNSPosix ]; then
 	echo
@@ -25,13 +25,24 @@ else
 	patch -p1 < ../mDNSResponder-333.10.android.patch
 fi
 
-echo '#include "mDNSEmbeddedAPI.h"' >> dummy.c
-echo 'mDNSexport mDNS mDNSStorage;' >> dummy.c
-echo 'mDNSexport const char ProgramName[] = "umundo";' >> dummy.c
+echo '
+#include <stdlib.h>
+#include "mDNSEmbeddedAPI.h"
+#define RR_CACHE_SIZE 1000
+static CacheEntity rrcachestorage[RR_CACHE_SIZE];
+mDNS mDNSStorage;
+struct mDNS_PlatformSupport_struct {};
+static mDNS_PlatformSupport platformSupport;
+const char ProgramName[] = "umundo";
 
+mDNSexport int embedded_mDNS_Init() {
+	mStatus err = mDNS_Init(&mDNSStorage, &platformSupport, rrcachestorage, RR_CACHE_SIZE, mDNS_Init_DontAdvertiseLocalAddresses, mDNS_Init_NoInitCallback, mDNS_Init_NoInitCallbackContext);
+	return err;
+}
+' > dummy.c
 
-mDNSEmbedded=( mDNSShared/dnssd_clientshim.c mDNSPosix/mDNSPosix.c mDNSCore/mDNS.c mDNSCore/DNSCommon.c mDNSShared/mDNSDebug.c \
-	mDNSShared/GenLinkedList.c mDNSCore/uDNS.c mDNSShared/PlatformCommon.c mDNSPosix/mDNSUNP.c mDNSCore/DNSDigest.c dummy.c )
+mDNSEmbedded=( dummy.c mDNSShared/dnssd_clientshim.c mDNSPosix/mDNSPosix.c mDNSCore/mDNS.c mDNSCore/DNSCommon.c mDNSShared/mDNSDebug.c \
+	mDNSShared/GenLinkedList.c mDNSCore/uDNS.c mDNSShared/PlatformCommon.c mDNSPosix/mDNSUNP.c mDNSCore/DNSDigest.c )
 
 ANDROID_BIN_PREFIX=${ANDROID_NDK_ROOT}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi
 AR=${ANDROID_BIN_PREFIX}-ar

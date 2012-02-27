@@ -3,6 +3,10 @@
 #include <string.h>
 #include "umundo/config.h"
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 namespace umundo {
 
 const char* Debug::relFileName(const char* filename) {
@@ -43,7 +47,11 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 		vasprintf(&message, fmt, args);
 		va_end(args);
 
+#ifdef ANDROID
+		__android_log_print(ANDROID_LOG_VERBOSE, "umundo", "%s:%d: %s %s\n", filename, line, severity, message);
+#else
 		printf("%s:%d: %s %s\n", filename, line, severity, message);
+#endif
 		free(message);
 	}
 	return true;

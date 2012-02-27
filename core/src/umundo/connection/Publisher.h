@@ -56,8 +56,20 @@ public:
 	virtual const string& getUUID()                  { return _uuid; }
 	virtual void setUUID(string uuid)                { _uuid = uuid; }
 
-	string _uuid;
+  /** @name Optional subscriber awareness */
+  //@{
+  virtual int waitForSubscribers(int count)        { return -1; }
+	//@}
 
+protected:
+  /** @name Optional subscriber awareness */
+  //@{
+  virtual void addedSubscriber()                   { /* Ignore or overwrite */ }
+  virtual void removedSubscriber()                 { /* Ignore or overwrite */ }
+	//@}
+
+	string _uuid;
+  friend class Publisher;
 };
 
 /**
@@ -72,8 +84,9 @@ public:
 
 	/** @name Functionality of local Publishers */
   //@{
-	void send(Message* msg)       { _impl->send(msg); }
+	void send(Message* msg)                        { _impl->send(msg); }
 	void send(const char* data, size_t length);
+	int waitForSubscribers(int count)              { return _impl->waitForSubscribers(count); }
 	//@}
 
 	/** @name Overwrite PublisherStub */
@@ -98,6 +111,8 @@ public:
 	//@{
 
 protected:
+  void addedSubscriber()       { _impl->addedSubscriber(); }
+  void removedSubscriber()     { _impl->removedSubscriber(); }
 	shared_ptr<PublisherImpl> _impl;
 	shared_ptr<PublisherConfig> _config;
 	friend class Node;

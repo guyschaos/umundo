@@ -36,6 +36,10 @@ FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
 )
 include_directories(${Boost_INCLUDE_DIR})
 
+if (ANDROID)
+	LIST(APPEND UMUNDOCORE_LIBRARIES log)
+endif()
+
 if (UNIX AND NOT APPLE AND NOT ANDROID)
 	LIST(APPEND UMUNDOCORE_LIBRARIES rt)
 endif()
@@ -82,8 +86,11 @@ if (UNIX AND NOT APPLE)
 	LIST(APPEND UMUNDOCORE_LIBRARIES ${UMUNDOCORE_LIBRARIES})
 endif()
 
-add_subdirectory(test)          # build tests
-add_subdirectory(docs)          # build documentation
+if (NOT CMAKE_CROSSCOMPILING)
+	add_subdirectory(test)          # build tests
+	add_subdirectory(docs)          # build documentation
+	add_subdirectory(tools)         # command-line tools
+endif()
 
 ############################################################
 # Generate wrappers for other languages

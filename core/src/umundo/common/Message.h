@@ -8,9 +8,7 @@ class Message;
 class Type;
 
 /**
- * Definition of message types and abstraction of message - not used (bridge pattern).
- *
- * We are still pondering whether we need an explicit message representation. At the moment, only the Type enum is used.
+ * Definition of message types and abstraction of message (bridge pattern).
  */
 class Message {
 public:
@@ -19,6 +17,8 @@ public:
 	    PUB_ADDED     = 0x0004,
 	    PUB_REMOVED   = 0x0005,
 	    NODE_INFO     = 0x0006,
+      SUBSCRIBE     = 0x0007,
+      UNSUBSCRIBE   = 0x0008,
 	};
 
 	Message() {}

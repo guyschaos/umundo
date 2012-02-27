@@ -29,6 +29,7 @@
 #cmakedefine NET_ZEROMQ
 #cmakedefine S11N_PROTOBUF
 #cmakedefine DISC_BONJOUR
+#cmakedefine DISC_BONJOUR_EMBED
 #cmakedefine DISC_AVAHI
 #ifndef THREAD_PTHREAD
 #cmakedefine THREAD_PTHREAD

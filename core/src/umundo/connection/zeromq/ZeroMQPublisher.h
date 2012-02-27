@@ -5,8 +5,7 @@
 
 #include "umundo/common/Common.h"
 #include "umundo/connection/Publisher.h"
-
-#define ZEROMQ_PUB_HWM 16
+#include "umundo/thread/Thread.h"
 
 namespace umundo {
 
@@ -22,11 +21,15 @@ public:
 	void destroy();
 
 	void send(Message* msg);
+  int waitForSubscribers(int count);
+  
 protected:
 	/**
 	* Constructor used for prototype in Factory only.
 	*/
 	ZeroMQPublisher();
+  void addedSubscriber();
+  void removedSubscriber();
 
 private:
 	// ZeroMQPublisher(const ZeroMQPublisher &other) {}
@@ -37,8 +40,12 @@ private:
 	void* _socket;
 	void* _zeroMQCtx;
 	shared_ptr<PublisherConfig> _config;
+  int _pubCount;
+  Mutex _pubLock;
 
 	friend class Factory;
+	friend class ZeroMQNode;
+	friend class Publisher;
 };
 
 }

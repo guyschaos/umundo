@@ -48,7 +48,7 @@ public:
 
 	void run();
 
-private:
+protected:
 	BonjourNodeDiscovery();
 	
 	/** @name Bonjour callbacks */

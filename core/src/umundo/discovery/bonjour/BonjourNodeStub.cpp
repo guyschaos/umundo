@@ -1,6 +1,6 @@
 #include "umundo/config.h"
 
-#if (defined UNIX || defined IOS)
+#if (defined UNIX || defined IOS || defined ANDROID)
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #endif
@@ -199,9 +199,9 @@ void DNSSD_API BonjourNodeStub::resolveReply(
 std::ostream& operator<<(std::ostream &out, const BonjourNodeStub* n) {
 	out << n->_uuid << " (";
 	std::set<std::string>::iterator domIter;
-	for (domIter = n->_actualDomains.begin(); domIter != n->_actualDomains.end(); domIter++) {
+	for (domIter = n->_domains.begin(); domIter != n->_domains.end(); domIter++) {
 		out << *domIter;
-		if (domIter->npos < n->_actualDomains.size())
+		if (domIter->npos < n->_domains.size())
 			out << ", ";
 	}
 	out << ")";

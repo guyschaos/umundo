@@ -55,7 +55,8 @@ private:
 	bool _isAdded;
 	map<int, string> _interfaces;
 	
-	std::set<string> _actualDomains;
+	std::set<string> _domains;
+	std::set<int> _interfaceIndices;
 	string _regType;
 	string _bonjourDomain;
 	string _hostTarget;

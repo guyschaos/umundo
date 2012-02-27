@@ -23,7 +23,9 @@
 #include <errno.h>
 #endif
 #ifdef THREAD_WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
 #endif
 
 namespace umundo {
@@ -43,6 +45,7 @@ public:
 		return _isStarted;
 	}
 
+	static void yield();
 	static void sleepMs(uint32_t ms);
 
 private:

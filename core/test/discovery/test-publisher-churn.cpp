@@ -1,6 +1,6 @@
 #include <iostream>
-#include "connection/Publisher.h"
-#include "connection/Subscriber.h"
+#include "umundo/core.h"
+#include <stdio.h>
 
 using namespace umundo;
 
@@ -8,8 +8,8 @@ class TestReceiver : public Receiver {
 public:
 	std::string _name;
 	TestReceiver(std::string name) : _name(name) {};
-	void receive(char* buffer, size_t length) {
-		std::cout << _name << " received " << length << "bytes" << std::endl;
+	void receive(Message* msg) {
+		std::cout << _name << " received " << msg->getData().size() << "bytes" << std::endl;
 	}	
 };
 
@@ -17,8 +17,10 @@ public:
 
 int main(int argc, char** argv) {
   TestReceiver *testRecv = new TestReceiver("recv1");
+	Node* node = new Node();
   Subscriber *subFoo = new Subscriber("fooChannel", testRecv);
-  
+	node->addSubscriber(subFoo);
+
   char buffer[BUFFER_SIZE];
   for (int i = 0; i < BUFFER_SIZE; i++) {
     buffer[i] = (char)i%255;
@@ -31,6 +33,5 @@ int main(int argc, char** argv) {
       pubFoo->send(buffer, BUFFER_SIZE);
       getchar();
     }
-    getchar();
   }
 }

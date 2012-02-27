@@ -46,8 +46,8 @@ for sure, that is not to say that umundo won't run on variations of these system
 	</td></tr>
 	<tr><td>Android 4.0.3</td><td>
 		<ul>
-			<li>Everything builds, links and deploys just fine.
-			<li>Calls into native code never return though - I guess that means *not running*.
+			<li>Builds links and runs fine.
+			<li>I cannot test it without a device, as <a href="http://developer.android.com/guide/developing/devices/emulator.html#emulatornetworking">google does not deem multicast to be important</a>.
 		</ul>
 	</td></tr>
     </tr>

@@ -44,7 +44,6 @@ public:
 	virtual void addPublisher(shared_ptr<PublisherImpl>) = 0;
 	virtual void removePublisher(shared_ptr<PublisherImpl>) = 0;
 	//@}
-	
 };
 
 /**
@@ -55,7 +54,7 @@ public:
 	Node();
 	Node(string domain);
 	virtual ~Node() {}
-	
+
 	/** @name Publish / Subscriber Maintenance */
   //@{	
 	void addSubscriber(Subscriber*);

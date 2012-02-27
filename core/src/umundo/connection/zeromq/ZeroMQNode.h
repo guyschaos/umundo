@@ -59,6 +59,16 @@ protected:
 	void processPubRemoved(const char*, zmq_msg_t);
   //@}
 
+  
+	/** @name Remote subscriber maintenance */
+  //@{
+  void processSubscription(const char*, zmq_msg_t);
+  void processUnsubscription(const char*, zmq_msg_t);
+  void notifyOfUnsubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
+  void notifyOfSubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
+
+  //@}
+
 	/** @name Local subscriber maintenance */
   //@{
 	void addRemotePubToLocalSubs(const char*, shared_ptr<PublisherStub>); ///< See if we have a local Subscriber interested in the remote Publisher.
@@ -71,7 +81,12 @@ private:
 		return *this;
 	}
 
-	static void initPubMgmtMsg(zmq_msg_t&, shared_ptr<ZeroMQPublisher>); ///< prepare a control message regarding a Publisher.
+  void processPubSub(const char*, zmq_msg_t, bool); ///< notify local publishers about subscriptions
+  bool validateState(); ///< check the nodes state
+
+//	static void initPubMgmtMsg(zmq_msg_t&, shared_ptr<PublisherStub>); ///< prepare a control message regarding a Publisher.
+	static char* writePubInfo(char*, uint16_t, const char*); ///< write publisher info into given byte array
+	static char* readPubInfo(char*, uint16_t&, char*&); ///< read publisher from into given byte array
 
 	static void* _zmqContext; ///< global 0MQ context.
 	void* _responder; ///< 0MQ node socket for administrative messages.
@@ -81,6 +96,7 @@ private:
 	map<string, shared_ptr<NodeStub> > _nodes;                                    ///< UUIDs to NodeStub%s.
 	map<string, void*> _sockets;                                                  ///< UUIDs to ZeroMQ Sockets.
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          ///< UUIDs to ports to remote publishers.
+	map<string, map<uint16_t, int > > _remoteSubs;                                ///< UUIDs to ports to number of remote subscribers.
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; ///< received publishers of yet undiscovered nodes.
 	map<uint16_t, shared_ptr<ZeroMQPublisher> > _localPubs;                       ///< Local ports to local publishers.
 	set<shared_ptr<ZeroMQSubscriber> > _localSubs;                                ///< Local subscribers.

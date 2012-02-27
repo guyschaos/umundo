@@ -1,8 +1,10 @@
 # generate JNI library and create a jar
 
-find_package(JNI)
-if(JNI_FOUND)
-	include_directories(${JNI_INCLUDE_DIRS})
+if (NOT CMAKE_CROSSCOMPILING)
+	find_package(JNI)
+	if(JNI_FOUND)
+		include_directories(${JNI_INCLUDE_DIRS})
+		endif()
 endif()
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})

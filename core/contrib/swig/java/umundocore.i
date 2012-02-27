@@ -26,6 +26,14 @@ typedef std::vector vector;
 #include "../../../../core/src/umundo/connection/Publisher.h"
 #include "../../../../core/src/umundo/connection/Subscriber.h"
 
+#if 0
+jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+	using umundo::Debug;
+	LOG_ERR("asdfasdf");
+	return JNI_VERSION_1_2;
+}
+#endif
+
 #ifdef ANDROID
 // google forgot imaxdiv in the android ndk r7 libc?!
 imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom) {

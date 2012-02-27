@@ -73,6 +73,17 @@ void Thread::stop() {
 	_isStarted = false;
 }
 
+void Thread::yield() {
+#ifdef THREAD_PTHREAD
+	int err = sched_yield();
+  (void)err;
+  assert(!err);
+#endif
+#ifdef THREAD_WIN32
+  SwitchToThread();
+#endif
+}
+
 void Thread::sleepMs(uint32_t ms) {
 #ifdef THREAD_PTHREAD
 	usleep(1000 * ms);
@@ -87,8 +98,9 @@ Mutex::Mutex() {
 #ifdef THREAD_PTHREAD
 	pthread_mutexattr_t attrib;
 	int ret = pthread_mutexattr_init(&attrib);
+  (void)ret;
 	assert(ret == 0);
-	ret = pthread_mutexattr_settype(&attrib, PTHREAD_MUTEX_RECURSIVE);
+	//ret = pthread_mutexattr_settype(&attrib, PTHREAD_MUTEX_RECURSIVE);
 	assert(ret == 0);
 	pthread_mutex_init(&_mutex, &attrib);
 	pthread_mutexattr_destroy(&attrib);

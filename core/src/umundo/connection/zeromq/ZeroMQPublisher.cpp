@@ -1,9 +1,18 @@
+#ifdef WIN32
+#include <time.h>
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#include <Windows.h>
+#endif
+
+#include "umundo/connection/zeromq/ZeroMQPublisher.h"
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "umundo/connection/zeromq/ZeroMQPublisher.h"
+
 #include "umundo/connection/zeromq/ZeroMQNode.h"
 #include "umundo/common/Message.h"
 
@@ -29,7 +38,9 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
 	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
-	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_PUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
+  _pubCount = 0;
+  _pubLock.lock();
+	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_XPUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
 
   int hwm = NET_ZEROMQ_SND_HWM;
 	zmq_setsockopt(_socket, ZMQ_SNDHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
@@ -49,6 +60,7 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 			break;
 		default:
 			LOG_WARN("zmq_bind: %s",zmq_strerror(errno));
+      Thread::sleepMs(100);
 		}
 	}
 	_port = port;
@@ -63,8 +75,35 @@ ZeroMQPublisher::ZeroMQPublisher() {
 ZeroMQPublisher::~ZeroMQPublisher() {
 	DEBUG_DTOR("ZeroMQPublisher start");
 	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
-	zmq_term(_zeroMQCtx) && LOG_WARN("zmq_term: %s",zmq_strerror(errno));
+	//zmq_term(_zeroMQCtx) && LOG_WARN("zmq_term: %s",zmq_strerror(errno));
 	DEBUG_DTOR("ZeroMQPublisher finished");
+}
+
+/**
+ * Block until we have a given number of subscribers.
+ */
+int ZeroMQPublisher::waitForSubscribers(int count) {
+  while (_pubCount < count) {
+    _pubLock.lock();
+    _pubLock.unlock();
+    // give the connection a moment to establish
+    Thread::sleepMs(100);
+  }
+  return _pubCount;
+}
+
+void ZeroMQPublisher::addedSubscriber() {
+  _pubCount++;
+  _pubLock.unlock();
+  Thread::yield();
+  _pubLock.lock();
+}
+
+void ZeroMQPublisher::removedSubscriber() {
+  _pubCount--;
+  _pubLock.unlock();
+  Thread::yield();
+  _pubLock.lock();
 }
 
 void ZeroMQPublisher::send(Message* msg) {

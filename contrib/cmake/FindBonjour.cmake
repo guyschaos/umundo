@@ -1,11 +1,5 @@
-if(CMAKE_CROSSCOMPILING AND ANDROID)
-	OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" ON)
-else()
-	OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" OFF) 
-endif()
-
 if (DISC_BONJOUR_EMBED)
-	SET(BONJOUR_LIBNAME "mDnssdEmbed")
+	SET(BONJOUR_LIBNAME "mDNSEmbedded")
 else()
 	SET(BONJOUR_LIBNAME "dns_sd;dnssd")
 endif()

@@ -72,7 +72,7 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", NULL, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
 		LOG_WARN("avahi_service_browser_new failed", error);
 	}
-	getInstance()->start();	
+	getInstance()->start();
 }
 
 void AvahiNodeDiscovery::browseClientCallback(AvahiClient *c, AvahiClientState state, void * userdata) {
@@ -108,17 +108,13 @@ void AvahiNodeDiscovery::browseCallback(
     AvahiLookupResultFlags flags,
     void* userdata
 ) {
-#if DISC_AVAHI_DEBUG
-	std::cout << "browseCallback["
-	          << "\n\tif:" << interface
-	          << " proto:" << protocol
-	          << " event:" << event
-	          << " name:" << (name == NULL ? "NULL" : name)
-	          << " type:" << type
-	          << " domain:" << (domain == NULL ? "NULL" : domain)
-	          << " f:" << flags
-	          << "]" << std::endl;
-#endif
+	LOG_DEBUG("browseCallback: %s %s/%s as %s at if %d with protocol %d",
+	          (event == AVAHI_BROWSER_NEW ? "Added" : "Called for"),
+	          (name == NULL ? "NULL" : name),
+	          (domain == NULL ? "NULL" : domain),
+	          type,
+	          interface,
+	          protocol);
 
 	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
 	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)userdata];
@@ -178,21 +174,14 @@ void AvahiNodeDiscovery::resolveCallback(
     AvahiLookupResultFlags flags,
     void* userdata
 ) {
-#if DISC_AVAHI_DEBUG
-	std::cout << "resolveCallback["
-	          << "\n\tif:" << interface
-	          << " proto:" << protocol
-	          << " event:" << event
-	          << " name:" << (name == NULL ? "NULL" : name)
-	          << " type:" << type
-	          << " domain:" << (domain == NULL ? "NULL" : domain)
-	          << " hostname:" << (host_name == NULL ? "NULL" : host_name)
-	          << " addr:" << address
-	          << " port:" << port
-	          << " txt:" << (txt == NULL ? "NULL" : avahi_string_list_to_string(txt))
-	          << " f:" << flags
-	          << "]" << std::endl;
-#endif
+	LOG_DEBUG("resolveCallback: %s %s/%s:%d as %s at if %d with protocol %d",
+	          (host_name == NULL ? "NULL" : host_name),
+	          (name == NULL ? "NULL" : name),
+	          (domain == NULL ? "NULL" : domain),
+	          port,
+	          type,
+	          interface,
+	          protocol);
 
 	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
 	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)userdata];
@@ -204,7 +193,7 @@ void AvahiNodeDiscovery::resolveCallback(
 	(node != NULL) || LOG_ERR("no node named %s known for query", name);
 
 	if (protocol == AVAHI_PROTO_INET6) {
-		LOG_WARN("Ignoring %s IPv6", host_name);
+		LOG_INFO("Ignoring %s IPv6", host_name);
 		return;
 	}
 

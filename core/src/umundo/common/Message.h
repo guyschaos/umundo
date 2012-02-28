@@ -17,8 +17,8 @@ public:
 	    PUB_ADDED     = 0x0004,
 	    PUB_REMOVED   = 0x0005,
 	    NODE_INFO     = 0x0006,
-      SUBSCRIBE     = 0x0007,
-      UNSUBSCRIBE   = 0x0008,
+	    SUBSCRIBE     = 0x0007,
+	    UNSUBSCRIBE   = 0x0008,
 	};
 
 	Message() {}
@@ -26,11 +26,21 @@ public:
 	Message(const char* data, size_t length) : _data(data, length) {}
 	virtual ~Message() {}
 
-	virtual const string& getData()                                     { return _data; }
-	virtual void setData(const string& data)                            { _data = data; }
-	virtual const void setMeta(const string& key, const string& value)  { _meta[key] = value; }
-	virtual const map<string, string>& getMeta()                        { return _meta; }
-	virtual const string& getMeta(const string& key)                    { return _meta[key]; }
+	virtual const string& getData()                                     {
+		return _data;
+	}
+	virtual void setData(const string& data)                            {
+		_data = data;
+	}
+	virtual const void setMeta(const string& key, const string& value)  {
+		_meta[key] = value;
+	}
+	virtual const map<string, string>& getMeta()                        {
+		return _meta;
+	}
+	virtual const string& getMeta(const string& key)                    {
+		return _meta[key];
+	}
 	/// Simplified access to keyset for Java, namespace qualifiers required for swig!
 	virtual const std::vector<std::string>& getKeys() {
 		map<string, string>::const_iterator metaIter;

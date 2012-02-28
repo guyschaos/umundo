@@ -38,11 +38,10 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
 	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
-  _pubCount = 0;
-  _pubLock.lock();
+	_pubCount = 0;
 	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_XPUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
 
-  int hwm = NET_ZEROMQ_SND_HWM;
+	int hwm = NET_ZEROMQ_SND_HWM;
 	zmq_setsockopt(_socket, ZMQ_SNDHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 
 	uint16_t port = 4242;
@@ -60,7 +59,7 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 			break;
 		default:
 			LOG_WARN("zmq_bind: %s",zmq_strerror(errno));
-      Thread::sleepMs(100);
+			Thread::sleepMs(100);
 		}
 	}
 	_port = port;
@@ -83,27 +82,22 @@ ZeroMQPublisher::~ZeroMQPublisher() {
  * Block until we have a given number of subscribers.
  */
 int ZeroMQPublisher::waitForSubscribers(int count) {
-  while (_pubCount < count) {
-    _pubLock.lock();
-    _pubLock.unlock();
-    // give the connection a moment to establish
-    Thread::sleepMs(100);
-  }
-  return _pubCount;
+	while (_pubCount < count) {
+		_pubLock.wait();
+		// give the connection a moment to establish
+		Thread::sleepMs(100);
+	}
+	return _pubCount;
 }
 
 void ZeroMQPublisher::addedSubscriber() {
-  _pubCount++;
-  _pubLock.unlock();
-  Thread::yield();
-  _pubLock.lock();
+	_pubCount++;
+	_pubLock.signal();
 }
 
 void ZeroMQPublisher::removedSubscriber() {
-  _pubCount--;
-  _pubLock.unlock();
-  Thread::yield();
-  _pubLock.lock();
+	_pubCount--;
+	_pubLock.signal();
 }
 
 void ZeroMQPublisher::send(Message* msg) {
@@ -136,26 +130,26 @@ void ZeroMQPublisher::send(Message* msg) {
 		zmq_msg_init_size (&metaMsg, metaSize) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
 
 		char* writePtr = (char*)zmq_msg_data(&metaMsg);
-		
+
 		memcpy(writePtr, (metaIter->first).data(), (metaIter->first).length());
 		// indexes start at zero, so length is the byte after the string
 		((char*)zmq_msg_data(&metaMsg))[(metaIter->first).length()] = '\0';
 		assert(strlen((char*)zmq_msg_data(&metaMsg)) == (metaIter->first).length());
 		assert(strlen(writePtr) == (metaIter->first).length()); // just to be sure
-		
+
 		// increment write pointer
 		writePtr += (metaIter->first).length() + 1;
-		
-		memcpy(writePtr, 
-			(metaIter->second).data(), 
-			(metaIter->second).length());
+
+		memcpy(writePtr,
+		       (metaIter->second).data(),
+		       (metaIter->second).length());
 		// first string + null byte + second string
 		((char*)zmq_msg_data(&metaMsg))[(metaIter->first).length() + 1 + (metaIter->second).length()] = '\0';
 		assert(strlen(writePtr) == (metaIter->second).length());
 
 		zmq_sendmsg(_socket, &metaMsg, ZMQ_SNDMORE) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 		zmq_msg_close(&metaMsg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
-		
+
 	}
 
 	// data as the second part of a multipart message

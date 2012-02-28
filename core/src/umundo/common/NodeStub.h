@@ -11,16 +11,28 @@ namespace umundo {
  */
 class NodeStub : public EndPoint {
 public:
-  virtual ~NodeStub() {}
-  
+	virtual ~NodeStub() {}
+
 	/** @name Remote Node */
 	//@{
-	virtual const string& getUUID() const       { return _uuid; }
-	virtual void setUUID(string uuid)           { _uuid = uuid; }
-	virtual const string& getHost() const       { return _host; }
-	virtual void setHost(string host)           { _host = host; }
-	virtual const string& getDomain() const     { return _domain; }
-	virtual void setDomain(string domain)       { _domain = domain; }
+	virtual const string& getUUID() const       {
+		return _uuid;
+	}
+	virtual void setUUID(string uuid)           {
+		_uuid = uuid;
+	}
+	virtual const string& getHost() const       {
+		return _host;
+	}
+	virtual void setHost(string host)           {
+		_host = host;
+	}
+	virtual const string& getDomain() const     {
+		return _domain;
+	}
+	virtual void setDomain(string domain)       {
+		_domain = domain;
+	}
 	//@}
 
 	inline bool operator==(NodeStub* n) const {

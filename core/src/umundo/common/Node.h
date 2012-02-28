@@ -19,8 +19,8 @@ class NodeStub;
 class NodeConfig : public Configuration {
 public:
 	shared_ptr<Configuration> create();
-  virtual ~NodeConfig() {}
-  
+	virtual ~NodeConfig() {}
+
 	string domain;
 	string transport;
 	string host;
@@ -38,7 +38,7 @@ public:
 	virtual ~NodeImpl() {}
 
 	/** @name Publish / Subscriber Maintenance */
-  //@{
+	//@{
 	virtual void addSubscriber(shared_ptr<SubscriberImpl>) = 0;
 	virtual void removeSubscriber(shared_ptr<SubscriberImpl>) = 0;
 	virtual void addPublisher(shared_ptr<PublisherImpl>) = 0;
@@ -56,7 +56,7 @@ public:
 	virtual ~Node() {}
 
 	/** @name Publish / Subscriber Maintenance */
-  //@{	
+	//@{
 	void addSubscriber(Subscriber*);
 	void removeSubscriber(Subscriber*);
 	void addPublisher(Publisher*);
@@ -64,29 +64,57 @@ public:
 	//@}
 
 	/** @name EndPoint */
-	virtual const string& getIP() const         { return _impl->getIP(); }
-	virtual void setIP(string ip)               { _impl->setIP(ip); }
-	virtual const string& getTransport() const  { return _impl->getTransport(); }
-	virtual void setTransport(string transport) { _impl->setTransport(transport); }
-	virtual uint16_t getPort() const            { return _impl->getPort(); }
-	virtual void setPort(uint16_t port)         { _impl->setPort(port); }
-	virtual bool isRemote() const               { return _impl->isRemote(); }
-	virtual void setRemote(bool remote)         { _impl->setRemote(remote); }
+	virtual const string& getIP() const         {
+		return _impl->getIP();
+	}
+	virtual void setIP(string ip)               {
+		_impl->setIP(ip);
+	}
+	virtual const string& getTransport() const  {
+		return _impl->getTransport();
+	}
+	virtual void setTransport(string transport) {
+		_impl->setTransport(transport);
+	}
+	virtual uint16_t getPort() const            {
+		return _impl->getPort();
+	}
+	virtual void setPort(uint16_t port)         {
+		_impl->setPort(port);
+	}
+	virtual bool isRemote() const               {
+		return _impl->isRemote();
+	}
+	virtual void setRemote(bool remote)         {
+		_impl->setRemote(remote);
+	}
 	//@{
 
 	/** @name Node Stub */
-	virtual const string& getUUID() const       { return _impl->getUUID(); }
-	virtual void setUUID(string uuid)           { _impl->setUUID(uuid); }
-	virtual const string& getHost() const       { return _impl->getHost(); }
-	virtual void setHost(string host)           { _impl->setHost(host); }
-	virtual const string& getDomain() const     { return _impl->getDomain(); }
-	virtual void setDomain(string domain)       { _impl->setDomain(domain); }
+	virtual const string& getUUID() const       {
+		return _impl->getUUID();
+	}
+	virtual void setUUID(string uuid)           {
+		_impl->setUUID(uuid);
+	}
+	virtual const string& getHost() const       {
+		return _impl->getHost();
+	}
+	virtual void setHost(string host)           {
+		_impl->setHost(host);
+	}
+	virtual const string& getDomain() const     {
+		return _impl->getDomain();
+	}
+	virtual void setDomain(string domain)       {
+		_impl->setDomain(domain);
+	}
 	//@{
 
 protected:
 	shared_ptr<NodeImpl> _impl;
 	shared_ptr<NodeConfig> _config;
-	
+
 	friend class Discovery;
 };
 

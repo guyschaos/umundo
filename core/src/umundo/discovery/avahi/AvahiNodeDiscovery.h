@@ -10,8 +10,6 @@
 #include "umundo/thread/Thread.h"
 #include "umundo/discovery/Discovery.h"
 
-#define DISC_AVAHI_DEBUG 1
-
 namespace umundo {
 
 class AvahiNodeStub;

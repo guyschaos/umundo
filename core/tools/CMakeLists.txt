@@ -13,7 +13,7 @@ install(
 	COMPONENT tools 
 )
 
-add_executable(umundo-pingpong test-pingpong.cpp)
+add_executable(umundo-pingpong umundo-pingpong.cpp)
 target_link_libraries(umundo-pingpong ${UMUNDOCORE_LIBRARIES})
 
 install(

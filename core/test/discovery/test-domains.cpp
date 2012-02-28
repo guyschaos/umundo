@@ -1,27 +1,5 @@
 #include "umundo/core.h"
-
 #include <iostream>
-
-#ifdef __GNUC__
-#include <stdio.h>
-#include <execinfo.h>
-#include <signal.h>
-#include <stdlib.h>
-
-void handler(int sig) {
-  void *array[10];
-  size_t size;
-
-  // get void*'s for all entries on the stack
-  size = backtrace(array, 10);
-
-  // print out all the frames to stderr
-  fprintf(stderr, "Error: signal %d:\n", sig);
-  backtrace_symbols_fd(array, size, 2);
-  exit(1);
-}
-#endif
-
 
 using namespace umundo;
 
@@ -44,11 +22,7 @@ public:
 
 #define BUFFER_SIZE 1024*1024
 
-int main(int argc, char** argv) {
-#ifdef __GNUC__
-	signal(SIGSEGV, handler);   // install our handler
-#endif
-	
+int main(int argc, char** argv) {	
   Subscriber* test1Sub = new Subscriber("test1", new TestReceiver("test1"));
   Publisher* test1Pub = new Publisher("test1");
 

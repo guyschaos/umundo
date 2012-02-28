@@ -63,7 +63,7 @@ void printUsageAndExit() {
 
 class PlainDumpingReceiver : public Receiver {
   void receive(Message* msg) {
-    std::cout << "Received!" << msg->getData() << std::flush;
+    std::cout << msg->getData() << std::flush;
   }
 };
 

@@ -15,21 +15,21 @@ namespace umundo {
 class ZeroMQPublisher : public PublisherImpl, public boost::enable_shared_from_this<ZeroMQPublisher>  {
 public:
 	virtual ~ZeroMQPublisher();
-	
+
 	shared_ptr<Implementation> create();
 	void init(shared_ptr<Configuration>);
 	void destroy();
 
 	void send(Message* msg);
-  int waitForSubscribers(int count);
-  
+	int waitForSubscribers(int count);
+
 protected:
 	/**
 	* Constructor used for prototype in Factory only.
 	*/
 	ZeroMQPublisher();
-  void addedSubscriber();
-  void removedSubscriber();
+	void addedSubscriber();
+	void removedSubscriber();
 
 private:
 	// ZeroMQPublisher(const ZeroMQPublisher &other) {}
@@ -40,8 +40,8 @@ private:
 	void* _socket;
 	void* _zeroMQCtx;
 	shared_ptr<PublisherConfig> _config;
-  int _pubCount;
-  Mutex _pubLock;
+	int _pubCount;
+	Monitor _pubLock;
 
 	friend class Factory;
 	friend class ZeroMQNode;

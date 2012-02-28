@@ -59,7 +59,10 @@ message(STATUS "CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH}")
 MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST COMPONENT)
 	FOREACH(HEADER ${${HEADER_LIST}})
 		STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}" "" REL_HEADER ${HEADER})
-		STRING(REGEX MATCH "[umundo|build](.*)[/\\]" DIR ${REL_HEADER})
+#		message(STATUS "HEADER ${HEADER} -> ${REL_HEADER}")
+		STRING(REGEX REPLACE "/build/" "/umundo/" REL_HEADER ${REL_HEADER})
+		STRING(REGEX MATCH "umundo(.*)[/\\]" DIR ${REL_HEADER})
+#		message(STATUS "HEADER ${REL_HEADER} -> ${DIR}")
 		if (NOT DIR)
 			message(STATUS "Refusing to add header file ${REL_HEADER} for include in uppermost directory")
 		endif()
@@ -78,7 +81,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
 if(CMAKE_COMPILER_IS_GNUCXX)
 	# best practices from scott meyers
 #	add_definitions(-Weffc++)
-	# all warnings as errors
+	# all warnings and as errors
 	add_definitions(-Werror)
 	add_definitions(-Wall)
 	# swig will throw a warning with optimization otherwise
@@ -95,8 +98,13 @@ if (CMAKE_CROSSCOMPILING AND ANDROID)
 else()
 	OPTION(BUILD_UMUNDO_S11N "Build umundo serialization" ON) 
 endif()
+
 OPTION(BUILD_STATIC_LIBRARIES "Build static libraries" ON) 
-OPTION(BUILD_PREFER_STATIC_LIBRARIES "Prefer static libraries when resolving dependencies" ON)
+if (CMAKE_CROSSCOMPILING)
+	OPTION(BUILD_PREFER_STATIC_LIBRARIES "Prefer static libraries when resolving dependencies" ON)
+else()
+	OPTION(BUILD_PREFER_STATIC_LIBRARIES "Prefer static libraries when resolving dependencies" OFF)
+endif()
 
 # Enable verbose Makefiles to debug the build process itself
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -105,10 +113,18 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 enable_testing()
 SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
 
-SET(LOGLEVEL_S11N "2" CACHE STRING "Log-level for serialization - higher is more verbose")
-SET(LOGLEVEL_COMMON "2" CACHE STRING "Log-level for common - higher is more verbose")
-SET(LOGLEVEL_DISC "2" CACHE STRING "Log-level for discovery - higher is more verbose")
-SET(LOGLEVEL_NET "2" CACHE STRING "Log-level for networking - higher is more verbose")
+if (CMAKE_BUILD_TYPE MATCHES Release)
+	SET(LOGLEVEL_S11N "1" CACHE STRING "Log-level for serialization - higher is more verbose" FORCE)
+	SET(LOGLEVEL_COMMON "1" CACHE STRING "Log-level for common - higher is more verbose" FORCE)
+	SET(LOGLEVEL_DISC "1" CACHE STRING "Log-level for discovery - higher is more verbose" FORCE)
+	SET(LOGLEVEL_NET "1" CACHE STRING "Log-level for networking - higher is more verbose" FORCE)
+else()
+	SET(LOGLEVEL_S11N "3" CACHE STRING "Log-level for serialization - higher is more verbose" FORCE)
+	SET(LOGLEVEL_COMMON "3" CACHE STRING "Log-level for common - higher is more verbose" FORCE)
+	SET(LOGLEVEL_DISC "3" CACHE STRING "Log-level for discovery - higher is more verbose" FORCE)
+	SET(LOGLEVEL_NET "3" CACHE STRING "Log-level for networking - higher is more verbose" FORCE)
+endif()
+
 SET_PROPERTY(CACHE LOGLEVEL_COMMON PROPERTY STRINGS 0 1 2 3)
 SET_PROPERTY(CACHE LOGLEVEL_DISC PROPERTY STRINGS 0 1 2 3)
 SET_PROPERTY(CACHE LOGLEVEL_NET PROPERTY STRINGS 0 1 2 3)
@@ -159,7 +175,7 @@ else()
 endif()
 
 # prefer static libraries for linking
-if(PREFER_STATIC_LIBRARIES)
+if(BUILD_PREFER_STATIC_LIBRARIES)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
 
@@ -224,8 +240,6 @@ endif()
 # Some concluding remarks
 ############################################################
 
-message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
-
 message(STATUS "umundo.core files: ")
 foreach(file ${UMUNDOCORE_FILES})
 	message(STATUS "  ${file}")
@@ -246,13 +260,15 @@ foreach(file ${UMUNDOS11N_LIBRARIES})
 	message(STATUS "  ${file}")
 endforeach()
 
+message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
+
 
 ############################################################
 # Installation / Provide package target
 ############################################################
 
-# see contrib/cmake/CPackInstallUMundo.cmake
-include(contrib/cmake/CPackInstallUMundo.cmake)
+# see contrib/cmake/CPackUMundoPlatform.cmake
+include(contrib/cmake/CPackUMundoPlatform.cmake)
 
 # This must always be last!
 include(CPack)

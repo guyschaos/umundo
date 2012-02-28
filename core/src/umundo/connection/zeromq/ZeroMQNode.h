@@ -24,56 +24,56 @@ public:
 	virtual ~ZeroMQNode();
 
 	/** @name Implementor */
-  //@{	
+	//@{
 	shared_ptr<Implementation> create();
 	void destroy();
 	void init(shared_ptr<Configuration>);
 	//@}
 
 	/** @name Publish / Subscriber Maintenance */
-  //@{	
+	//@{
 	void addSubscriber(shared_ptr<SubscriberImpl>);
 	void removeSubscriber(shared_ptr<SubscriberImpl>);
 	void addPublisher(shared_ptr<PublisherImpl>);
 	void removePublisher(shared_ptr<PublisherImpl>);
-  //@}
-	
+	//@}
+
 	/** @name Callbacks from Discovery */
-  //@{
+	//@{
 	void added(shared_ptr<NodeStub>);    ///< A node was added, connect to its router socket and list our publishers.
 	void removed(shared_ptr<NodeStub>);  ///< A node was removed, notify local subscribers and clean up.
 	void changed(shared_ptr<NodeStub>);  ///< Never happens.
-  //@}
+	//@}
 
-  static void* getZeroMQContext();
-  
+	static void* getZeroMQContext();
+
 protected:
 	ZeroMQNode();
 
 	void run(); ///< see Thread
 
 	/** @name Control message handling */
-  //@{
+	//@{
 	zmq_msg_t msgPubList();
 	void processPubAdded(const char*, zmq_msg_t);
 	void processPubRemoved(const char*, zmq_msg_t);
-  //@}
+	//@}
 
-  
+
 	/** @name Remote subscriber maintenance */
-  //@{
-  void processSubscription(const char*, zmq_msg_t);
-  void processUnsubscription(const char*, zmq_msg_t);
-  void notifyOfUnsubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
-  void notifyOfSubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
+	//@{
+	void processSubscription(const char*, zmq_msg_t);
+	void processUnsubscription(const char*, zmq_msg_t);
+	void notifyOfUnsubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
+	void notifyOfSubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
 
-  //@}
+	//@}
 
 	/** @name Local subscriber maintenance */
-  //@{
+	//@{
 	void addRemotePubToLocalSubs(const char*, shared_ptr<PublisherStub>); ///< See if we have a local Subscriber interested in the remote Publisher.
 	void removeRemotePubFromLocalSubs(const char*, shared_ptr<PublisherStub>); ///< A remote Publisher was removed, notify Subscribe%s.
-  //@}
+	//@}
 
 private:
 	ZeroMQNode(const ZeroMQNode &other) {}
@@ -81,8 +81,8 @@ private:
 		return *this;
 	}
 
-  void processPubSub(const char*, zmq_msg_t, bool); ///< notify local publishers about subscriptions
-  bool validateState(); ///< check the nodes state
+	void processPubSub(const char*, zmq_msg_t, bool); ///< notify local publishers about subscriptions
+	bool validateState(); ///< check the nodes state
 
 //	static void initPubMgmtMsg(zmq_msg_t&, shared_ptr<PublisherStub>); ///< prepare a control message regarding a Publisher.
 	static char* writePubInfo(char*, uint16_t, const char*); ///< write publisher info into given byte array

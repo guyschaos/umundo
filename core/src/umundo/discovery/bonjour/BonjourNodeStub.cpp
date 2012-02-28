@@ -109,44 +109,41 @@ void DNSSD_API BonjourNodeStub::addrInfoReply(
     void *context
 ) {
 
-#if DISC_BONJ_DEBUG
-	std::cout << "addrInfoReply["
-	          << " f:" << flags
-	          << " if:" << interfaceIndex
-	          << " err:" << errorCode
-	          << " hostname:" << hostname
-	          << " ttl:" << ttl
-	          << "]" << std::endl;
-#endif
+	switch(errorCode) {
+	case kDNSServiceErr_NoError: {
+		bool override = false;
+		char* addr = NULL;
 
-	if (errorCode != kDNSServiceErr_NoError) {
-//		LOG_WARN("BonjourNodeStub::addrInfoReply called with error");
-		return;
+		if (address && address->sa_family == AF_INET) {
+			const unsigned char *b = (const unsigned char *) &((struct sockaddr_in *)address)->sin_addr;
+			asprintf(&addr, "%d.%d.%d.%d", b[0], b[1], b[2], b[3]);
+			override = true; // we prefer ipv4 ..
+		}	else if (address && address->sa_family == AF_INET6) {
+			const struct sockaddr_in6 *s6 = (const struct sockaddr_in6 *)address;
+			const unsigned char *b = (const unsigned char*)&s6->sin6_addr;
+
+			asprintf(&addr, "%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X",
+			         b[0x0], b[0x1], b[0x2], b[0x3], b[0x4], b[0x5], b[0x6], b[0x7],
+			         b[0x8], b[0x9], b[0xA], b[0xB], b[0xC], b[0xD], b[0xE], b[0xF]);
+		}
+		LOG_DEBUG("addrInfoReply: %s as %s at if %d",
+		          hostname,
+		          addr,
+		          interfaceIndex);
+
+		BonjourNodeStub* node = (BonjourNodeStub*)context;
+		if (node->_interfaces.find(interfaceIndex) == node->_interfaces.end() || override)
+			node->_interfaces[interfaceIndex] = addr;
+		free(addr);
+		break;
 	}
-
-	bool override = false;
-	char* addr = NULL;
-
-	if (address && address->sa_family == AF_INET) {
-		const unsigned char *b = (const unsigned char *) &((struct sockaddr_in *)address)->sin_addr;
-		asprintf(&addr, "%d.%d.%d.%d", b[0], b[1], b[2], b[3]);
-		override = true; // we prefer ipv4 ..
-	}	else if (address && address->sa_family == AF_INET6) {
-		const struct sockaddr_in6 *s6 = (const struct sockaddr_in6 *)address;
-		const unsigned char *b = (const unsigned char*)&s6->sin6_addr;
-
-		asprintf(&addr, "%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X",
-		         b[0x0], b[0x1], b[0x2], b[0x3], b[0x4], b[0x5], b[0x6], b[0x7],
-		         b[0x8], b[0x9], b[0xA], b[0xB], b[0xC], b[0xD], b[0xE], b[0xF]);
+	case kDNSServiceErr_NoSuchRecord:
+		LOG_DEBUG("resolveReply called with error: kDNSServiceErr_NoSuchRecord");
+		break;
+	default:
+		LOG_WARN("resolveReply called with error: %d", errorCode);
+		break;
 	}
-#if DISC_BONJ_DEBUG
-	std::cout << "addrInfoReply: " << hostname << " address: " << addr << std::endl;
-#endif
-
-	BonjourNodeStub* node = (BonjourNodeStub*)context;
-	if (node->_interfaces.find(interfaceIndex) == node->_interfaces.end() || override)
-		node->_interfaces[interfaceIndex] = addr;
-	free(addr);
 }
 
 void DNSSD_API BonjourNodeStub::resolveReply(
@@ -162,18 +159,11 @@ void DNSSD_API BonjourNodeStub::resolveReply(
     void *context
 ) {
 
-#if DISC_BONJ_DEBUG
-	std::cout << "resolveReply["
-	          << " f:" << flags
-	          << " if:" << interfaceIndex
-	          << " err:" << errorCode
-	          << " fullname:" << fullname
-	          << " hosttarget:" << hosttarget
-	          << " port:" << ntohs(opaqueport)
-	          << " txtLen:" << txtLen
-	          << " txtRecord:" << txtRecord
-	          << "]" << std::endl;
-#endif
+	LOG_DEBUG("resolveReply: %s at %s:%d with if %d",
+	          fullname,
+	          hosttarget,
+	          ntohs(opaqueport),
+	          interfaceIndex);
 
 	if(errorCode == kDNSServiceErr_NoError) {
 		BonjourNodeStub* node = (BonjourNodeStub*)context;
@@ -192,7 +182,7 @@ void DNSSD_API BonjourNodeStub::resolveReply(
 
 		node->_port = ntohs(opaqueport);
 	} else {
-		LOG_WARN("BonjourNodeStub::resolveReply called with error");
+		LOG_WARN("resolveReply called with error: %d", errorCode);
 	}
 }
 

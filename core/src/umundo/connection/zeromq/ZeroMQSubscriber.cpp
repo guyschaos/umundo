@@ -54,7 +54,7 @@ void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 }
 
 void ZeroMQSubscriber::run() {
-	int64_t more;
+	int32_t more;
 	size_t more_size = sizeof(more);
 
 	while(isStarted()) {
@@ -73,25 +73,25 @@ void ZeroMQSubscriber::run() {
 			if (more) {
 				char* key = (char*)zmq_msg_data(&message);
 				char* value = ((char*)zmq_msg_data(&message) + strlen(key) + 1);
-        
-        // is this the first message with the channelname?
-        if (strlen(key) + 1 == msgSize &&
-            msg->getMeta().find(key) == msg->getMeta().end()) {
-          msg->setMeta("channelName", key);
-        } else {
+
+				// is this the first message with the channelname?
+				if (strlen(key) + 1 == msgSize &&
+				        msg->getMeta().find(key) == msg->getMeta().end()) {
+					msg->setMeta("channelName", key);
+				} else {
 					assert(strlen(key) + strlen(value) + 2 == msgSize);
-          if (strlen(key) + strlen(value) + 2 != msgSize) {
-            LOG_WARN("Received malformed message %d + %d + 2 != %d", strlen(key), strlen(value), msgSize);
-            zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
-            break;
-          } else {
-            msg->setMeta(key, value);
-          }
-        }
-        zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));        
+					if (strlen(key) + strlen(value) + 2 != msgSize) {
+						LOG_WARN("Received malformed message %d + %d + 2 != %d", strlen(key), strlen(value), msgSize);
+						zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+						break;
+					} else {
+						msg->setMeta(key, value);
+					}
+				}
+				zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 			} else {
 				msg->setData(string((char*)zmq_msg_data(&message), msgSize));
-        zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+				zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 				_receiver->receive(msg);
 				break; // last message part
 			}

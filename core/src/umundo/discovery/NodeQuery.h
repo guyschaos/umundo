@@ -15,7 +15,7 @@ class NodeStub;
 /**
  * Representation of a query for discovery of nodes.
  *
- * Support for the additional query criteria of this class is rather limited in the concrete 
+ * Support for the additional query criteria of this class is rather limited in the concrete
  * discovery implementors. At the moment, this is just an extension point to allow more refined
  * queries if we need such a feature.
  */
@@ -30,6 +30,16 @@ public:
 	virtual const string& getDomain();
 	virtual void setTransport(string);
 	virtual const string& getTransport();
+
+	set<shared_ptr<NodeStub> >& getPendingChanges()   {
+		return _pendingChanges;
+	}
+	set<shared_ptr<NodeStub> >& getPendingRemovals()  {
+		return _pendingRemovals;
+	}
+	set<shared_ptr<NodeStub> >& getPendingAdditions() {
+		return _pendingAdditions;
+	}
 
 	virtual void notifyImmediately(bool notifyImmediately);
 	virtual void notifyResultSet();

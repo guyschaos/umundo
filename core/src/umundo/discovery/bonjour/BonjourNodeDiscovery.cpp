@@ -76,8 +76,8 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	DNSServiceErrorType err;
 	DNSServiceRef dnsRegisterClient;
 
-  assert(node->getUUID().length() > 0);
-  
+	assert(node->getUUID().length() > 0);
+
 	DNSServiceFlags flags = 0; // kDNSServiceFlagsNoAutoRename;
 	uint32_t interfaceIndex = kDNSServiceInterfaceIndexAny;
 	const char* name = (node->getUUID().length() ? node->getUUID().c_str() : NULL);
@@ -87,11 +87,11 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	asprintf(&regtype, "_mundo._%s", transport);
 
 	char* domain;
-  if (node->getDomain().length() > 0) {
-    asprintf(&domain, "%s.local.", node->getDomain().c_str());
-  } else {
-    asprintf(&domain, "local.");
-  }
+	if (node->getDomain().length() > 0) {
+		asprintf(&domain, "%s.local.", node->getDomain().c_str());
+	} else {
+		asprintf(&domain, "local.");
+	}
 
 	const char* host = (node->getHost().length() ? node->getHost().c_str() : NULL);
 	uint16_t port = (node->getPort() > 0 ? htons(node->getPort()) : 0);
@@ -163,12 +163,12 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	const char* transport = (query->getTransport().length() ? query->getTransport().c_str() : "tcp");
 	asprintf(&regtype, "_mundo._%s", transport);
 
-  char* domain;
-  if (query->getDomain().length() > 0) {
-    asprintf(&domain, "%s.local.", query->getDomain().c_str());
-  } else {
-    asprintf(&domain, "local.");
-  }
+	char* domain;
+	if (query->getDomain().length() > 0) {
+		asprintf(&domain, "%s.local.", query->getDomain().c_str());
+	} else {
+		asprintf(&domain, "local.");
+	}
 
 	intptr_t address = (intptr_t)(query.get());
 
@@ -249,16 +249,12 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
     const char *replyDomain,
     void *context) {
 
-#if DISC_BONJ_DEBUG
-	std::cout << "browseReply["
-	          << " f:" << flags
-	          << " if:" << ifIndex
-	          << " err:" << errorCode
-	          << " name:" << replyName
-	          << " type:" << replyType
-	          << " domain:" << replyDomain
-	          << "]" << std::endl;
-#endif
+	LOG_DEBUG("browseReply: %s %s/%s as %s at if %d",
+	          (flags & kDNSServiceFlagsAdd ? "Added" : "Removed"),
+	          replyName,
+	          replyDomain,
+	          replyType,
+	          ifIndex);
 	shared_ptr<BonjourNodeDiscovery> myself = getInstance();
 	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)context];
 
@@ -272,50 +268,56 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 	// do we already know this node?
 	shared_ptr<BonjourNodeStub> node = myself->_queryNodes[query][replyName];
 
-  if (flags & (kDNSServiceFlagsAdd)) {
-    // we have a node to add
-    if (node == NULL) {
-      node = shared_ptr<BonjourNodeStub>(new BonjourNodeStub());
-      node->setRemote(true); /// @todo: we also find ourselves ..
-      if (strncmp(replyType + strlen(replyType) - 4, "tcp", 3) == 0) {
-        node->setTransport("tcp");
-      } else if (strncmp(replyType + strlen(replyType) - 4, "udp", 3) == 0) {
-        node->setTransport("udp");
-      } else {
-        LOG_WARN("Unknown transport %s, defaulting to tcp", replyType + strlen(replyType) - 4);
-        node->setTransport("tcp");
-      }
-      node->setUUID(replyName);
-      node->setDomain(replyDomain);
-      // remember node
-      myself->_queryNodes[query][replyName] = node;
+	if (flags & (kDNSServiceFlagsAdd)) {
+		// we have a node to add
+		if (node == NULL) {
+			node = shared_ptr<BonjourNodeStub>(new BonjourNodeStub());
+			node->setRemote(true); /// @todo: we also find ourselves ..
+			if (strncmp(replyType + strlen(replyType) - 4, "tcp", 3) == 0) {
+				node->setTransport("tcp");
+			} else if (strncmp(replyType + strlen(replyType) - 4, "udp", 3) == 0) {
+				node->setTransport("udp");
+			} else {
+				LOG_WARN("Unknown transport %s, defaulting to tcp", replyType + strlen(replyType) - 4);
+				node->setTransport("tcp");
+			}
+			node->setUUID(replyName);
+			node->setDomain(replyDomain);
+			// remember node
+			myself->_queryNodes[query][replyName] = node;
 
-    }
-    node->_domains.insert(replyDomain);
-    node->_interfaceIndices.insert(ifIndex);
+			// add to query
+			LOG_INFO("Discovered node %s:%d found", node->getUUID().c_str(), node->getPort());
+			query->added(node);
+		}
+		node->_domains.insert(replyDomain);
+		node->_interfaceIndices.insert(ifIndex);
 
-    if (!(flags & kDNSServiceFlagsMoreComing)) {
-      // no more info on the node
-      query->added(node);
-      node->resolve();
-      query->notifyResultSet();
-    }
-  } else {
-    // remove the node or an interface
-    assert(node != NULL);
-    node->_interfaceIndices.erase(ifIndex);
-    if (!(flags & kDNSServiceFlagsMoreComing)) {
-      if (node->_interfaceIndices.empty()) {
-        query->removed(node);
-        query->notifyResultSet();
-        myself->_queryNodes[query].erase(replyName);
-      } else {
-        node->resolve();
-        query->changed(node);
-        query->notifyResultSet();
-      }
-    }
-  }
+	} else {
+		// remove or change the node or an interface
+		assert(node != NULL);
+		node->_interfaceIndices.erase(ifIndex);
+		if (node->_interfaceIndices.empty()) {
+			LOG_INFO("Vanished node %s:%d", node->getUUID().c_str(), node->getPort());
+			query->removed(node);
+			// erase from pending changes if it get deleted anyway
+			query->getPendingChanges().erase(node);
+			myself->_queryNodes[query].erase(replyName);
+		} else {
+			LOG_INFO("Changed node %s:%d", node->getUUID().c_str(), node->getPort());
+			query->changed(node);
+		}
+	}
+	if (!(flags & kDNSServiceFlagsMoreComing)) {
+		// that's it, resolve pending nodes and notify result set
+		set<shared_ptr<NodeStub> >::iterator nodeIter;
+		for (nodeIter = query->getPendingAdditions().begin(); nodeIter != query->getPendingAdditions().end(); nodeIter++)
+			boost::static_pointer_cast<BonjourNodeStub>(*nodeIter)->resolve();
+		for (nodeIter = query->getPendingChanges().begin(); nodeIter != query->getPendingChanges().end(); nodeIter++)
+			boost::static_pointer_cast<BonjourNodeStub>(*nodeIter)->resolve();
+
+		query->notifyResultSet();
+	}
 }
 
 /**
@@ -339,15 +341,14 @@ void DNSSD_API BonjourNodeDiscovery::registerReply(
     void                                *context
 ) {
 
-#if DISC_BONJ_DEBUG
-	std::cout << "registerReply["
-	          << " f:" << flags
-	          << " err:" << errorCode
-	          << " name:" << name
-	          << " regtype:" << regtype
-	          << " domain:" << domain
-	          << "]" << std::endl;
-#endif
+	LOG_DEBUG("registerReply: %s %s/%s as %s",
+	          (flags & kDNSServiceFlagsAdd ? "Registered" : "Unregistered"),
+	          name,
+	          domain,
+	          regtype);
+	if (errorCode == kDNSServiceErr_NameConflict)
+		LOG_WARN("Name conflict!");
+
 	switch (errorCode) {
 	case kDNSServiceErr_NoError:
 		if (flags & kDNSServiceFlagsAdd) {

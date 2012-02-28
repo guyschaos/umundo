@@ -8,12 +8,12 @@
 namespace umundo {
 
 class NodeStub;
-class Message;	
+class Message;
 
 class PublisherConfig : public Configuration {
 public:
 	shared_ptr<Configuration> create();
-  virtual ~PublisherConfig() {}
+	virtual ~PublisherConfig() {}
 
 	string channelName;
 	string transport;
@@ -29,13 +29,25 @@ public:
 	virtual ~PublisherStub() {}
 
 	/** @name Functionality of local *and* remote Publishers */
-  //@{
-	virtual const string& getChannelName() const      { return _channelName; }
-	virtual void setChannelName(string channelName)   { _channelName = channelName; }
-	virtual const string& getHost() const             { return _host; }
-	virtual void setHost(string host)                 { _host = host; }
-	virtual const string& getDomain() const           { return _domain; }
-	virtual void setDomain(string domain)             { domain = _domain; }
+	//@{
+	virtual const string& getChannelName() const      {
+		return _channelName;
+	}
+	virtual void setChannelName(string channelName)   {
+		_channelName = channelName;
+	}
+	virtual const string& getHost() const             {
+		return _host;
+	}
+	virtual void setHost(string host)                 {
+		_host = host;
+	}
+	virtual const string& getDomain() const           {
+		return _domain;
+	}
+	virtual void setDomain(string domain)             {
+		domain = _domain;
+	}
 	//@}
 
 protected:
@@ -53,23 +65,33 @@ public:
 	virtual ~PublisherImpl() {}
 
 	virtual void send(Message* msg) = 0;
-	virtual const string& getUUID()                  { return _uuid; }
-	virtual void setUUID(string uuid)                { _uuid = uuid; }
+	virtual const string& getUUID()                  {
+		return _uuid;
+	}
+	virtual void setUUID(string uuid)                {
+		_uuid = uuid;
+	}
 
-  /** @name Optional subscriber awareness */
-  //@{
-  virtual int waitForSubscribers(int count)        { return -1; }
+	/** @name Optional subscriber awareness */
+	//@{
+	virtual int waitForSubscribers(int count)        {
+		return -1;
+	}
 	//@}
 
 protected:
-  /** @name Optional subscriber awareness */
-  //@{
-  virtual void addedSubscriber()                   { /* Ignore or overwrite */ }
-  virtual void removedSubscriber()                 { /* Ignore or overwrite */ }
+	/** @name Optional subscriber awareness */
+	//@{
+	virtual void addedSubscriber()                   {
+		/* Ignore or overwrite */
+	}
+	virtual void removedSubscriber()                 {
+		/* Ignore or overwrite */
+	}
 	//@}
 
 	string _uuid;
-  friend class Publisher;
+	friend class Publisher;
 };
 
 /**
@@ -83,36 +105,72 @@ public:
 	virtual ~Publisher();
 
 	/** @name Functionality of local Publishers */
-  //@{
-	void send(Message* msg)                        { _impl->send(msg); }
+	//@{
+	void send(Message* msg)                        {
+		_impl->send(msg);
+	}
 	void send(const char* data, size_t length);
-	int waitForSubscribers(int count)              { return _impl->waitForSubscribers(count); }
+	int waitForSubscribers(int count)              {
+		return _impl->waitForSubscribers(count);
+	}
 	//@}
 
 	/** @name Overwrite PublisherStub */
-  //@{
-	virtual const string& getChannelName() const      { return _impl->getChannelName(); }
-	virtual void setChannelName(string channelName)   { _impl->setChannelName(channelName); }
+	//@{
+	virtual const string& getChannelName() const      {
+		return _impl->getChannelName();
+	}
+	virtual void setChannelName(string channelName)   {
+		_impl->setChannelName(channelName);
+	}
 	//@}
 
 	/** @name Overwrite EndPoint */
-	virtual const string& getIP() const         { return _impl->getIP(); }
-	virtual void setIP(string ip)               { _impl->setIP(ip); }
-	virtual const string& getTransport() const  { return _impl->getTransport(); }
-	virtual void setTransport(string transport) { _impl->setTransport(transport); }
-	virtual uint16_t getPort() const            { return _impl->getPort(); }
-	virtual void setPort(uint16_t port)         { _impl->setPort(port); }
-	virtual bool isRemote() const               { return _impl->isRemote(); }
-	virtual void setRemote(bool remote)         { _impl->setRemote(remote); }
-	virtual const string& getHost() const       { return _impl->getHost(); }
-	virtual void setHost(string host)           { _impl->setHost(host); }
-	virtual const string& getDomain() const     { return _impl->getDomain(); }
-	virtual void setDomain(string domain)       { _impl->setDomain(domain); }
+	virtual const string& getIP() const         {
+		return _impl->getIP();
+	}
+	virtual void setIP(string ip)               {
+		_impl->setIP(ip);
+	}
+	virtual const string& getTransport() const  {
+		return _impl->getTransport();
+	}
+	virtual void setTransport(string transport) {
+		_impl->setTransport(transport);
+	}
+	virtual uint16_t getPort() const            {
+		return _impl->getPort();
+	}
+	virtual void setPort(uint16_t port)         {
+		_impl->setPort(port);
+	}
+	virtual bool isRemote() const               {
+		return _impl->isRemote();
+	}
+	virtual void setRemote(bool remote)         {
+		_impl->setRemote(remote);
+	}
+	virtual const string& getHost() const       {
+		return _impl->getHost();
+	}
+	virtual void setHost(string host)           {
+		_impl->setHost(host);
+	}
+	virtual const string& getDomain() const     {
+		return _impl->getDomain();
+	}
+	virtual void setDomain(string domain)       {
+		_impl->setDomain(domain);
+	}
 	//@{
 
 protected:
-  void addedSubscriber()       { _impl->addedSubscriber(); }
-  void removedSubscriber()     { _impl->removedSubscriber(); }
+	void addedSubscriber()       {
+		_impl->addedSubscriber();
+	}
+	void removedSubscriber()     {
+		_impl->removedSubscriber();
+	}
 	shared_ptr<PublisherImpl> _impl;
 	shared_ptr<PublisherConfig> _config;
 	friend class Node;

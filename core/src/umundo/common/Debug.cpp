@@ -1,13 +1,53 @@
 #include "umundo/common/Debug.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+#include <time.h>
 #include "umundo/config.h"
 
 #ifdef ANDROID
 #include <android/log.h>
 #endif
 
+#ifdef WIN32
+#include <io.h>
+#endif
+
+#define RESET       0
+#define BRIGHT      1
+#define FAINT       2
+#define ITALIC      3
+#define UNDERLINE   4
+#define BLINK_SLOW  5
+#define BLINK_FAST  6
+#define INVERT      7
+#define HIDDEN      8
+#define STRIKED     9
+
+#define BLACK       0
+#define RED         1
+#define GREEN       2
+#define YELLOW      3
+#define BLUE        4
+#define MAGENTA     5
+#define CYAN        6
+#define	WHITE       7
+
 namespace umundo {
+
+// required for padding
+static int longestFilename = 0;
+static int longestLineNumber = 0;
+static const char* lastLogDomain = NULL;
+
+// log levels can be overwritten per environment
+static bool determinedLogLevels = false;
+static int logLevelCommon = -1;
+static int logLevelNet = -1;
+static int logLevelDisc = -1;
+static int logLevelS11n = -1;
+
+static int useColors = -1;
 
 const char* Debug::relFileName(const char* filename) {
 	const char* relPath = filename;
@@ -21,39 +61,145 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 	// try to shorten filename
 	filename = relFileName(filename);
 	char* pathSepPos = (char*)filename;
-	bool skip = false;
+	const char* logDomain = NULL;
+	bool logDomainChanged = false;
 
-	while((pathSepPos = strchr(pathSepPos + 1, PATH_SEPERATOR))) {
-		if (strncmp(pathSepPos + 1, "common", 6) == 0 && lvl > LOGLEVEL_COMMON)
-			return false;
-		if (strncmp(pathSepPos + 1, "connection", 10) == 0 && lvl > LOGLEVEL_NET)
-			return false;
-		if (strncmp(pathSepPos + 1, "discovery", 9) == 0 && lvl > LOGLEVEL_DISC)
-			return false;
-		if (strncmp(pathSepPos + 1, "s11n", 9) == 0 && lvl > LOGLEVEL_S11N)
-			return false;
+	// determine actual log levels once per program start
+	if (!determinedLogLevels) {
+		// if UMUNDO_LOGLEVEL is defined in environment, it overwrites loglevels from build time
+		logLevelCommon = (getenv("UMUNDO_LOGLEVEL") != NULL ? atoi(getenv("UMUNDO_LOGLEVEL")) : LOGLEVEL_COMMON);
+		logLevelNet    = (getenv("UMUNDO_LOGLEVEL") != NULL ? atoi(getenv("UMUNDO_LOGLEVEL")) : LOGLEVEL_NET);
+		logLevelDisc   = (getenv("UMUNDO_LOGLEVEL") != NULL ? atoi(getenv("UMUNDO_LOGLEVEL")) : LOGLEVEL_DISC);
+		logLevelS11n   = (getenv("UMUNDO_LOGLEVEL") != NULL ? atoi(getenv("UMUNDO_LOGLEVEL")) : LOGLEVEL_S11N);
+
+		// if specific loglevel is defined in environment, it takes precedence over everything
+		if (getenv("UMUNDO_LOGLEVEL_COMMON") != NULL) logLevelCommon = atoi(getenv("UMUNDO_LOGLEVEL_COMMON"));
+		if (getenv("UMUNDO_LOGLEVEL_NET") != NULL)    logLevelNet = atoi(getenv("UMUNDO_LOGLEVEL_NET"));
+		if (getenv("UMUNDO_LOGLEVEL_DISC") != NULL)   logLevelDisc = atoi(getenv("UMUNDO_LOGLEVEL_DISC"));
+		if (getenv("UMUNDO_LOGLEVEL_S11N") != NULL)   logLevelS11n = atoi(getenv("UMUNDO_LOGLEVEL_S11N"));
+
+		determinedLogLevels = true;
 	}
 
-	if (!skip) {
-		const char* severity = NULL;
-		if (lvl == 0) severity = "ERROR";
-		if (lvl == 1) severity = "WARNING";
-		if (lvl == 2) severity = "INFO";
-		if (lvl == 3) severity = "DEBUG";
+	// determine whether we want colored output
+	if (useColors < 0) {
+		useColors = 0;
+		if (getenv("UMUNDO_LOGCOLORS") != NULL && (strcmp(getenv("UMUNDO_LOGCOLORS"), "NO") == 0 || strcmp(getenv("UMUNDO_LOGCOLORS"), "0") == 0)) {
+			// color explicitly disabled per environment
+			useColors = 0;
+		} else {
+			// even if we want colors, check if terminal supports them
+			if (isatty(1)) {
+				char* term = getenv("TERM");
+				if ((term != NULL) && (strncmp(term, "xterm", 5) == 0 || strcmp(term, "xterm") == 0)) {
+					useColors = 1;
+				}
+			}
+		}
+	}
 
-		char* message;
-		va_list args;
-		va_start(args, line);
-		vasprintf(&message, fmt, args);
-		va_end(args);
+	// check log domain and whether we will log at all
+	while((pathSepPos = strchr(pathSepPos + 1, PATH_SEPERATOR))) {
+		if (strncmp(pathSepPos + 1, "common", 6) == 0) {
+			if (lvl > logLevelCommon)
+				return false;
+			logDomain = "common";
+		} else if (strncmp(pathSepPos + 1, "connection", 10) == 0) {
+			if (lvl > logLevelNet)
+				return false;
+			logDomain = "connection";
+		} else if (strncmp(pathSepPos + 1, "discovery", 9) == 0) {
+			if (lvl > logLevelDisc)
+				return false;
+			logDomain = "discovery";
+		} else if (strncmp(pathSepPos + 1, "s11n", 4) == 0) {
+			if (lvl > logLevelS11n)
+				return false;
+			logDomain = "s11n";
+		} else if (strncmp(pathSepPos + 1, "thread", 6) == 0) {
+			// tread threads as common domain
+			if (lvl > logLevelCommon)
+				return false;
+			logDomain = "common";
+		}
+		filename = pathSepPos + 1;
+	}
+
+	// only color first line of a new log domain
+	if (lastLogDomain == NULL || strcmp(lastLogDomain, logDomain) != 0) {
+		lastLogDomain = logDomain;
+		logDomainChanged = true;
+	}
+
+	// determine length of filename:line for padding
+	int lineNumberLength = (int)ceil(log((float)line + 1) / log((float)10));
+	if ((int)strlen(filename) + lineNumberLength > longestFilename) {
+		longestFilename = strlen(filename) + lineNumberLength;
+		longestLineNumber = lineNumberLength;
+	}
+
+	const char* severity = NULL;
+	if (lvl == 0) severity = "ERROR";
+	if (lvl == 1) severity = "WARNING";
+	if (lvl == 2) severity = "INFO";
+	if (lvl == 3) severity = "DEBUG";
+
+	char* padding = (char*)malloc((longestFilename - (strlen(filename) + lineNumberLength)) + 1);
+	padding[(longestFilename - (strlen(filename) + lineNumberLength))] = 0;
+	memset(padding, ' ', longestFilename - (strlen(filename) + lineNumberLength));
+
+	char* message;
+	va_list args;
+	va_start(args, line);
+	vasprintf(&message, fmt, args);
+	va_end(args);
+
+	time_t current_time;
+	struct tm * time_info;
+	char timeStr[9];  // space for "HH:MM:SS\0"
+	time(&current_time);
+	time_info = localtime(&current_time);
+	strftime(timeStr, sizeof(timeStr), "%H:%M:%S", time_info);
 
 #ifdef ANDROID
-		__android_log_print(ANDROID_LOG_VERBOSE, "umundo", "%s:%d: %s %s\n", filename, line, severity, message);
+	__android_log_print(ANDROID_LOG_VERBOSE, "umundo", "%s:%d: %s %s\n", filename, line, severity, message);
 #else
-		printf("%s:%d: %s %s\n", filename, line, severity, message);
+	if (useColors) {
+#ifdef WIN32
+		// @todo implement color output on windows
+		printf("%s|%s:%d:%s %s %s\n", timeStr, filename, line, padding, severity, message);
+#else
+
+		int effect = 0;
+		int foreground = BLACK;
+		int background = WHITE;
+
+		if (logDomain != NULL && logDomainChanged) {
+			if (strcmp(logDomain, "common") == 0)      background = CYAN;
+			if (strcmp(logDomain, "connection") == 0)  background = MAGENTA;
+			if (strcmp(logDomain, "discovery") == 0)   background = YELLOW;
+			if (strcmp(logDomain, "s11n") == 0)        background = BLUE;
+		} else {
+			if (lvl == 1) effect = BRIGHT;
+			if (lvl == 2) effect = UNDERLINE;
+			if (lvl == 3) effect = 0;
+		}
+		// errors are white on red in any case
+		if (lvl == 0) {
+			effect = RESET;
+			background = RED;
+			foreground = WHITE;
+		}
+
+		printf("\e[%d;%d;%dm%s|%s:%d:%s %s %s\e[0m\n", effect, foreground + 30, background + 40, timeStr, filename, line, padding, severity, message );
 #endif
-		free(message);
+	} else {
+		printf("%s|%s:%d:%s %s %s\n", timeStr, filename, line, padding, severity, message);
 	}
+	fflush(stdout);
+#endif
+	free(message);
+	free(padding);
 	return true;
 }
 

@@ -32,7 +32,7 @@ public:
  * Abstraction of the discovery subsystem (bridge pattern).
  *
  * Concrete implementors of this class provide advertising and discovery of remote and local nodes within a domain.
- * 
+ *
  * - Enable remote Discovery implementors to find locally added Nodes as NodeStub%s.
  * - Allow the application to browse for Node%s via NodeQuery%s.
  *
@@ -49,16 +49,16 @@ public:
 	~Discovery();
 
 	/** @name Management of local nodes */
-  //@{
+	//@{
 	static void add(Node* node);    ///< Add a Node to multicast domain discovery.
 	static void remove(Node* node); ///< Remove a Node from multicast domain disc.
-  //@}
+	//@}
 
 	/** @name Query for nodes */
-  //@{
+	//@{
 	static void browse(shared_ptr<NodeQuery> discovery);
 	static void unbrowse(shared_ptr<NodeQuery> discovery);
-  //@}
+	//@}
 
 protected:
 	shared_ptr<DiscoveryImpl> _impl; ///< The concrete implementor instance.

@@ -68,6 +68,8 @@ using namespace umundo;
 %ignore operator!=(NodeStub* n) const;
 %ignore operator<<(std::ostream&, const NodeStub*);
 
+%rename(waitSignal) wait;
+
 %ignore umundo::Publisher::getNode() const;
 %ignore umundo::Publisher::setNode(shared_ptr<NodeStub> node);
 %ignore umundo::PublisherStub::getNode() const;

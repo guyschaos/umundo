@@ -13,7 +13,7 @@
 namespace umundo {
 
 shared_ptr<Configuration> NodeConfig::create() {
-  return shared_ptr<Configuration>(new NodeConfig());
+	return shared_ptr<Configuration>(new NodeConfig());
 }
 
 NodeImpl::NodeImpl() {
@@ -24,7 +24,7 @@ Node::Node() {
 	_impl = boost::static_pointer_cast<NodeImpl>(Factory::create("node"));
 	shared_ptr<NodeConfig> config = boost::static_pointer_cast<NodeConfig>(Factory::config("node"));
 	_impl->init(config);
-  // add our node query
+	// add our node query
 	Discovery::add(this);
 }
 

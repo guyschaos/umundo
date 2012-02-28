@@ -1,7 +1,7 @@
 #include "umundo/common/NodeStub.h"
 
 namespace umundo {
-  
+
 std::ostream& operator<<(std::ostream &out, const NodeStub* n) {
 	out << n->getUUID() << ": ";
 	out << n->getHost() << ".";

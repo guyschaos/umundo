@@ -19,8 +19,8 @@ Publisher::Publisher(const string& channelName) {
 
 void Publisher::send(const char* data, size_t length) {
 	Message* msg = new Message(data, length);
-	_impl->send(msg); 
-	delete(msg); 
+	_impl->send(msg);
+	delete(msg);
 }
 
 Publisher::~Publisher() {

@@ -4,7 +4,7 @@
 #include "umundo/common/Common.h"
 
 //this is a hack until we get a compiler firewall per Pimpl
-#ifdef _WIN32 
+#ifdef _WIN32
 # if !(defined THREAD_PTHREAD || defined THREAD_WIN32)
 #   define THREAD_WIN32 1
 # endif
@@ -45,7 +45,7 @@ public:
 		return _isStarted;
 	}
 
-	static void yield();
+//	static void yield();
 	static void sleepMs(uint32_t ms);
 
 private:
@@ -80,6 +80,35 @@ private:
 #endif
 #ifdef THREAD_WIN32
 	HANDLE _mutex;
+#endif
+
+};
+
+/**
+ * See comments from Schmidt on condition variables in windows:
+ * http://www.cs.wustl.edu/~schmidt/win32-cv-1.html (we choose 3.2)
+ */
+class Monitor {
+public:
+	Monitor();
+	virtual ~Monitor();
+
+	void signal();
+	bool wait() {
+		return wait(0);
+	}
+	bool wait(uint32_t ms);
+
+private:
+#ifdef THREAD_PTHREAD
+	pthread_mutex_t _mutex;
+	pthread_cond_t _cond;
+	bool _signaled;
+#endif
+#ifdef THREAD_WIN32
+	int _waiters;
+	Mutex _monitorLock;
+	HANDLE _monitor;
 #endif
 
 };

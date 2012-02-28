@@ -6,8 +6,8 @@
 #ifdef ANDROID
 #include <wchar.h>
 namespace std {
-	// prevent error: 'wcslen' is not a member of 'std'
-	using ::wcslen;
+// prevent error: 'wcslen' is not a member of 'std'
+using ::wcslen;
 }
 #endif
 
@@ -16,6 +16,10 @@ namespace std {
 
 #ifndef snprintf
 #define snprintf _snprintf
+#endif
+
+#ifndef isatty
+#define isatty _isatty
 #endif
 
 #ifndef strdup

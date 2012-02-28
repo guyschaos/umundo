@@ -3,9 +3,15 @@
 # see http://astyle.sourceforge.net/astyle.html
 # run from project root as sh ./contrib/tidy_source.sh
 
+set -e
+
+ME=`basename $0`
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+CWD=`pwd`
+
 astyle  \
 	--style=java \
 	--indent=tab \
-	--recursive  src/*.cpp src/*.h
+	--recursive ${DIR}/../core/src/*.cpp ${DIR}/../core/src/*.h
 	
-find src -iname '*.orig' -exec rm {} \;
+find ${DIR}/../core/src/ -iname '*.orig' -exec rm {} \;

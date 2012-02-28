@@ -31,7 +31,7 @@ namespace umundo {
  * - #LOG_INFO(fmt, ...)
  * - #LOG_DEBUG(fmt, ...)
  *
- * These macros will take care of calling Debug::logMsg() for you. By using macros, we can simply remove them in release builds. 
+ * These macros will take care of calling Debug::logMsg() for you. By using macros, we can simply remove them in release builds.
  * The macros will return a boolean to allow logging in lazy evaluated expressions:
  *
  * trueForSuccess() || LOG_WARN("Failed to succeed");

@@ -12,7 +12,6 @@
 #include "umundo/thread/Thread.h"
 #include "umundo/discovery/Discovery.h"
 
-#define DISC_BONJ_DEBUG 0
 #define BONJOUR_REPOLL_USEC 10000
 #define BONJOUR_REPOLL_SEC 0
 
@@ -35,7 +34,7 @@ class BonjourNodeDiscovery : public DiscoveryImpl, public Thread {
 public:
 	virtual ~BonjourNodeDiscovery();
 	static shared_ptr<BonjourNodeDiscovery> getInstance();  ///< Return the singleton instance.
-	
+
 	shared_ptr<Implementation> create();
 	void destroy();
 	void init(shared_ptr<Configuration>);
@@ -50,9 +49,9 @@ public:
 
 protected:
 	BonjourNodeDiscovery();
-	
+
 	/** @name Bonjour callbacks */
-  //@{
+	//@{
 	static void DNSSD_API browseReply(
 	    DNSServiceRef sdref,
 	    const DNSServiceFlags flags,
@@ -73,9 +72,9 @@ protected:
 	    const char* domain,
 	    void* context
 	);
-  //@}
+	//@}
 
-	
+
 	map<int, DNSServiceRef> _sockFD;          ///< Socket file descriptors to bonjour handle.
 	map<intptr_t, shared_ptr<NodeQuery> > _browsers;     ///< Memory addresses to node queries for static callbacks.
 	map<intptr_t, shared_ptr<NodeImpl> > _nodes;  ///< Memory addresses of local nodes for static callbacks.

@@ -22,7 +22,7 @@ public:
 
 class SubscriberConfig : public Configuration {
 public:
-  virtual ~SubscriberConfig() {}
+	virtual ~SubscriberConfig() {}
 	shared_ptr<Configuration> create();
 	string channelName;
 	string uuid;
@@ -34,17 +34,29 @@ public:
  */
 class SubscriberImpl : public Thread, public Implementation {
 public:
-	virtual const string& getChannelName()           { return _channelName; }
-	virtual void setChannelName(string channelName)  { _channelName = channelName; }
-  virtual const Receiver* getReceiver()            { return _receiver; }
-  virtual void setReceiver(Receiver* receiver)     { _receiver = receiver; }
-  virtual const string& getUUID()                  { return _uuid; }
-	virtual void setUUID(string uuid)                { _uuid = uuid; }
+	virtual const string& getChannelName()           {
+		return _channelName;
+	}
+	virtual void setChannelName(string channelName)  {
+		_channelName = channelName;
+	}
+	virtual const Receiver* getReceiver()            {
+		return _receiver;
+	}
+	virtual void setReceiver(Receiver* receiver)     {
+		_receiver = receiver;
+	}
+	virtual const string& getUUID()                  {
+		return _uuid;
+	}
+	virtual void setUUID(string uuid)                {
+		_uuid = uuid;
+	}
 
 protected:
-  Receiver* _receiver;
-  string _channelName;
-  string _uuid;
+	Receiver* _receiver;
+	string _channelName;
+	string _uuid;
 };
 
 /**
@@ -57,8 +69,12 @@ public:
 	Subscriber(string channelName, Receiver* receiver);
 	virtual ~Subscriber();
 
-	virtual const string& getChannelName()           { return _impl->getChannelName(); }
-	virtual void setChannelName(string channelName)  { _impl->setChannelName(channelName); }
+	virtual const string& getChannelName()           {
+		return _impl->getChannelName();
+	}
+	virtual void setChannelName(string channelName)  {
+		_impl->setChannelName(channelName);
+	}
 
 protected:
 	shared_ptr<SubscriberImpl> _impl;

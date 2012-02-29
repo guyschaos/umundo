@@ -30,7 +30,7 @@
 @end
 
 void umundoTypedReceiverWrapper::receive(umundo::Message* msg) {    
-  @autoreleasepool {
+//  @autoreleasepool {
     google::protobuf::MessageLite* pbObj = _deserializers[msg->getMeta("type")]->New();
     pbObj->ParseFromString(msg->getData());
     assert(pbObj->SerializeAsString().compare(msg->getData()) == 0);
@@ -43,6 +43,6 @@ void umundoTypedReceiverWrapper::receive(umundo::Message* msg) {
       [meta setValue:value forKey:key];
     }
     [_objcTypedReceiver received:pbObj andMeta:meta];
-  }
+//  }
 }
 

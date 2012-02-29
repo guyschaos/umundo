@@ -47,7 +47,6 @@ if (WIN32)
 	LIST(APPEND UMUNDOCORE_LIBRARIES Ws2_32)
 endif()
 
-LIST(APPEND UMUNDOCORE_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)
 LIST(SORT UMUNDOCORE_HEADER_FILES)
 
 # include directories for our header files
@@ -55,6 +54,15 @@ include_directories(./src)
 include_directories(./test)
 
 add_subdirectory(src/umundo)    # gather UMUNDOCORE_FILES and add target umundo library
+
+# add objective-c bindings on mac and ios
+if (APPLE OR IOS)
+	file(GLOB_RECURSE UMUNDOCORE_OBJC_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/core/*.mm)
+	list(APPEND UMUNDOCORE_FILES ${UMUNDOCORE_OBJC_FILES})
+	file(GLOB_RECURSE UMUNDOCORE_OBJC_HEADER_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/core/*.h)
+	list(APPEND UMUNDOCORE_HEADER_FILES ${UMUNDOCORE_OBJC_HEADER_FILES})
+	include_directories(${PROJECT_SOURCE_DIR}/contrib/bindings/objc/)
+endif()
 
 # library name suffix depending on build type
 if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
@@ -80,6 +88,9 @@ else()
 endif()
 
 INSTALL_HEADERS_WITH_DIRECTORY("UMUNDOCORE_HEADER_FILES" headerCore)
+
+# ok to have in IDEs, but do not install
+LIST(APPEND UMUNDOCORE_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)
 
 if (UNIX AND NOT APPLE)
 	# we need to duplicate the libraries on debian - is this a cmake bug?

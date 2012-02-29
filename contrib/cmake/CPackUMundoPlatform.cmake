@@ -33,14 +33,17 @@ file(GLOB_RECURSE PLATFORM_LIBS
 
 # platform dependant libraries
 foreach(PLATFORM_LIB ${PLATFORM_LIBS})
-	if (PLATFORM_LIB MATCHES ".*umundocoreSwig.*")
+	if (PLATFORM_LIB MATCHES ".*umundocore.wig.*")
 		install(FILES ${PLATFORM_LIB} DESTINATION share/umundo/java COMPONENT librarySwig)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
 #		message(STATUS "PACKAGE RELEASE SWIG ${PLATFORM_LIB}")
 	elseif (PLATFORM_LIB MATCHES ".*umundoserial.*")
 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryS11N)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "libraryS11N")
 #		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
 	elseif (PLATFORM_LIB MATCHES ".*umundocore.*")
 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryCore)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "libraryCore")
 #		message(STATUS "PACKAGE RELEASE CORE ${PLATFORM_LIB}")
 	else()
 		message(STATUS "PACKAGE RELEASE UNK ${PLATFORM_LIB} - not packaging")	
@@ -53,6 +56,7 @@ if (WIN32)
 	list(REVERSE SWIG_JARS) # do not use the android jars as they are more likely out of date :(
 	list(GET SWIG_JARS 0 SWIG_JAR)
 	install(FILES ${SWIG_JAR} DESTINATION share/umundo COMPONENT librarySwig)
+	list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
 endif()
 
 ########################################
@@ -64,6 +68,7 @@ foreach(HTML_DOC ${HTML_DOCS})
 	STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}/core/" "" HTML_PATH ${HTML_DOC})
 	STRING(REGEX MATCH "(.*)[/\\]" HTML_PATH ${HTML_PATH})
 	install(FILES ${HTML_DOC} DESTINATION share/umundo/${HTML_PATH} COMPONENT docs)
+	list (APPEND UMUNDO_CPACK_COMPONENTS "docs")
 #	message(STATUS ${HTML_PATH})
 endforeach()
 
@@ -80,6 +85,7 @@ foreach(ANDROID_LIB ${ANDROID_LIBS})
 	STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}/lib/" "" ANDROID_PATH ${ANDROID_LIB})
 	STRING(REGEX MATCH "[^/]*/[^/]*" ANDROID_PATH ${ANDROID_PATH})
 	install(FILES ${ANDROID_LIB} DESTINATION share/umundo/${ANDROID_PATH} COMPONENT libraryAndroid)
+	list (APPEND UMUNDO_CPACK_COMPONENTS "libraryAndroid")
 endforeach()
 
 # add cross-compile target support for ios
@@ -91,8 +97,19 @@ if (APPLE)
 		STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}/lib/" "" IOS_PATH ${IOS_LIB})
 		STRING(REGEX MATCH "[^/]*" IOS_PATH ${IOS_PATH})
 		install(FILES ${IOS_LIB} DESTINATION share/umundo/${IOS_PATH} COMPONENT libraryIOS)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "libraryIOS")
 	endforeach()
 endif()
+
+list (APPEND UMUNDO_CPACK_COMPONENTS "headerCore")
+list (APPEND UMUNDO_CPACK_COMPONENTS "headerS11N")
+
+if (NOT CMAKE_CROSS_COMPILING)
+	list (APPEND UMUNDO_CPACK_COMPONENTS "tools")
+endif()
+list (REMOVE_DUPLICATES UMUNDO_CPACK_COMPONENTS ${UMUNDO_CPACK_COMPONENTS})
+#message("UMUNDO_CPACK_COMPONENTS: ${UMUNDO_CPACK_COMPONENTS}")
+
 
 ########################################
 # Configure packagers
@@ -160,81 +177,84 @@ set(CPACK_RPM_PACKAGE_LICENSE "CDDL")
 ########################################
 
 set(CPACK_COMPONENTS_ALL 
-	tools
-#	samples
-	docs
-	
-	librarySwig
-	libraryAndroid
-#	libraryIOS
-	
-	libraryCore
-	headerCore
-	 
-	libraryS11N
-	headerS11N
+	${UMUNDO_CPACK_COMPONENTS}
 )
 
 ###
 # Description of components 
 #
-set(CPACK_COMPONENT_TOOLS_DISPLAY_NAME "Command-line Tools")
-set(CPACK_COMPONENT_TOOLS_DESCRIPTION "Command-line tools to debug and monitor a umundo network.")
 
-# set(CPACK_COMPONENT_SAMPLES_DISPLAY_NAME "Sample Applications with IDE templates")
-# set(CPACK_COMPONENT_SAMPLES_DESCRIPTION 
-#   "Sample applications with source-code, illustrating the API and usage of the library.")
+list(FIND UMUNDO_CPACK_COMPONENTS "tools" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_TOOLS_DISPLAY_NAME "Command-line Tools")
+	set(CPACK_COMPONENT_TOOLS_DESCRIPTION "Command-line tools to debug and monitor a umundo network.")
+endif()
 
-set(CPACK_COMPONENT_DOCS_DISPLAY_NAME "Documentation")
-set(CPACK_COMPONENT_DOCS_DESCRIPTION "Auto-generated documentation.")
+list(FIND UMUNDO_CPACK_COMPONENTS "samples" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_SAMPLES_DISPLAY_NAME "Sample Applications with IDE templates")
+	set(CPACK_COMPONENT_SAMPLES_DESCRIPTION 
+  		"Sample applications with source-code, illustrating the API and usage of the library.")
+endif()
 
-set(CPACK_COMPONENT_LIBRARYSWIG_DISPLAY_NAME "umundo.core JNI")
-set(CPACK_COMPONENT_LIBRARYSWIG_DESCRIPTION "umundo.core library wrapped for Java per native interfaces. This will install the actual library and the JAR archive.")
-set(CPACK_COMPONENT_LIBRARYANDROID_DISPLAY_NAME "Cross Compiled for Android")
-set(CPACK_COMPONENT_LIBRARYANDROID_DESCRIPTION "umundo.core cross compiled for Android devices.")
-#set(CPACK_COMPONENT_LIBRARYIOS_DISPLAY_NAME "Cross Compiled for iOS")
-#set(CPACK_COMPONENT_LIBRARYIOS_DESCRIPTION "umundo.core cross compiled for iOS devices (universal libraries).")
+list(FIND UMUNDO_CPACK_COMPONENTS "docs" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_DOCS_DISPLAY_NAME "Documentation")
+	set(CPACK_COMPONENT_DOCS_DESCRIPTION "Auto-generated documentation.")
+endif()
 
-set(CPACK_COMPONENT_LIBRARYCORE_DISPLAY_NAME "Library umundo.core")
-set(CPACK_COMPONENT_LIBRARYCORE_DESCRIPTION "Static library libumundocore with the basic pub/sub implementation and discovery.")
-set(CPACK_COMPONENT_HEADERCORE_DISPLAY_NAME "C++ Headers umundo.core")
-set(CPACK_COMPONENT_HEADERCORE_DESCRIPTION "C++ header files for umundo.core")
+list(FIND UMUNDO_CPACK_COMPONENTS "librarySwig" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_LIBRARYSWIG_DISPLAY_NAME "umundo.core JNI")
+	set(CPACK_COMPONENT_LIBRARYSWIG_DESCRIPTION "umundo.core library wrapped for Java per native interfaces. This will install the actual library and the JAR archive.")
+	set(CPACK_COMPONENT_LIBRARYSWIG_GROUP "Development")
+endif()
 
-set(CPACK_COMPONENT_LIBRARYS11N_DISPLAY_NAME "Library umundo.s11n")
-set(CPACK_COMPONENT_LIBRARYS11N_DESCRIPTION "Static library libumundoserial with typed pub/sub and object serialization.")
-set(CPACK_COMPONENT_HEADERS11N_DISPLAY_NAME "C++ Headers umundo.s11n")
-set(CPACK_COMPONENT_HEADERS11N_DESCRIPTION "C++ header files for umundo.s11n")
+list(FIND UMUNDO_CPACK_COMPONENTS "libraryAndroid" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_LIBRARYANDROID_DISPLAY_NAME "Cross Compiled for Android")
+	set(CPACK_COMPONENT_LIBRARYANDROID_DESCRIPTION "umundo.core cross compiled for Android devices.")
 
-###
-# Interdependencies (are they transitive?)
-#
-set(CPACK_COMPONENT_LIBRARYCORE_DEPENDS headerCore)
-set(CPACK_COMPONENT_LIBRARYS11N_DEPENDS libraryCore)
-set(CPACK_COMPONENT_LIBRARYS11N_DEPENDS headerS11N)
+	set(CPACK_COMPONENT_LIBRARYANDROID_GROUP "Development")
+endif()
 
-# set(CPACK_COMPONENT_SAMPLES_DEPENDS libraryS11N)
-# set(CPACK_COMPONENT_SAMPLES_DEPENDS libraryCore)
+list(FIND UMUNDO_CPACK_COMPONENTS "libraryIOS" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_LIBRARYIOS_DISPLAY_NAME "Cross Compiled for iOS")
+	set(CPACK_COMPONENT_LIBRARYIOS_DESCRIPTION "umundo.core cross compiled for iOS devices (universal libraries).")
 
-#set(CPACK_COMPONENT_LIBRARYIOS_DEPENDS headerCore)
-#set(CPACK_COMPONENT_LIBRARYIOS_DEPENDS headerS11N)
+	set(CPACK_COMPONENT_LIBRARYIOS_GROUP "Development")
 
-###
-# Grouping
-#
-#set(CPACK_COMPONENT_SAMPLES_GROUP "Samples")
-#set(CPACK_COMPONENT_TOOLS_GROUP "Tools")
+	set(CPACK_COMPONENT_LIBRARYIOS_DEPENDS headerCore)
+	set(CPACK_COMPONENT_LIBRARYIOS_DEPENDS headerS11N)
+endif()
 
-set(CPACK_COMPONENT_LIBRARYSWIG_GROUP "Development")
-set(CPACK_COMPONENT_LIBRARYDEBUGSWIG_GROUP "Development")
+list(FIND UMUNDO_CPACK_COMPONENTS "libraryCore" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_LIBRARYCORE_DISPLAY_NAME "Library umundo.core")
+	set(CPACK_COMPONENT_LIBRARYCORE_DESCRIPTION "Static library libumundocore with the basic pub/sub implementation and discovery.")
+	set(CPACK_COMPONENT_HEADERCORE_DISPLAY_NAME "C++ Headers umundo.core")
+	set(CPACK_COMPONENT_HEADERCORE_DESCRIPTION "C++ header files for umundo.core")
+	
+	set(CPACK_COMPONENT_LIBRARYCORE_GROUP "Development")
+	set(CPACK_COMPONENT_HEADERCORE_GROUP "Development")
 
-set(CPACK_COMPONENT_LIBRARYCORE_GROUP "Development")
-set(CPACK_COMPONENT_HEADERCORE_GROUP "Development")
+	set(CPACK_COMPONENT_LIBRARYCORE_DEPENDS headerCore)
+endif()
 
-set(CPACK_COMPONENT_LIBRARYS11N_GROUP "Development")
-set(CPACK_COMPONENT_HEADERS11N_GROUP "Development")
+list(FIND UMUNDO_CPACK_COMPONENTS "libraryS11N" FOUND_ITEM)
+if (FOUND_ITEM GREATER 0)
+	set(CPACK_COMPONENT_LIBRARYS11N_DISPLAY_NAME "Library umundo.s11n")
+	set(CPACK_COMPONENT_LIBRARYS11N_DESCRIPTION "Static library libumundoserial with typed pub/sub and object serialization.")
+	set(CPACK_COMPONENT_HEADERS11N_DISPLAY_NAME "C++ Headers umundo.s11n")
+	set(CPACK_COMPONENT_HEADERS11N_DESCRIPTION "C++ header files for umundo.s11n")
 
-set(CPACK_COMPONENT_LIBRARYANDROID_GROUP "Development")
-#set(CPACK_COMPONENT_LIBRARYIOS_GROUP "Development")
+	set(CPACK_COMPONENT_LIBRARYS11N_GROUP "Development")
+	set(CPACK_COMPONENT_HEADERS11N_GROUP "Development")
+	
+	set(CPACK_COMPONENT_LIBRARYS11N_DEPENDS libraryCore)
+	set(CPACK_COMPONENT_LIBRARYS11N_DEPENDS headerS11N)
+endif()
 
-# set(CPACK_COMPONENT_GROUP_APPLICATIONS_DESCRIPTION
-#   "All of the tools you'll ever need to develop software")
+
+set(CPACK_COMPONENT_GROUP_DEVELOPMENT_DESCRIPTION "Libraries and Headers for umundo.")

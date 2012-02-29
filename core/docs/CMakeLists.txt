@@ -7,7 +7,7 @@ if (UNIX)
 
 	ADD_CUSTOM_TARGET(
 	    docs
-		bash -c "find . -name *.png -exec convert {} -colors 16 -depth 4 {} \;"
+		bash -c "find . -name *.png -exec convert {} -colors 256 -depth 16 {} \;"
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Decreasing quality of images in documentation"
 		VERBATIM

@@ -3,7 +3,7 @@
 ############################################################
 
 # gather all header files
-file(GLOB_RECURSE UMUNDOS11N_HEADER_FILES src-cpp/*.h)
+file(GLOB_RECURSE UMUNDOS11N_HEADER_FILES src/*.h)
 
 #########################################################################
 # Redefine PROTOBUF_GENERATE_CPP macro to allow subdirectories and objc
@@ -101,6 +101,15 @@ FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
 include_directories(${Boost_INCLUDE_DIR})
 
 add_subdirectory(src/umundo)           # gather UMUNDOS11N_FILES and add target umundo library
+
+# add objective-c bindings on mac and ios
+if (APPLE OR IOS)
+	file(GLOB_RECURSE UMUNDOS11N_OBJC_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/s11n/*.mm)
+	list(APPEND UMUNDOS11N_FILES ${UMUNDOS11N_OBJC_FILES})
+	file(GLOB_RECURSE UMUNDOS11N_OBJC_HEADER_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/s11n/*.h)
+	list(APPEND UMUNDOS11N_HEADER_FILES ${UMUNDOS11N_OBJC_HEADER_FILES})
+	include_directories(${PROJECT_SOURCE_DIR}/contrib/bindings/objc/)
+endif()
 
 # library name suffix depending on build type
 if (CMAKE_GENERATOR MATCHES "Visual Studio.*")

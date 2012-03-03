@@ -1,7 +1,7 @@
 # Getting started
 
-uMundo tries to make usage as convenience for a developer as is reasonable. All the libraries we rely upon are available
-as precompiled, static libraries and are directly included in the resulting libraries in <tt>/lib</tt>. 
+uMundo tries to make usage for a developer as convenient as is reasonable. All the libraries we rely upon are available
+as precompiled, static libraries and are directly included in the uMundo libraries. 
 
 To get started, download an [installer](https://github.com/tklab-tud/umundo/tree/master/installer) for your platform and run two 
 instances of <tt>umundo-pingpong</tt> from the console or from within your installation directory. If you see some *io* on both 
@@ -43,12 +43,6 @@ uMundo applications.
 
 ### Basic Concept
 
-<table class="image" border="1px" style="float: right;">
-<caption align="bottom">Figure 1: User visible object model of umundo.core</caption>
-<tr><td><img width="300px" src="https://github.com/tklab-tud/umundo/blob/master/docs/user-visible-object-model.png" /></td></tr>
-</table>
-
-The basic idea with umundo is always to establish a structure as is given in figure 1.
 You start by instantiating a node and specify its domain in the constructor. Then you add
 publishers and subscribers specifying their channel name in the constructor. The subscriber
 also requires a receiver when invoking its constructor. There are some basic facts that you 

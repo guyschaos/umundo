@@ -45,7 +45,7 @@ uMundo applications.
 
 <table class="image" border="1px" style="float: right;">
 <caption align="bottom">Figure 1: User visible object model of umundo.core</caption>
-<tr><td><img width="300px" src="user-visible-object-model.png" /></td></tr>
+<tr><td><img width="300px" src="/tklab-tud/umundo/blob/master/docs/user-visible-object-model.png" /></td></tr>
 </table>
 
 The basic idea with umundo is always to establish a structure as is given in figure 1.

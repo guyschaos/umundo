@@ -58,11 +58,11 @@ add_subdirectory(src/umundo)    # gather UMUNDOCORE_FILES and add target umundo 
 
 # add objective-c bindings on mac and ios
 if (APPLE OR IOS)
-	file(GLOB_RECURSE UMUNDOCORE_OBJC_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/core/*.mm)
+	file(GLOB_RECURSE UMUNDOCORE_OBJC_FILES bindings/umundo-objc/core/*.mm)
 	list(APPEND UMUNDOCORE_FILES ${UMUNDOCORE_OBJC_FILES})
-	file(GLOB_RECURSE UMUNDOCORE_OBJC_HEADER_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/core/*.h)
+	file(GLOB_RECURSE UMUNDOCORE_OBJC_HEADER_FILES bindings/umundo-objc/core/*.h)
 	list(APPEND UMUNDOCORE_HEADER_FILES ${UMUNDOCORE_OBJC_HEADER_FILES})
-	include_directories(${PROJECT_SOURCE_DIR}/contrib/bindings/objc/)
+	include_directories(bindings)
 endif()
 
 # library name suffix depending on build type
@@ -109,7 +109,7 @@ endif()
 ############################################################
 
 if (NOT CMAKE_CROSSCOMPILING OR ANDROID)
-	add_subdirectory(contrib/swig)  # build umundocore JNI library
+	add_subdirectory(bindings/swig)  # build umundocore JNI library
 endif()
 
 ############################################################

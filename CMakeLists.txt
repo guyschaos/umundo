@@ -270,16 +270,16 @@ message(STATUS "umundo.core libraries:")
 foreach(file ${UMUNDOCORE_LIBRARIES})
 	message(STATUS "  ${file}")
 endforeach()
-# 
-# message(STATUS "umundo.s11n files: ")
-# foreach(file ${UMUNDOS11N_FILES})
-# 	message(STATUS "  ${file}")
-# endforeach()
-# 
-# message(STATUS "umundo.s11n libraries: ")
-# foreach(file ${UMUNDOS11N_LIBRARIES})
-# 	message(STATUS "  ${file}")
-# endforeach()
+
+message(STATUS "umundo.s11n files: ")
+foreach(file ${UMUNDOS11N_FILES})
+	message(STATUS "  ${file}")
+endforeach()
+
+message(STATUS "umundo.s11n libraries: ")
+foreach(file ${UMUNDOS11N_LIBRARIES})
+	message(STATUS "  ${file}")
+endforeach()
 
 message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
 

@@ -104,11 +104,11 @@ add_subdirectory(src/umundo)           # gather UMUNDOS11N_FILES and add target 
 
 # add objective-c bindings on mac and ios
 if (APPLE OR IOS)
-	file(GLOB_RECURSE UMUNDOS11N_OBJC_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/s11n/*.mm)
+	file(GLOB_RECURSE UMUNDOS11N_OBJC_FILES src/umundo-objc/s11n/*.mm)
 	list(APPEND UMUNDOS11N_FILES ${UMUNDOS11N_OBJC_FILES})
-	file(GLOB_RECURSE UMUNDOS11N_OBJC_HEADER_FILES ${PROJECT_SOURCE_DIR}/contrib/bindings/objc/umundo-objc/s11n/*.h)
+	file(GLOB_RECURSE UMUNDOS11N_OBJC_HEADER_FILES src/umundo-objc/s11n/*.h)
 	list(APPEND UMUNDOS11N_HEADER_FILES ${UMUNDOS11N_OBJC_HEADER_FILES})
-	include_directories(${PROJECT_SOURCE_DIR}/contrib/bindings/objc/)
+	include_directories(${PROJECT_SOURCE_DIR}/core/bindings/)
 endif()
 
 # library name suffix depending on build type

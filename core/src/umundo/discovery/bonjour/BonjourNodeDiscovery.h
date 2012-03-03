@@ -50,6 +50,8 @@ public:
 protected:
 	BonjourNodeDiscovery();
 
+  bool validateState();
+  
 	/** @name Bonjour callbacks */
 	//@{
 	static void DNSSD_API browseReply(
@@ -72,16 +74,42 @@ protected:
 	    const char* domain,
 	    void* context
 	);
+	
+	static void DNSSD_API serviceResolveReply(
+	    DNSServiceRef sdref,
+	    const DNSServiceFlags flags,
+	    uint32_t ifIndex,
+	    DNSServiceErrorType errorCode,
+	    const char *fullname,
+	    const char *hosttarget,
+	    uint16_t opaqueport,
+	    uint16_t txtLen,
+	    const unsigned char *txtRecord,
+	    void *context
+	);
+
+	static void DNSSD_API addrInfoReply(
+	    DNSServiceRef sdRef,
+	    DNSServiceFlags flags,
+	    uint32_t interfaceIndex,
+	    DNSServiceErrorType errorCode,
+	    const char *hostname,
+	    const struct sockaddr *address,
+	    uint32_t ttl,
+	    void *context
+	);
 	//@}
 
+	map<int, DNSServiceRef> _sockFDToClients;                 ///< Socket file descriptors to bonjour handle.
 
-	map<int, DNSServiceRef> _sockFD;          ///< Socket file descriptors to bonjour handle.
-	map<intptr_t, shared_ptr<NodeQuery> > _browsers;     ///< Memory addresses to node queries for static callbacks.
-	map<intptr_t, shared_ptr<NodeImpl> > _nodes;  ///< Memory addresses of local nodes for static callbacks.
-	map<intptr_t, DNSServiceRef> _dnsClients; ///< Bonjour handles for local node registration.
+	map<intptr_t, shared_ptr<NodeImpl> > _localNodes;         ///< Local node addresses to nodes.
+	map<intptr_t, DNSServiceRef> _registerClients;            ///< local node address to bonjour handles.
 
-	/// All the nodes a query was notified about.
-	map<shared_ptr<NodeQuery>, map<string, shared_ptr<BonjourNodeStub> > > _queryNodes;
+	map<intptr_t, shared_ptr<NodeQuery> > _queries;           ///< Memory addresses to node queries for static callbacks.
+	map<intptr_t, DNSServiceRef> _queryClients;               ///< query address to bonjour handles.
+	map<intptr_t, shared_ptr<NodeQuery> > _nodeToQuery;       ///< remote node addresses to their queries.
+	map<string, shared_ptr<BonjourNodeStub> > _remoteNodes;   ///< UUID to remote nodes.
+
 	Mutex _mutex;
 
 	static shared_ptr<BonjourNodeDiscovery> _instance;  ///< The singleton instance.

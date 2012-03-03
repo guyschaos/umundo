@@ -39,6 +39,7 @@ namespace umundo {
 static int longestFilename = 0;
 static int longestLineNumber = 0;
 static const char* lastLogDomain = NULL;
+static time_t lastTime = 0;
 
 // log levels can be overwritten per environment
 static bool determinedLogLevels = false;
@@ -154,13 +155,17 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 	vasprintf(&message, fmt, args);
 	va_end(args);
 
+  // timestamp
 	time_t current_time;
 	struct tm * time_info;
-	char timeStr[9];  // space for "HH:MM:SS\0"
+	char timeStr[9] = "        ";  // space for "HH:MM:SS\0"
 	time(&current_time);
-	time_info = localtime(&current_time);
-	strftime(timeStr, sizeof(timeStr), "%H:%M:%S", time_info);
-
+  if (lastTime != current_time) {
+    time_info = localtime(&current_time);
+    strftime(timeStr, sizeof(timeStr), "%H:%M:%S", time_info);
+    lastTime = current_time;
+  }
+    
 #ifdef ANDROID
 	__android_log_print(ANDROID_LOG_VERBOSE, "umundo", "%s:%d: %s %s\n", filename, line, severity, message);
 #else

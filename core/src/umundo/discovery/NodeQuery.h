@@ -27,6 +27,7 @@ public:
 	virtual void added(shared_ptr<NodeStub>);
 	virtual void changed(shared_ptr<NodeStub>);
 	virtual void removed(shared_ptr<NodeStub>);
+	
 	virtual const string& getDomain();
 	virtual void setTransport(string);
 	virtual const string& getTransport();
@@ -41,6 +42,10 @@ public:
 		return _pendingAdditions;
 	}
 
+	map<string, shared_ptr<NodeStub> >& getNodes() {
+		return _nodes;
+	}
+
 	virtual void notifyImmediately(bool notifyImmediately);
 	virtual void notifyResultSet();
 
@@ -48,6 +53,7 @@ protected:
 	bool _notifyImmediately;
 	string _domain;
 	string _transport;
+	map<string, shared_ptr<NodeStub> > _nodes;
 	ResultSet<NodeStub>* _listener;
 
 	Mutex _mutex;

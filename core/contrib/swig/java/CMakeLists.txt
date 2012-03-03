@@ -1,4 +1,9 @@
 # generate JNI library and create a jar
+# Make from within Eclipse fails miserably with the whole thing
+if(CMAKE_GENERATOR MATCHES "Eclipse.*" OR CMAKE_ECLIPSE_VERSION GREATER 0)
+	message(STATUS "NOTE: Eclipse fails with dependency on *.java")
+	return()
+endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
 	find_package(JNI)
@@ -40,6 +45,8 @@ else()
 	endif()
 endif()
 
+# message(STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
+# message(STATUS "CMAKE_ECLIPSE_VERSION: ${CMAKE_ECLIPSE_VERSION}")
 FIND_PACKAGE(Java)
 # use java started 
 if(Java_JAVAC_EXECUTABLE AND CMAKE_PATCH_VERSION GREATER 5)

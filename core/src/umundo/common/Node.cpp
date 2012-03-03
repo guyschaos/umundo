@@ -22,7 +22,7 @@ NodeImpl::NodeImpl() {
 
 Node::Node() {
 	_impl = boost::static_pointer_cast<NodeImpl>(Factory::create("node"));
-	shared_ptr<NodeConfig> config = boost::static_pointer_cast<NodeConfig>(Factory::config("node"));
+	shared_ptr<Configuration> config = Factory::config("node");
 	_impl->init(config);
 	// add our node query
 	Discovery::add(this);
@@ -30,7 +30,7 @@ Node::Node() {
 
 Node::Node(string domain) {
 	_impl = boost::static_pointer_cast<NodeImpl>(Factory::create("node"));
-	shared_ptr<NodeConfig> config = boost::static_pointer_cast<NodeConfig>(Factory::config("node"));
+	shared_ptr<Configuration> config = Factory::config("node");
 	_impl->setDomain(domain);
 	_impl->init(config);
 	Discovery::add(this);

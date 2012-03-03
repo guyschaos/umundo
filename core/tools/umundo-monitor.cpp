@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 				file = optarg;
 				break;
 			case 'w':
-				minSubs = atoi(optarg);
+				minSubs = atoi((const char*)optarg);
 				break;
 			case 'i':
 				interactive = true;
@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
 				break;
 			default:
 				printUsageAndExit();
+				break;
 		}
 	}
 	

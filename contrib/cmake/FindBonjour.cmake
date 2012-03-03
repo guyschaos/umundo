@@ -30,8 +30,21 @@ FIND_LIBRARY(Bonjour_LIBRARY
   /opt
 )
 
+FIND_LIBRARY(Bonjour_LIBRARY_DEBUG
+  NAMES ${BONJOUR_LIBNAME}_d ${BONJOUR_LIBNAME}
+  HINTS
+  $ENV{BonjourDIR}
+  PATHS
+  /usr/local
+  /usr
+  /sw
+  /opt/local
+  /opt/csw
+  /opt
+)
+
 # handle the QUIETLY and REQUIRED arguments and set OPENAL_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Bonjour DEFAULT_MSG Bonjour_LIBRARY Bonjour_INCLUDE_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Bonjour DEFAULT_MSG Bonjour_LIBRARY Bonjour_LIBRARY_DEBUG Bonjour_INCLUDE_DIR)
 MARK_AS_ADVANCED(Bonjour_INCLUDE_DIR Bonjour_LIBRARY)

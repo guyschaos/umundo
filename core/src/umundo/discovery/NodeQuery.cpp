@@ -48,18 +48,21 @@ void NodeQuery::notifyResultSet() {
 	_mutex.lock();
 	set<shared_ptr<NodeStub> >::const_iterator nodeIter;
 	for (nodeIter = _pendingChanges.begin(); nodeIter != _pendingChanges.end(); nodeIter++) {
-		_listener->changed(*nodeIter);
+		// do not notify about changes to nodes we have not yet added
+		if (_pendingAdditions.find(*nodeIter) == _pendingAdditions.end())
+			_listener->changed(*nodeIter);
 	}
-	_pendingChanges.clear();
 
 	for (nodeIter = _pendingRemovals.begin(); nodeIter != _pendingRemovals.end(); nodeIter++) {
 		_listener->removed(*nodeIter);
 	}
-	_pendingRemovals.clear();
 
 	for (nodeIter = _pendingAdditions.begin(); nodeIter != _pendingAdditions.end(); nodeIter++) {
 		_listener->added(*nodeIter);
 	}
+
+	_pendingRemovals.clear();
+	_pendingChanges.clear();
 	_pendingAdditions.clear();
 	_mutex.unlock();
 }

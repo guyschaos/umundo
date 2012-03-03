@@ -127,10 +127,10 @@ if (CMAKE_BUILD_TYPE MATCHES Release)
 	SET(LOGLEVEL_DISC "1" CACHE STRING "Log-level for discovery - higher is more verbose" FORCE)
 	SET(LOGLEVEL_NET "1" CACHE STRING "Log-level for networking - higher is more verbose" FORCE)
 else()
-	SET(LOGLEVEL_S11N "3" CACHE STRING "Log-level for serialization - higher is more verbose" FORCE)
-	SET(LOGLEVEL_COMMON "3" CACHE STRING "Log-level for common - higher is more verbose" FORCE)
-	SET(LOGLEVEL_DISC "3" CACHE STRING "Log-level for discovery - higher is more verbose" FORCE)
-	SET(LOGLEVEL_NET "3" CACHE STRING "Log-level for networking - higher is more verbose" FORCE)
+	SET(LOGLEVEL_S11N "4" CACHE STRING "Log-level for serialization - higher is more verbose" FORCE)
+	SET(LOGLEVEL_COMMON "4" CACHE STRING "Log-level for common - higher is more verbose" FORCE)
+	SET(LOGLEVEL_DISC "4" CACHE STRING "Log-level for discovery - higher is more verbose" FORCE)
+	SET(LOGLEVEL_NET "4" CACHE STRING "Log-level for networking - higher is more verbose" FORCE)
 endif()
 
 SET_PROPERTY(CACHE LOGLEVEL_COMMON PROPERTY STRINGS 0 1 2 3)
@@ -145,7 +145,8 @@ SET_PROPERTY(CACHE LOGLEVEL_S11N PROPERTY STRINGS 0 1 2 3)
 # select implementations for discovery and network connectivity
 if(UNIX AND NOT APPLE AND NOT IOS AND NOT ANDROID)
 	# build with avahi on all unices but macosx
-	OPTION(DISC_BONJOUR "Use bonjour for discovery" OFF) 
+	OPTION(DISC_BONJOUR "Use bonjour for discovery" OFF)
+	OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" OFF) 
 	OPTION(DISC_AVAHI "Use avahi for discovery" ON) 
 else()
 	# build with bonjour everywhere else
@@ -156,6 +157,18 @@ else()
 	else()
 		OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" OFF) 
 	endif()
+endif()
+
+# CMake does not allow explicit dependencies
+if (DISC_BONJOUR_EMBED AND NOT DISC_BONJOUR)
+	message("Cannot use embedded bonjour without bonjour - DISC_BONJOUR!")
+	SET(DISC_BONJOUR CACHE ON FORCE)
+endif()
+if (DISC_BONJOUR AND DISC_AVAHI)
+	message("Cannot use both avahi and bonjour for discovery - disable one!")
+endif()
+if (NOT DISC_AVAHI AND NOT DISC_BONJOUR)
+	message("No discovery implementation choosen - enable either DISC_BONJOUR or DISC_AVAHI!")
 endif()
 
 if(WIN32)
@@ -248,15 +261,15 @@ endif()
 # Some concluding remarks
 ############################################################
 
-# message(STATUS "umundo.core files: ")
-# foreach(file ${UMUNDOCORE_FILES})
-# 	message(STATUS "  ${file}")
-# endforeach()
-# 
-# message(STATUS "umundo.core libraries:")
-# foreach(file ${UMUNDOCORE_LIBRARIES})
-# 	message(STATUS "  ${file}")
-# endforeach()
+message(STATUS "umundo.core files: ")
+foreach(file ${UMUNDOCORE_FILES})
+	message(STATUS "  ${file}")
+endforeach()
+
+message(STATUS "umundo.core libraries:")
+foreach(file ${UMUNDOCORE_LIBRARIES})
+	message(STATUS "  ${file}")
+endforeach()
 # 
 # message(STATUS "umundo.s11n files: ")
 # foreach(file ${UMUNDOS11N_FILES})

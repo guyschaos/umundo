@@ -384,6 +384,28 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
         // last interface was removed, node vanished
         LOG_INFO("Vanished node %s:%d", node->getUUID().c_str(), node->getPort());
         query->removed(node);
+
+        map<string, DNSServiceRef>::iterator serviceResolveIter;
+        for (serviceResolveIter = node->_serviceResolveClients.begin(); serviceResolveIter != node->_serviceResolveClients.end(); serviceResolveIter++) {
+          int sockFD = DNSServiceRefSockFD(serviceResolveIter->second);
+          assert(getInstance()->_sockFDToClients.find(sockFD) != getInstance()->_sockFDToClients.end());
+          getInstance()->_sockFDToClients.erase(sockFD);
+          DNSServiceRefDeallocate(serviceResolveIter->second);
+          node->_serviceResolveClients.erase(serviceResolveIter);
+        }
+
+        map<int, DNSServiceRef>::iterator addrInfoIter;
+        for (addrInfoIter = node->_addrInfoClients.begin(); addrInfoIter != node->_addrInfoClients.end(); addrInfoIter++) {
+          int sockFD = DNSServiceRefSockFD(addrInfoIter->second);
+          assert(getInstance()->_sockFDToClients.find(sockFD) != getInstance()->_sockFDToClients.end());
+          getInstance()->_sockFDToClients.erase(sockFD);
+          DNSServiceRefDeallocate(addrInfoIter->second);
+          node->_addrInfoClients.erase(addrInfoIter);
+        }
+        assert(getInstance()->_nodeToQuery.find((intptr_t)node.get()) != getInstance()->_nodeToQuery.end());
+        getInstance()->_nodeToQuery.erase((intptr_t)node.get());
+				getInstance()->_remoteNodes.erase(node->getUUID());
+        
       } else {
         LOG_INFO("Ancient node vanished %s:%d", node->getUUID().c_str(), node->getPort());
       }
@@ -473,7 +495,7 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 		node->_bonjourDomain = fullname;
 		node->_hostTarget = hosttarget;
 		node->_port = ntohs(opaqueport);
-
+    
 		const char* domainStart = strchr(hosttarget, '.');
 		node->_domain = ++domainStart;
 
@@ -485,6 +507,13 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 		free(host);
 
     // do we remove the service resolve client now that we resolved the service?
+//    assert(node->_serviceResolveClients.find(node->_domain) != node->_serviceResolveClients.end());
+//    int sockFD = DNSServiceRefSockFD(node->_serviceResolveClients[node->_domain]);
+//    assert(getInstance()->_sockFDToClients.find(sockFD) != getInstance()->_sockFDToClients.end());
+//    getInstance()->_sockFDToClients.erase(sockFD);
+//    DNSServiceRefDeallocate(node->_serviceResolveClients[node->_domain]);
+//    node->_serviceResolveClients.erase(node->_domain);
+
     
     // I am not sure whether this is a valid assumption
     //assert(node->_addrInfoClients.find(interfaceIndex) == node->_addrInfoClients.end());
@@ -727,7 +756,7 @@ bool BonjourNodeDiscovery::validateState() {
   assert(socketFDs.size() == 0);
 #endif
 
-  LOG_DEBUG("Validated state");
+  LOG_DEBUG("Validated state: %d remote nodes, %d local nodes, %d queries", _remoteNodes.size(), _localNodes.size(), _sockFDToClients.size());
   _mutex.unlock();
   return true;
 }

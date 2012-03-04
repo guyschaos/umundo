@@ -104,8 +104,13 @@ void ZeroMQSubscriber::run() {
 void ZeroMQSubscriber::added(shared_ptr<PublisherStub> pub) {
 	std::stringstream ss;
 	ss << pub->getTransport() << "://" << pub->getIP() << ":" << pub->getPort();
-	LOG_DEBUG("ZeroMQSubscriber connecting to %s", ss.str().c_str());
-	zmq_connect(_socket, ss.str().c_str()) && LOG_WARN("zmq_connect: %s",zmq_strerror(errno));
+	if (_connections.find(ss.str()) != _connections.end()) {
+		LOG_DEBUG("ZeroMQSubscriber relying on auto-reconnect for %s", ss.str().c_str());		
+	} else {
+		LOG_DEBUG("ZeroMQSubscriber connecting to %s", ss.str().c_str());
+		zmq_connect(_socket, ss.str().c_str()) && LOG_WARN("zmq_connect: %s",zmq_strerror(errno));
+		_connections.insert(ss.str());
+	}
 }
 
 void ZeroMQSubscriber::removed(shared_ptr<PublisherStub> pub) {

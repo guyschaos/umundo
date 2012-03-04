@@ -32,6 +32,7 @@ protected:
 	ZeroMQSubscriber();
 	ZeroMQSubscriber(string, Receiver*);
 
+	set<string> _connections;
 	void* _socket;
 	void* _zeroMQCtx;
 

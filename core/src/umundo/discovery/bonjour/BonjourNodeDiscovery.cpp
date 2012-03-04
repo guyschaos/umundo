@@ -487,7 +487,7 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
     // do we remove the service resolve client now that we resolved the service?
     
     // I am not sure whether this is a valid assumption
-    assert(node->_addrInfoClients.find(interfaceIndex) == node->_addrInfoClients.end());
+    //assert(node->_addrInfoClients.find(interfaceIndex) == node->_addrInfoClients.end());
     
     DNSServiceRef addrInfoClient;
 

@@ -114,4 +114,4 @@ especially with the embedded mDNS server on Android. Furthermore sleeping / awak
 	rather low ulimit for open file-handles on MacOSX (<tt>ulimit -n</tt> gives 256).</dd>
 
 <dt><b>Are these actually questions that are asked frequently?</b><dt>
-<dd>No, it's more like a set of questions I can imagine other people might have. It will eventually grow into a real FAQ.</dd>.
+<dd>No, it's more like a set of questions I can imagine other people might have. It will eventually grow into a real FAQ.</dd>

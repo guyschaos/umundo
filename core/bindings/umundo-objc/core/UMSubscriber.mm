@@ -14,6 +14,8 @@ public:
   umundoReceiverWrapper(id<UMSubscriberReceiver> receiver) : _objcReceiver(receiver) {}
   id<UMSubscriberReceiver> _objcReceiver;
 	virtual void receive(umundo::Message* msg) {
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
     NSData* nsData = [[NSData alloc] initWithBytes:(msg->getData().data()) length:msg->getData().size()];
     NSMutableDictionary* nsMeta = [[NSMutableDictionary alloc] init];
     std::map<std::string, std::string>::const_iterator metaIter;
@@ -23,6 +25,8 @@ public:
        forKey:[NSString stringWithCString:metaIter->second.c_str() encoding:[NSString defaultCStringEncoding]]];
     }
     [_objcReceiver received:nsData withMeta:nsMeta];
+    [pool drain];
+
   }
 };
 

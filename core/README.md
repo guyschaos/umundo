@@ -13,6 +13,11 @@ there are matching Nodes appearing or disappearing.
 You instantiate a Node within a domain and add Publishers and Subscribers to it. The Node will register itself with the 
 Discovery component and automatically hook up your Publishers and Subscribers with remote entities within the same domain.
 
+Most of the work is being done in <a href="https://github.com/tklab-tud/umundo/blob/master/core/src/umundo/discovery/avahi/AvahiNodeDiscovery.cpp">AvahiNodeDiscovery.cpp</a> 
+and <a href="https://github.com/tklab-tud/umundo/blob/master/core/src/umundo/discovery/bonjour/BonjourNodeDiscovery.cpp">BonjourNodeDiscovery.cpp</a>
+for discovery and <a href="https://github.com/tklab-tud/umundo/blob/master/core/src/umundo/connection/zeromq/ZeroMQNode.cpp">ZeroMQNode.cpp</a>
+for connection handling.
+
 ### Patterns
 
 Throughout umundo.core, the Pimpl or Bridge pattern is applied - as far as I can tell, they are the same. The basic idea here 

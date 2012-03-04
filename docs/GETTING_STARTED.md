@@ -7,6 +7,12 @@ To get started, download an [installer](https://github.com/tklab-tud/umundo/tree
 instances of <tt>umundo-pingpong</tt> from the console or from within your installation directory. If you see some *io* on both 
 ends, your system is setup correctly to run umundo programs.
 
+You can export <tt>UMUNDO_LOGLEVEL=[0..4]</tt> to increase the global log-level, with 4 being the most verbose. You can also
+increase/descrease log-levels per domain by exporting <tt>UMUNDO_LOGLEVEL_[COMMON|NET|DISC|S11N]=[0..4]</tt>. With some terminals,
+colored output is available via <tt>UMUNDO_LOGCOLORS=[ON|OFF]</tt>. Have a look at the 
+<a href="https://github.com/tklab-tud/umundo/blob/master/core/src/umundo/common/Debug.cpp">Debug.cpp</a> file to see how
+the various options are used.
+
 ## Dependencies
 
 Below are the runtime dependencies for uMundo as the prerequisites to install on a platform in order to develop with and run

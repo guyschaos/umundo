@@ -1,5 +1,7 @@
-
 # Building from Source
+
+The source code is build using CMake, see the dependencies below and install all the required packages, than see the platform
+notes to build uMundo on your platform.
 
 ## Build Dependencies
 
@@ -83,9 +85,11 @@ If you want to build for another IDE or build-environment, just empty the *out-o
 get an idea of supported IDEs and build-environments on your platform, type <tt>cmake --help</tt> and look for the *Generators*
 section at the end of the output.
 
-## Mac OSX
+## Platform Notes
 
-### Console / Make
+### Mac OSX
+
+#### Console / Make
 
 	$ cd /somewhere/convenient/
 	$ git clone git@github.com:tklab-tud/umundo.git
@@ -103,7 +107,7 @@ You can test whether everything works by starting one of the sample programs:
 	[...]
 	$ killall umundo-pingpong
 	
-### Xcode
+#### Xcode
 	
 	$ cd /somewhere/even/more/convenient/
 	$ git clone git@github.com:tklab-tud/umundo.git
@@ -113,13 +117,13 @@ You can test whether everything works by starting one of the sample programs:
 	-- Build files have been written to: /somewhere/convenient/umundo/build
 	$ open umundo.xcodeproj
 
-## Linux
+### Linux
 
-### Console / Make
+#### Console / Make
 
 Instructions are literally a verbatim copy of building umundo for MacOSX on the console.
 
-### Eclipse CDT
+#### Eclipse CDT
 
 	$ cd /somewhere/convenient/
 	$ git clone git@github.com:tklab-tud/umundo.git
@@ -132,7 +136,7 @@ Now open Eclipse CDT and import the out-of-source directory as an existing proje
 into workspace" checkbox unchecked. There are some more [detailled instruction](http://www.cmake.org/Wiki/Eclipse_CDT4_Generator) available 
 in the cmake wiki as well.
 
-### Debian Stable - Complete Walkthrough
+#### Debian Stable - Complete Walkthrough
 
 I downloaded and installed a *fresh* installation of Debian GNU/Linux 6.0.4 stable for i386 from the netinst.iso, here are all the 
 steps required to arrive at a static <tt>libumundocore.a</tt> (<tt>sudo</tt> is no actually installed by default, install it and 
@@ -177,7 +181,7 @@ need is a current CMake version:
 This should say <tt>cmake version 2.8.7</tt>. If you get the bash complaining about not finding cmake, logout and login again. Now
 you got everything needed to compile Java wrappers. 
 
-## Windows
+### Windows
 
 Building from source on windows is somewhat more involved and instructions are necessarily in prose form.
 
@@ -195,3 +199,7 @@ I can say for sure that MinGW won't work for now, as we do not have prebuilt lib
 7. Navigate to the directory where you told CMake-GUI to build the libraries and find a umundo solution file for MS Visual Studio
 there.
 8. Open the solution with MS Visual Studio. Only <tt>Debug</tt> and <tt>Release</tt> builds are supported for now.
+
+## Build process
+
+Throughout the uMundo directories, there are <tt>CMakeLists.txt</tt> files describing the build process.

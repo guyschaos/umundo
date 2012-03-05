@@ -27,6 +27,7 @@ namespace umundo {
 
 BonjourNodeDiscovery::BonjourNodeDiscovery() {
 	DEBUG_CTOR("BonjourNodeDiscovery");
+  _removeCurrentFD = false;
 }
 
 shared_ptr<Implementation> BonjourNodeDiscovery::create() {
@@ -87,11 +88,11 @@ void BonjourNodeDiscovery::run() {
 		tv.tv_sec  = BONJOUR_REPOLL_SEC;
 		tv.tv_usec = BONJOUR_REPOLL_USEC;
 
-		std::map<int, DNSServiceRef>::const_iterator it;
-		for (it = _sockFDToClients.begin(); it != _sockFDToClients.end(); it++) {
-			if (it->first > nfds)
-				nfds = it->first;
-			FD_SET(it->first, &readfds);
+		std::map<int, DNSServiceRef>::const_iterator cIt;
+		for (cIt = _sockFDToClients.begin(); cIt != _sockFDToClients.end(); cIt++) {
+			if (cIt->first > nfds)
+				nfds = cIt->first;
+			FD_SET(cIt->first, &readfds);
 		}
 		nfds++;
 
@@ -99,12 +100,18 @@ void BonjourNodeDiscovery::run() {
 
 		if (result > 0) {
 			_mutex.lock();
-			for (it = _sockFDToClients.begin(); it != _sockFDToClients.end(); it++) {
-				if (FD_ISSET(it->first, &readfds)) {
+      std::map<int, DNSServiceRef>::const_iterator it;
+
+      it = _sockFDToClients.begin();
+      while(it != _sockFDToClients.end()) {
+        DNSServiceRef sdref = it->second;
+        int sockFD = it->first;
+        it++;
+        if (FD_ISSET(sockFD, &readfds)) {
 					LOG_DEBUG("Processing mDNS event");
-					DNSServiceProcessResult(it->second);
+					DNSServiceProcessResult(sdref);
 				}
-			}
+      }
 			_mutex.unlock();
 		} else if (result == 0) {
 			// timeout
@@ -383,8 +390,9 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
       if (node->_isAdded) {
         // last interface was removed, node vanished
         LOG_INFO("Vanished node %s:%d", node->getUUID().c_str(), node->getPort());
-        query->removed(node);
+        query->removed(boost::static_pointer_cast<NodeStub>(node));
 
+#ifndef DISC_BONJOUR_EMBED
         map<string, DNSServiceRef>::iterator serviceResolveIter;
         for (serviceResolveIter = node->_serviceResolveClients.begin(); serviceResolveIter != node->_serviceResolveClients.end(); serviceResolveIter++) {
           int sockFD = DNSServiceRefSockFD(serviceResolveIter->second);
@@ -402,6 +410,7 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
           DNSServiceRefDeallocate(addrInfoIter->second);
           node->_addrInfoClients.erase(addrInfoIter);
         }
+#endif
         assert(getInstance()->_nodeToQuery.find((intptr_t)node.get()) != getInstance()->_nodeToQuery.end());
         getInstance()->_nodeToQuery.erase((intptr_t)node.get());
 				getInstance()->_remoteNodes.erase(node->getUUID());
@@ -505,15 +514,6 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 		hostEnd[0] = 0;
 		node->_host = host;
 		free(host);
-
-    // do we remove the service resolve client now that we resolved the service?
-//    assert(node->_serviceResolveClients.find(node->_domain) != node->_serviceResolveClients.end());
-//    int sockFD = DNSServiceRefSockFD(node->_serviceResolveClients[node->_domain]);
-//    assert(getInstance()->_sockFDToClients.find(sockFD) != getInstance()->_sockFDToClients.end());
-//    getInstance()->_sockFDToClients.erase(sockFD);
-//    DNSServiceRefDeallocate(node->_serviceResolveClients[node->_domain]);
-//    node->_serviceResolveClients.erase(node->_domain);
-
     
     // I am not sure whether this is a valid assumption
     //assert(node->_addrInfoClients.find(interfaceIndex) == node->_addrInfoClients.end());
@@ -539,6 +539,18 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 			LOG_ERR("DNSServiceGetAddrInfo returned error");
 		}
 
+		if (!(flags & kDNSServiceFlagsMoreComing)) {
+#ifndef DISC_BONJOUR_EMBED
+			// remove the service resolver for this domain
+			assert(node->_serviceResolveClients.find(node->_domain) != node->_serviceResolveClients.end());
+			assert(node->_serviceResolveClients[node->_domain] == sdref);
+			int sockFD = DNSServiceRefSockFD(node->_serviceResolveClients[node->_domain]);
+			assert(getInstance()->_sockFDToClients.find(sockFD) != getInstance()->_sockFDToClients.end());
+			getInstance()->_sockFDToClients.erase(sockFD);
+			DNSServiceRefDeallocate(node->_serviceResolveClients[node->_domain]);
+			node->_serviceResolveClients.erase(node->_domain);
+#endif
+		}
 	} else {
 		LOG_WARN("serviceResolveReply called with error: %d", errorCode);
 	}
@@ -618,17 +630,30 @@ void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
       LOG_WARN("addrInfoReply error %d for %s at interface %d", errorCode, hostname, interfaceIndex);
 		break;
 	}
-  
+#ifndef DISC_BONJOUR_EMBED
+  if (node->_interfacesIPv6.find(interfaceIndex) != node->_interfacesIPv6.end() && 
+      node->_interfacesIPv4.find(interfaceIndex) != node->_interfacesIPv4.end()) {
+    // remove the address resolver for this domain
+    assert(node->_addrInfoClients.find(interfaceIndex) != node->_addrInfoClients.end());
+    assert(node->_addrInfoClients[interfaceIndex] == sdRef);
+    int sockFD = DNSServiceRefSockFD(node->_addrInfoClients[interfaceIndex]);
+    assert(getInstance()->_sockFDToClients.find(sockFD) != getInstance()->_sockFDToClients.end());
+    getInstance()->_sockFDToClients.erase(sockFD);
+    DNSServiceRefDeallocate(node->_addrInfoClients[interfaceIndex]);
+    node->_addrInfoClients.erase(interfaceIndex);
+  }
+#endif
   // is this node fully resolved?
   if (node->_interfaceIndices.size() == node->_interfacesIPv4.size()) {
 //      node->_interfaceIndices.size() == node->_interfacesIPv6.size()) {
     // we resolved all interfaces
     LOG_DEBUG("Fully resolved node %s", node->getUUID().c_str());
+
     if (node->_isAdded) {
-      query->changed(node);
+      query->changed(boost::static_pointer_cast<NodeStub>(node));
     } else {
       node->_isAdded = true;
-      query->added(node);          
+      query->added(boost::static_pointer_cast<NodeStub>(node));
     }
   }
 
@@ -665,18 +690,14 @@ void DNSSD_API BonjourNodeDiscovery::registerReply(
     LOG_WARN("Name conflict!");
 
   switch (errorCode) {
-  case kDNSServiceErr_NoError:
-    if (flags & kDNSServiceFlagsAdd) {
+  case kDNSServiceErr_NoError: {
       shared_ptr<NodeImpl> node = getInstance()->_localNodes[(intptr_t)context];
       assert(node != NULL);
       assert(name != NULL);
       assert(domain != NULL);
       node->setUUID(name);
       node->setDomain(domain);
-    } else {
-      // I am not sure what it would mean to end up here
-      LOG_WARN("In replyRegister from DNSServiceRegister, something fishy happened");
-    }
+		}
     break;
   case kDNSServiceErr_NameConflict:
     break;
@@ -709,6 +730,7 @@ bool BonjourNodeDiscovery::validateState() {
     // gather all socket fds to eliminate them in subsequent tests
     socketFDs.insert(sockFDToClientIter->first);
   }
+  LOG_DEBUG("%d dns queries:", socketFDs.size());
 #endif
 
   // test something about local nodes?
@@ -738,15 +760,19 @@ bool BonjourNodeDiscovery::validateState() {
   
   for (remoteNodeIter = _remoteNodes.begin(); remoteNodeIter != _remoteNodes.end(); remoteNodeIter++) {
     assert(remoteNodeIter->first.compare(remoteNodeIter->second->getUUID()) == 0);
+    LOG_DEBUG("%s service resolvers:", remoteNodeIter->first.c_str());
     for (serviceResolveClientIter = remoteNodeIter->second->_serviceResolveClients.begin(); serviceResolveClientIter != remoteNodeIter->second->_serviceResolveClients.end(); serviceResolveClientIter++) {
 #ifndef DISC_BONJOUR_EMBED
       assert(socketFDs.find(DNSServiceRefSockFD(serviceResolveClientIter->second)) != socketFDs.end());
+      LOG_DEBUG("%s", serviceResolveClientIter->first.c_str());
       socketFDs.erase(DNSServiceRefSockFD(serviceResolveClientIter->second));
 #endif
     }
+    LOG_DEBUG("%s address resolvers:", remoteNodeIter->first.c_str());
     for (addrInfoClientIter = remoteNodeIter->second->_addrInfoClients.begin(); addrInfoClientIter != remoteNodeIter->second->_addrInfoClients.end(); addrInfoClientIter++) {
 #ifndef DISC_BONJOUR_EMBED
       assert(socketFDs.find(DNSServiceRefSockFD(addrInfoClientIter->second)) != socketFDs.end());
+      LOG_DEBUG("if %d", addrInfoClientIter->first);
       socketFDs.erase(DNSServiceRefSockFD(addrInfoClientIter->second));
 #endif
     }

@@ -9,7 +9,8 @@ set -e
 
 ME=`basename $0`
 TARGET_DEVICE="arm-linux-androideabi"
-DEST_DIR="${PWD}/../../prebuilt/zeromq/android/${TARGET_DEVICE}"
+BUILD_DIR="/tmp/build-zeromq-android/"
+DEST_DIR="${PWD}/../../prebuilt/android/${TARGET_DEVICE}/lib"
 
 if [ ! -f src/zmq.cpp ]; then
 	echo
@@ -19,6 +20,7 @@ if [ ! -f src/zmq.cpp ]; then
 	echo
 	exit
 fi
+mkdir -p ${BUILD_DIR} &> /dev/null
 mkdir -p ${DEST_DIR} &> /dev/null
 
 # set ANDROID_NDK to default if environment variable not set
@@ -41,14 +43,23 @@ if [ ! -f ${ANDROID_NDK_ROOT}/ndk-build ]; then
 fi
 
 # download updated config.guess and config.sub
-cd config
-wget http://git.savannah.gnu.org/cgit/config.git/plain/config.guess -O config.guess
-wget http://git.savannah.gnu.org/cgit/config.git/plain/config.sub -O config.sub
-cd ..
+#cd config
+#wget http://git.savannah.gnu.org/cgit/config.git/plain/config.guess -O config.guess
+#wget http://git.savannah.gnu.org/cgit/config.git/plain/config.sub -O config.sub
+#cd ..
 
 if [ -f Makefile ]; then
 	make clean
 fi
+
+
+if [ -f ispatched ]; then
+	rm ./ispatched
+else
+	patch -p1 < ../zeromq-3.1.0.android.patch
+fi
+touch ispatched
+
 
 # select and verify toolchain
 ANDROID_SYS_ROOT="${ANDROID_NDK_ROOT}/standalone"
@@ -67,13 +78,18 @@ if [ ! -d ${ANDROID_SYS_ROOT}/lib ]; then
 	exit;
 fi
 
+COMMON_FLAGS=" -DANDROID -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -DTARGET_OS_ANDROID -fsigned-char -mfloat-abi=softfp -mfpu=vfp -fno-exceptions -fno-rtti -mthumb -fomit-frame-pointer -fno-strict-aliasing "
+
 ./configure \
 CPP="cpp" \
 CXXCPP="cpp" \
 CC="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-gcc" \
 CXX="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-g++" \
 LD="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-ld" \
-LDFLAGS="-L${ANDROID_SYS_ROOT}/lib -static" \
+CXXFLAGS="-O3 ${COMMON_FLAGS}" \
+CFLAGS="-O3 ${COMMON_FLAGS}" \
+LIBZMQ_EXTRA_LDFLAGS="-llog" \
+LDFLAGS="-L${ANDROID_SYS_ROOT}/lib -static -Wl,--fix-cortex-a8" \
 CPPFLAGS="-I${ANDROID_SYS_ROOT}/include -static" \
 AR="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-ar" \
 AS="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-as" \
@@ -83,16 +99,39 @@ RANLIB="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-ranlib" \
 --disable-dependency-tracking \
 --target=arm-linux-androideabi \
 --host=arm-linux-androideabi \
---prefix=${DEST_DIR}
+--prefix=${BUILD_DIR}
 
 make -j2 install
 
-# tidy up
-rm -rf ${DEST_DIR}/include
-rm -rf ${DEST_DIR}/share
-rm -rf ${DEST_DIR}/lib/pkgconfig
-mv ${DEST_DIR}/lib/* ${DEST_DIR}
-rm -rf ${DEST_DIR}/lib
+mv ${BUILD_DIR}/lib/libzmq.a ${DEST_DIR}
+
+make clean
+
+# build again with debugging
+./configure \
+CPP="cpp" \
+CXXCPP="cpp" \
+CC="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-gcc" \
+CXX="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-g++" \
+LD="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-ld" \
+CXXFLAGS="-g ${COMMON_FLAGS}" \
+CFLAGS="-g ${COMMON_FLAGS}" \
+LIBZMQ_EXTRA_LDFLAGS="-llog" \
+LDFLAGS="-L${ANDROID_SYS_ROOT}/lib -static -Wl,--fix-cortex-a8" \
+CPPFLAGS="-I${ANDROID_SYS_ROOT}/include -static" \
+AR="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-ar" \
+AS="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-as" \
+LIBTOOL="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-libtool" \
+STRIP="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-strip" \
+RANLIB="${ANDROID_SYS_ROOT}/bin/${TARGET_DEVICE}-ranlib" \
+--disable-dependency-tracking \
+--target=arm-linux-androideabi \
+--host=arm-linux-androideabi \
+--prefix=${BUILD_DIR}
+
+make -j2 install
+
+mv ${BUILD_DIR}/lib/libzmq.a ${DEST_DIR}/libzmq_d.a
 
 echo
 echo "Installed static libraries in ${DEST_DIR}"

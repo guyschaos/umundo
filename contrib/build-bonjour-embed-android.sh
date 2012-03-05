@@ -63,7 +63,7 @@ SYSROOT=${ANDROID_NDK_ROOT}/platforms/android-14/arch-arm
 CC_FLAGS="\
  -ImDNSCore -ImDNSShared -fwrapv -W -Wall -DPID_FILE=\"/var/run/mdnsd.pid\" \
  -DMDNS_UDS_SERVERPATH=\"/var/run/mdnsd\" -DTARGET_OS_ANDROID -DNOT_HAVE_SA_LEN -DUSES_NETLINK -fpic\
- -Wdeclaration-after-statement -Os -DMDNS_DEBUGMSGS=5 -llog"
+ -Wdeclaration-after-statement -Os -llog"
 
 if [ -d build ]; then
 	rm -rf build
@@ -79,7 +79,7 @@ OBJS=""
 for file in ${mDNSEmbedded[@]}; do
 	if [ ! -f build/${file}.o ]; then
 		echo ${CC} --sysroot=${SYSROOT} ${CC_FLAGS} ${file} -o build/${file}.o
-		${CC} --sysroot=${SYSROOT} ${CC_FLAGS} -c ${file} -o build/${file}.o
+		${CC} --sysroot=${SYSROOT} -DMDNS_DEBUGMSGS=0 ${CC_FLAGS} -c ${file} -o build/${file}.o
 		OBJS="$OBJS build/${file}.o"
 	fi
 done
@@ -94,7 +94,7 @@ OBJS=""
 for file in ${mDNSEmbedded[@]}; do
 	if [ ! -f build/${file}_d.o ]; then
 		echo ${CC} --sysroot=${SYSROOT} ${CC_FLAGS} ${file} -o build/${file}_d.o
-		${CC} --sysroot=${SYSROOT} ${CC_FLAGS} -c ${file} -o build/${file}_d.o
+		${CC} --sysroot=${SYSROOT} -g -DMDNS_DEBUGMSGS=5 ${CC_FLAGS} -c ${file} -o build/${file}_d.o
 		OBJS="$OBJS build/${file}_d.o"
 	fi
 done

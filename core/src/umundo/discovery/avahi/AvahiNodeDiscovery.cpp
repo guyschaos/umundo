@@ -45,7 +45,7 @@ void AvahiNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	getInstance()->_nodes[address] = node;
 
 	AvahiClient* client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, &clientCallback, (void*)address, &err);
-	if (!client) LOG_WARN("avahi_client_new", err);
+	if (!client) LOG_WARN("avahi_client_new - is the Avahi daemon running?", err);
 	getInstance()->_avahiClients[address] = client;
 	getInstance()->start();
 }
@@ -63,7 +63,7 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 
 	client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, browseClientCallback, (void*)address, &error);
 	if (client == NULL) {
-		LOG_WARN("avahi_client_new failed", error);
+		LOG_WARN("avahi_client_new failed - is the Avahi daemon running?", error);
 		return;
 	}
 	getInstance()->_avahiClients[address] = client;

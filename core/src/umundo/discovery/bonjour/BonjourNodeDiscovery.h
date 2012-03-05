@@ -101,7 +101,8 @@ protected:
 	//@}
 
 	map<int, DNSServiceRef> _sockFDToClients;                 ///< Socket file descriptors to bonjour handle.
-
+  bool _removeCurrentFD;                                    ///< whether we remove the current bonjour handle after processing
+  
 	map<intptr_t, shared_ptr<NodeImpl> > _localNodes;         ///< Local node addresses to nodes.
 	map<intptr_t, DNSServiceRef> _registerClients;            ///< local node address to bonjour handles.
 

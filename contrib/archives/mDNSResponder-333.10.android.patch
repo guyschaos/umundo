@@ -1,6 +1,6 @@
-diff -rupN mDNSResponder-333.10/mDNSPosix/mDNSPosix.h mDNSResponder-333.10.android/mDNSPosix/mDNSPosix.h
---- mDNSResponder-333.10/mDNSPosix/mDNSPosix.h	2012-01-26 02:26:42.000000000 +0100
-+++ mDNSResponder-333.10.android/mDNSPosix/mDNSPosix.h	2012-01-26 02:13:48.000000000 +0100
+diff -rupN mDNSResponder-333.10/mDNSPosix/mDNSPosix.h mDNSResponder-333.10.patched/mDNSPosix/mDNSPosix.h
+--- mDNSResponder-333.10/mDNSPosix/mDNSPosix.h	2009-08-11 03:13:47.000000000 +0200
++++ mDNSResponder-333.10.patched/mDNSPosix/mDNSPosix.h	2012-03-05 11:55:13.000000000 +0100
 @@ -25,6 +25,10 @@
      extern "C" {
  #endif
@@ -12,9 +12,50 @@ diff -rupN mDNSResponder-333.10/mDNSPosix/mDNSPosix.h mDNSResponder-333.10.andro
  // PosixNetworkInterface is a record extension of the core NetworkInterfaceInfo
  // type that supports extra fields needed by the Posix platform.
  //
-diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c mDNSResponder-333.10.android/mDNSShared/dnssd_clientshim.c
---- mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c	2012-01-26 02:26:42.000000000 +0100
-+++ mDNSResponder-333.10.android/mDNSShared/dnssd_clientshim.c	2012-01-26 02:13:48.000000000 +0100
+diff -rupN mDNSResponder-333.10/mDNSShared/PlatformCommon.c mDNSResponder-333.10.patched/mDNSShared/PlatformCommon.c
+--- mDNSResponder-333.10/mDNSShared/PlatformCommon.c	2011-04-12 00:54:35.000000000 +0200
++++ mDNSResponder-333.10.patched/mDNSShared/PlatformCommon.c	2012-03-05 14:08:34.000000000 +0100
+@@ -27,6 +27,10 @@
+ #include "DNSCommon.h"
+ #include "PlatformCommon.h"
+ 
++#ifdef TARGET_OS_ANDROID
++#include <android/log.h>
++#endif
++
+ #ifdef NOT_HAVE_SOCKLEN_T
+     typedef unsigned int socklen_t;
+ #endif
+@@ -143,13 +147,20 @@ mDNSexport void ReadDDNSSettingsFromConf
+ #if MDNS_DEBUGMSGS
+ mDNSexport void mDNSPlatformWriteDebugMsg(const char *msg)
+ 	{
++#ifdef TARGET_OS_ANDROID
++	__android_log_print(ANDROID_LOG_DEBUG, "bonjour", "%s", msg);
++#else
+ 	fprintf(stderr,"%s\n", msg);
+ 	fflush(stderr);
++#endif
+ 	}
+ #endif
+ 
+ mDNSexport void mDNSPlatformWriteLogMsg(const char *ident, const char *buffer, mDNSLogLevel_t loglevel)
+ 	{
++#ifdef TARGET_OS_ANDROID
++	__android_log_print(ANDROID_LOG_DEBUG, "bonjour", "%s", buffer);
++#else
+ #if APPLE_OSX_mDNSResponder && LogTimeStamps
+ 	extern mDNS mDNSStorage;
+ 	extern mDNSu32 mDNSPlatformClockDivisor;
+@@ -193,4 +204,5 @@ mDNSexport void mDNSPlatformWriteLogMsg(
+ #endif
+ 			syslog(syslog_level, "%s", buffer);
+ 		}
++#endif
+ 	}
+diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c mDNSResponder-333.10.patched/mDNSShared/dnssd_clientshim.c
+--- mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c	2011-06-02 00:44:37.000000000 +0200
++++ mDNSResponder-333.10.patched/mDNSShared/dnssd_clientshim.c	2012-03-05 11:55:13.000000000 +0100
 @@ -25,6 +25,9 @@
  
  #include "dns_sd.h"				// Defines the interface to the client layer above
@@ -49,9 +90,9 @@ diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c mDNSResponder-333.
  	x->q.SearchListIndex     = 0;
  	x->q.AppendSearchDomains = 0;
  	x->q.RetryWithSearchDomains = mDNSfalse;
-diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_ipc.h mDNSResponder-333.10.android/mDNSShared/dnssd_ipc.h
---- mDNSResponder-333.10/mDNSShared/dnssd_ipc.h	2012-01-26 02:26:42.000000000 +0100
-+++ mDNSResponder-333.10.android/mDNSShared/dnssd_ipc.h	2012-01-26 02:13:48.000000000 +0100
+diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_ipc.h mDNSResponder-333.10.patched/mDNSShared/dnssd_ipc.h
+--- mDNSResponder-333.10/mDNSShared/dnssd_ipc.h	2011-06-30 22:56:04.000000000 +0200
++++ mDNSResponder-333.10.patched/mDNSShared/dnssd_ipc.h	2012-03-05 11:55:13.000000000 +0100
 @@ -29,6 +29,11 @@
  #ifndef DNSSD_IPC_H
  #define DNSSD_IPC_H
@@ -64,9 +105,9 @@ diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_ipc.h mDNSResponder-333.10.andr
  #include "dns_sd.h"
  
  //
-diff -rupN mDNSResponder-333.10/mDNSShared/uds_daemon.h mDNSResponder-333.10.android/mDNSShared/uds_daemon.h
---- mDNSResponder-333.10/mDNSShared/uds_daemon.h	2012-01-26 02:26:42.000000000 +0100
-+++ mDNSResponder-333.10.android/mDNSShared/uds_daemon.h	2012-01-26 02:13:48.000000000 +0100
+diff -rupN mDNSResponder-333.10/mDNSShared/uds_daemon.h mDNSResponder-333.10.patched/mDNSShared/uds_daemon.h
+--- mDNSResponder-333.10/mDNSShared/uds_daemon.h	2011-05-18 00:18:08.000000000 +0200
++++ mDNSResponder-333.10.patched/mDNSShared/uds_daemon.h	2012-03-05 11:55:13.000000000 +0100
 @@ -22,6 +22,11 @@
  
   */

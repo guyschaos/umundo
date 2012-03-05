@@ -167,7 +167,7 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
   }
     
 #ifdef ANDROID
-	__android_log_print(ANDROID_LOG_VERBOSE, "umundo", "%s:%d: %s %s\n", filename, line, severity, message);
+	__android_log_print(ANDROID_LOG_VERBOSE, logDomain, "%s:%d: %s %s\n", filename, line, severity, message);
 #else
 	if (useColors) {
 #ifdef WIN32

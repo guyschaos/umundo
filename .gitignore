@@ -1,7 +1,8 @@
+contrib/samples/android/bin
 core/contrib/bindings/android/bin/
 core/contrib/bindings/android/gen/
-.DS_Store
 core/contrib/bindings/java/bin/
 build/
 build-cli/
 core/docs/html/
+.DS_Store

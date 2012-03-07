@@ -53,7 +53,7 @@ class Node : public NodeStub {
 public:
 	Node();
 	Node(string domain);
-	virtual ~Node() {}
+	virtual ~Node();
 
 	/** @name Publish / Subscriber Maintenance */
 	//@{

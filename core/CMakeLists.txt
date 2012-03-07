@@ -71,7 +71,7 @@ if (APPLE OR IOS)
 endif()
 
 # library name suffix depending on build type
-if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
 	add_library(umundocore
 		${UMUNDOCORE_FILES}
 		${UMUNDOCORE_HEADER_FILES}

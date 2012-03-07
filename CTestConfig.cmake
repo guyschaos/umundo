@@ -1,0 +1,11 @@
+# Dashboard is opened for submissions for a 24 hour period starting at
+# the specified NIGHLY_START_TIME. Time is specified in 24 hour format.
+#SET (CTEST_NIGHTLY_START_TIME "23:00:00 EDT")
+
+set(CTEST_PROJECT_NAME "umundo")
+set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
+
+set(CTEST_DROP_METHOD "http")
+set(CTEST_DROP_SITE "epikur.local")
+set(CTEST_DROP_LOCATION "/cdash/submit.php?project=umundo")
+set(CTEST_DROP_SITE_CDASH TRUE)

@@ -1,3 +1,4 @@
+#include "umundo/common/NodeStub.h"
 #include "umundo/discovery/NodeQuery.h"
 #include "umundo/common/Factory.h"
 
@@ -10,22 +11,19 @@ NodeQuery::NodeQuery(string domain, ResultSet<NodeStub>* listener) :
 NodeQuery::~NodeQuery() {
 }
 
-void NodeQuery::added(shared_ptr<NodeStub> node) {
+void NodeQuery::found(shared_ptr<NodeStub> node) {
 	_mutex.lock();
 	if (_notifyImmediately) {
-		_listener->added(node);
+		if (_nodes.find(node->getUUID()) != _nodes.end()) {
+      LOG_DEBUG("Changed node %s", node->getUUID().c_str());
+			_listener->changed(node);
+		} else {
+      LOG_DEBUG("Added node %s", node->getUUID().c_str());
+			_listener->added(node);
+      _nodes[node->getUUID()] = node;
+		}
 	} else {
-		_pendingAdditions.insert(node);
-	}
-	_mutex.unlock();
-}
-
-void NodeQuery::changed(shared_ptr<NodeStub> node) {
-	_mutex.lock();
-	if (_notifyImmediately) {
-		_listener->changed(node);
-	} else {
-		_pendingChanges.insert(node);
+		_pendingFinds.insert(node);
 	}
 	_mutex.unlock();
 }
@@ -33,7 +31,9 @@ void NodeQuery::changed(shared_ptr<NodeStub> node) {
 void NodeQuery::removed(shared_ptr<NodeStub> node) {
 	_mutex.lock();
 	if (_notifyImmediately) {
+    LOG_DEBUG("Removed node %s", node->getUUID().c_str());
 		_listener->removed(node);
+    _nodes.erase(node->getUUID());
 	} else {
 		_pendingRemovals.insert(node);
 	}
@@ -47,23 +47,26 @@ void NodeQuery::notifyImmediately(bool notifyImmediately) {
 void NodeQuery::notifyResultSet() {
 	_mutex.lock();
 	set<shared_ptr<NodeStub> >::const_iterator nodeIter;
-	for (nodeIter = _pendingChanges.begin(); nodeIter != _pendingChanges.end(); nodeIter++) {
-		// do not notify about changes to nodes we have not yet added
-		if (_pendingAdditions.find(*nodeIter) == _pendingAdditions.end())
-			_listener->changed(*nodeIter);
-	}
 
 	for (nodeIter = _pendingRemovals.begin(); nodeIter != _pendingRemovals.end(); nodeIter++) {
+    LOG_DEBUG("Removed node %s", (*nodeIter)->getUUID().c_str());
 		_listener->removed(*nodeIter);
+		_nodes.erase((*nodeIter)->getUUID());
 	}
 
-	for (nodeIter = _pendingAdditions.begin(); nodeIter != _pendingAdditions.end(); nodeIter++) {
-		_listener->added(*nodeIter);
+	for (nodeIter = _pendingFinds.begin(); nodeIter != _pendingFinds.end(); nodeIter++) {
+		if (_nodes.find((*nodeIter)->getUUID()) != _nodes.end()) {
+      LOG_DEBUG("Changed node %s", (*nodeIter)->getUUID().c_str());
+			_listener->changed(*nodeIter);			
+		} else {
+      LOG_DEBUG("Added node %s", (*nodeIter)->getUUID().c_str());
+			_listener->added(*nodeIter);
+			_nodes[(*nodeIter)->getUUID()] = *nodeIter;
+		}
 	}
 
 	_pendingRemovals.clear();
-	_pendingChanges.clear();
-	_pendingAdditions.clear();
+	_pendingFinds.clear();
 	_mutex.unlock();
 }
 

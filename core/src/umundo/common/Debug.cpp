@@ -95,6 +95,10 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 				if ((term != NULL) && (strncmp(term, "xterm", 5) == 0 || strcmp(term, "xterm") == 0)) {
 					useColors = 1;
 				}
+        char* unbuffIO = getenv("NSUnbufferedIO");
+				if ((unbuffIO != NULL) && (strncmp(unbuffIO, "YES", 3) == 0)) {
+					useColors = 0;
+				}
 			}
 		}
 	}

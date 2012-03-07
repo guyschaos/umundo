@@ -27,8 +27,7 @@ private:
 	std::set<string> _domains;
 	std::set<int> _interfaceIndices;
 	string _regType;
-	string _bonjourDomain;
-	string _hostTarget;
+	string _fullname;
 
 	map<string, DNSServiceRef> _serviceResolveClients; ///< Bonjour handle for node/service resolving per domain.
 	map<int, DNSServiceRef> _addrInfoClients; ///< Bonjour handle for address info per interface.

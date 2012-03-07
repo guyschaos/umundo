@@ -27,7 +27,7 @@ SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES SWIG_FLAGS "-package;${UMUND
 SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES CPLUSPLUS ON)
 SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}")
 
-if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
 	SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
 	SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARIES})
 	SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
@@ -50,7 +50,7 @@ endif()
 FIND_PACKAGE(Java)
 # use java started 
 if(Java_JAVAC_EXECUTABLE AND CMAKE_PATCH_VERSION GREATER 5)
-	if(CMAKE_GENERATOR MATCHES "Visual Studio.*")
+	if(CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
 		# using java to build jars gives the following error in MSVS
 		# Error	179	error MSB6001: Invalid command line switch for "cmd.exe". Illegal characters in path.	C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets	151	6	umundocoreSwigJNI
 			# ADD_CUSTOM_COMMAND(

@@ -1,5 +1,7 @@
 #include "umundo/discovery/avahi/AvahiNodeDiscovery.h"
 
+#include <stdio.h> // asprintf
+
 #include "umundo/common/Node.h"
 #include "umundo/discovery/NodeQuery.h"
 #include "umundo/discovery/avahi/AvahiNodeStub.h"
@@ -35,27 +37,49 @@ AvahiNodeDiscovery::~AvahiNodeDiscovery() {
 }
 
 void AvahiNodeDiscovery::remove(shared_ptr<NodeImpl> node) {
-	/// @todo Implement node removal for avahi discovery.
-	assert(false);
+	_mutex.lock();
+	LOG_DEBUG("Removing node %s", node->getUUID().c_str());
+	intptr_t address = (intptr_t)(node.get());
+	if(_avahiClients.find(address) == _avahiClients.end()) {
+		LOG_WARN("Ignoring removal of unregistered node from discovery");
+		_mutex.unlock();
+		return;
+	}
+	avahi_client_free(_avahiClients[address]);
+	_avahiClients.erase(address);
+	_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::add(shared_ptr<NodeImpl> node) {
+	_mutex.lock();
 	int err;
 	intptr_t address = (intptr_t)(node.get());
-	getInstance()->_nodes[address] = node;
+	_nodes[address] = node;
 
 	AvahiClient* client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, &clientCallback, (void*)address, &err);
 	if (!client) LOG_WARN("avahi_client_new - is the Avahi daemon running?", err);
-	getInstance()->_avahiClients[address] = client;
-	getInstance()->start();
+	_avahiClients[address] = client;
+	start();
+	_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
-	/// @todo Implement query removal for avahi discovery.
-	assert(false);
+	_mutex.lock();
+	intptr_t address = (intptr_t)(query.get());
+
+	if(_avahiClients.find(address) == _avahiClients.end()) {
+		LOG_WARN("Unbrowsing query that was never added");
+		_mutex.unlock();
+		return;
+	}
+	avahi_client_free(_avahiClients[address]);
+	_avahiClients.erase(address);
+	_queryNodes.erase(query);
+	_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
+	_mutex.lock();
 	AvahiServiceBrowser *sb = NULL;
 	AvahiClient *client = NULL;
 	intptr_t address = (intptr_t)(query.get());
@@ -64,18 +88,29 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, browseClientCallback, (void*)address, &error);
 	if (client == NULL) {
 		LOG_WARN("avahi_client_new failed - is the Avahi daemon running?", error);
+		_mutex.unlock();
 		return;
 	}
-	getInstance()->_avahiClients[address] = client;
-	getInstance()->_browsers[address] = query;
+	_avahiClients[address] = client;
+	_browsers[address] = query;
 
-	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", NULL, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
+	char* domain;
+	if (query->getDomain().length() > 0) {
+		asprintf(&domain, "%s.local.", query->getDomain().c_str());
+	} else {
+		asprintf(&domain, "local.");
+	}
+
+	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", domain, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
 		LOG_WARN("avahi_service_browser_new failed", error);
 	}
-	getInstance()->start();
+	free(domain);
+	start();
+	_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::browseClientCallback(AvahiClient *c, AvahiClientState state, void * userdata) {
+	getInstance()->_mutex.lock();
 	assert(c);
 
 	switch(state) {
@@ -95,6 +130,7 @@ void AvahiNodeDiscovery::browseClientCallback(AvahiClient *c, AvahiClientState s
 		LOG_WARN("Server state: COLLISION", avahi_client_errno(c));
 		break;
 	}
+	getInstance()->_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::browseCallback(
@@ -108,6 +144,7 @@ void AvahiNodeDiscovery::browseCallback(
     AvahiLookupResultFlags flags,
     void* userdata
 ) {
+	getInstance()->_mutex.lock();
 	LOG_DEBUG("browseCallback: %s %s/%s as %s at if %d with protocol %d",
 	          (event == AVAHI_BROWSER_NEW ? "Added" : "Called for"),
 	          (name == NULL ? "NULL" : name),
@@ -157,6 +194,7 @@ void AvahiNodeDiscovery::browseCallback(
 		LOG_WARN("avahi browser failure", avahi_client_errno(avahi_service_browser_get_client(b)));
 		break;
 	}
+	getInstance()->_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::resolveCallback(
@@ -174,6 +212,7 @@ void AvahiNodeDiscovery::resolveCallback(
     AvahiLookupResultFlags flags,
     void* userdata
 ) {
+	getInstance()->_mutex.lock();
 	LOG_DEBUG("resolveCallback: %s %s/%s:%d as %s at if %d with protocol %d",
 	          (host_name == NULL ? "NULL" : host_name),
 	          (name == NULL ? "NULL" : name),
@@ -194,6 +233,7 @@ void AvahiNodeDiscovery::resolveCallback(
 
 	if (protocol == AVAHI_PROTO_INET6) {
 		LOG_INFO("Ignoring %s IPv6", host_name);
+		getInstance()->_mutex.unlock();
 		return;
 	}
 
@@ -216,7 +256,7 @@ void AvahiNodeDiscovery::resolveCallback(
 
 		avahi_free(t);
 		// this is the wrong place to notify the query listener ...
-		query->added(node);
+		query->found(node);
 
 		break;
 	}
@@ -225,9 +265,11 @@ void AvahiNodeDiscovery::resolveCallback(
 	}
 
 	avahi_service_resolver_free(r);
+	getInstance()->_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupState state, void* userdata) {
+	getInstance()->_mutex.lock();
 	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
 	shared_ptr<NodeImpl> node = myself->_nodes[(intptr_t)userdata];
 	AvahiEntryGroup* group = myself->_avahiGroups[(intptr_t)userdata];
@@ -264,9 +306,11 @@ void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupS
 		LOG_WARN("entryGroupCallback default switch", 0);
 
 	}
+	getInstance()->_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, void* userdata) {
+	getInstance()->_mutex.lock();
 	assert(c);
 	int err;
 	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
@@ -287,14 +331,21 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 			}
 		}
 		if (avahi_entry_group_is_empty(group)) {
-			if ((err = avahi_entry_group_add_service(group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, (AvahiPublishFlags)0, node->getUUID().c_str(), "_mundo._tcp", NULL, NULL, node->getPort(), NULL)) < 0) {
+			char* domain;
+			if (node->getDomain().length() > 0) {
+				asprintf(&domain, "%s.local.", node->getDomain().c_str());
+			} else {
+				asprintf(&domain, "local.");
+			}
+
+			if ((err = avahi_entry_group_add_service(group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, (AvahiPublishFlags)0, node->getUUID().c_str(), "_mundo._tcp", domain, NULL, node->getPort(), NULL)) < 0) {
 				if (err == AVAHI_ERR_COLLISION) {
 					assert(0); // we register uuids, there shouldn't be collisions
 				}
 				LOG_WARN("avahi_entry_group_add_service failed ", err);
 				avahi_simple_poll_quit(myself->_simplePoll);
 			}
-
+			free(domain);
 			/* Tell the server to register the service */
 			if ((err = avahi_entry_group_commit(group)) < 0) {
 				LOG_WARN("avahi_entry_group_commit failed ", err);
@@ -325,12 +376,16 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 		LOG_WARN("AVAHI_CLIENT_CONNECTING ", avahi_client_errno(c));
 		break;
 	}
+	getInstance()->_mutex.unlock();
 }
 
 void AvahiNodeDiscovery::run() {
 	while (isStarted()) {
-		Thread::sleepMs(500);
-		avahi_simple_poll_loop(_simplePoll);
+		_mutex.lock();
+		int timeoutMs = 50;
+		avahi_simple_poll_iterate(_simplePoll, timeoutMs) && LOG_WARN("avahi_simple_poll_iterate: %d", errno);
+		_mutex.unlock();
+		Thread::yield();
 	}
 }
 

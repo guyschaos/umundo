@@ -13,6 +13,7 @@ ELSE()
 ENDIF()
 
 project(umundo)
+#message("CMAKE_GENERATOR ${CMAKE_GENERATOR}")
 
 # lower case version of system name and compiler for library paths
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
@@ -30,6 +31,12 @@ string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
 
 # search root for includes
 LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt")
+
+# this happens when we ssh into windows to build there, see also:
+# http://publib.boulder.ibm.com/infocenter/wxdinfo/v6r1/index.jsp?topic=/com.ibm.websphere.ops.doc/info/odoe_task/tcimgr_sshwin.html
+if (NOT CMAKE_SYSTEM_PROCESSOR)
+	set(CMAKE_SYSTEM_PROCESSOR x86)
+endif()
 
 # find libraries
 if(CMAKE_CROSSCOMPILING)
@@ -212,7 +219,7 @@ if(CMAKE_CROSSCOMPILING)
 		${PROJECT_SOURCE_DIR}/lib/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
 	SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH}/${CMAKE_BUILD_TYPE})
 else()
-	if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+	if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
 		SET(LIBRARY_ROOT_PATH 
 			${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
 		SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH})
@@ -284,6 +291,11 @@ endforeach()
 
 message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
 
+############################################################
+# Test reports
+############################################################
+
+include (CTest)
 
 ############################################################
 # Installation / Provide package target

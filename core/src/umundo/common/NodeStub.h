@@ -21,18 +21,6 @@ public:
 	virtual void setUUID(string uuid)           {
 		_uuid = uuid;
 	}
-	virtual const string& getHost() const       {
-		return _host;
-	}
-	virtual void setHost(string host)           {
-		_host = host;
-	}
-	virtual const string& getDomain() const     {
-		return _domain;
-	}
-	virtual void setDomain(string domain)       {
-		_domain = domain;
-	}
 	//@}
 
 	inline bool operator==(NodeStub* n) const {
@@ -45,8 +33,6 @@ public:
 
 protected:
 	string _uuid;
-	string _host;
-	string _domain;
 
 private:
 	friend std::ostream& operator<<(std::ostream&, const NodeStub*);

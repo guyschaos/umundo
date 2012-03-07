@@ -93,16 +93,16 @@ void Thread::stop() {
 	_isStarted = false;
 }
 
-//void Thread::yield() {
-//#ifdef THREAD_PTHREAD
-//	int err = sched_yield();
-//  (void)err;
-//  assert(!err);
-//#endif
-//#ifdef THREAD_WIN32
-//  SwitchToThread();
-//#endif
-//}
+void Thread::yield() {
+#ifdef THREAD_PTHREAD
+	int err = sched_yield();
+ 	(void)err;
+ 	assert(!err);
+#endif
+#ifdef THREAD_WIN32
+ 	SwitchToThread();
+#endif
+}
 
 void Thread::sleepMs(uint32_t ms) {
 #ifdef THREAD_PTHREAD

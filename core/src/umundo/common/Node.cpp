@@ -36,6 +36,10 @@ Node::Node(string domain) {
 	Discovery::add(this);
 }
 
+Node::~Node() {
+  Discovery::remove(this);
+}
+  
 void Node::addSubscriber(Subscriber* sub) {
 	_impl->addSubscriber(sub->_impl);
 }

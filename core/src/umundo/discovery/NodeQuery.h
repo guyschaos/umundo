@@ -24,23 +24,12 @@ public:
 	NodeQuery(string domain, ResultSet<NodeStub>*);
 	virtual ~NodeQuery();
 
-	virtual void added(shared_ptr<NodeStub>);
-	virtual void changed(shared_ptr<NodeStub>);
+	virtual void found(shared_ptr<NodeStub>);
 	virtual void removed(shared_ptr<NodeStub>);
 	
 	virtual const string& getDomain();
 	virtual void setTransport(string);
 	virtual const string& getTransport();
-
-	set<shared_ptr<NodeStub> >& getPendingChanges()   {
-		return _pendingChanges;
-	}
-	set<shared_ptr<NodeStub> >& getPendingRemovals()  {
-		return _pendingRemovals;
-	}
-	set<shared_ptr<NodeStub> >& getPendingAdditions() {
-		return _pendingAdditions;
-	}
 
 	map<string, shared_ptr<NodeStub> >& getNodes() {
 		return _nodes;
@@ -58,9 +47,8 @@ protected:
 
 	Mutex _mutex;
 
-	set<shared_ptr<NodeStub> > _pendingChanges;
 	set<shared_ptr<NodeStub> > _pendingRemovals;
-	set<shared_ptr<NodeStub> > _pendingAdditions;
+	set<shared_ptr<NodeStub> > _pendingFinds;
 
 	friend class DiscoveryImpl;
 };

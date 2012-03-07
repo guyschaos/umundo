@@ -100,16 +100,15 @@ protected:
 	);
 	//@}
 
-	map<int, DNSServiceRef> _sockFDToClients;                 ///< Socket file descriptors to bonjour handle.
-  bool _removeCurrentFD;                                    ///< whether we remove the current bonjour handle after processing
+	map<int, DNSServiceRef> _activeFDs;                       ///< Socket file descriptors to bonjour handle.
   
 	map<intptr_t, shared_ptr<NodeImpl> > _localNodes;         ///< Local node addresses to nodes.
 	map<intptr_t, DNSServiceRef> _registerClients;            ///< local node address to bonjour handles.
 
-	map<intptr_t, shared_ptr<NodeQuery> > _queries;           ///< Memory addresses to node queries for static callbacks.
+	map<intptr_t, shared_ptr<NodeQuery> > _queries;           ///< query address to query object for browseReply.
 	map<intptr_t, DNSServiceRef> _queryClients;               ///< query address to bonjour handles.
 	map<intptr_t, shared_ptr<NodeQuery> > _nodeToQuery;       ///< remote node addresses to their queries.
-	map<string, shared_ptr<BonjourNodeStub> > _remoteNodes;   ///< UUID to remote nodes.
+	map<shared_ptr<NodeQuery>, map<string, shared_ptr<BonjourNodeStub> > > _queryToNodes; ///< query to all its nodes.
 
 	Mutex _mutex;
 

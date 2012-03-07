@@ -20,42 +20,45 @@ public:
 	}	
 };
 
+void testDifferentDomain() {
+	Node* fooNode = new Node("foo");
+  Node* barNode = new Node("bar");
+
+  Subscriber* sub = new Subscriber("test1", new TestReceiver("test1"));
+  Publisher* pub = new Publisher("test1");
+
+	fooNode->addPublisher(pub);
+	barNode->addSubscriber(sub);
+	Thread::sleepMs(2000);
+	assert(pub->waitForSubscribers(0) == 0);
+	
+	delete(fooNode);
+	delete(barNode);
+}
+
+void testSameDomain() {
+	Node* fooNode = new Node("foo");
+  Node* barNode = new Node("foo");
+
+  Subscriber* sub = new Subscriber("test1", new TestReceiver("test1"));
+  Publisher* pub = new Publisher("test1");
+
+	fooNode->addPublisher(pub);
+	barNode->addSubscriber(sub);
+	Thread::sleepMs(2000);
+	assert(pub->waitForSubscribers(1) == 1);
+	
+	delete(fooNode);
+	delete(barNode);
+}
+
 #define BUFFER_SIZE 1024*1024
 
-int main(int argc, char** argv) {	
-  Subscriber* test1Sub = new Subscriber("test1", new TestReceiver("test1"));
-  Publisher* test1Pub = new Publisher("test1");
-
-	/**
-	 * Start two nodes in two different domains and add the test1 publisher
-	 */
-
-	// A node in the fooDomain with our publisher
-  Node* test1Node = new Node("fooDomain");
-  test1Node->addPublisher(test1Pub);
-  // A node in the barDomain with our publisher
-  Node* test2Node = new Node("barDomain");
-  test2Node->addPublisher(test1Pub);
+int main(int argc, char** argv, char** envp) {	
 	
-  // yet another node where none is subscribed to
-  Node* test5Node = new Node("unsubscribedDomain");
-  test5Node->addPublisher(test1Pub);
-
-	/**
-	 * Start two more nodes in those domains and add the test1 subscriber
-	 */
-	
-	// Another node in the fooDomain with a publisher
-  Node* test3Node = new Node("fooDomain");
-  test3Node->addSubscriber(test1Sub);
-
-	// Another node in the fooDomain with a publisher
-  Node* test4Node = new Node("barDomain");
-  test4Node->addSubscriber(test1Sub);
-
-  // yet another node where none will publish
-  Node* test6Node = new Node("unpublishedDomain");
-  test6Node->addSubscriber(test1Sub);
+	testDifferentDomain();
+	testSameDomain();
+	return EXIT_SUCCESS;
 
   char buffer[BUFFER_SIZE];
   for (int i = 0; i < BUFFER_SIZE; i++) {
@@ -69,10 +72,10 @@ int main(int argc, char** argv) {
     Message* msg = new Message();
     msg->setData(string(buffer, BUFFER_SIZE));
     msg->setMeta("type", "foo!");
-    test1Pub->send(msg);
+//    test1Pub->send(msg);
   }
   // yield to give subscriber a chance to receive
   Thread::sleepMs(200);
   std::cout << "Received " << receives << " messages, expected " << 2 * iterations << " messages" << std::endl;
-  assert(receives == 2 * iterations);
+//  assert(receives == 2 * iterations);
 }

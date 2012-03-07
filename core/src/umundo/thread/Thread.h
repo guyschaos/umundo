@@ -45,7 +45,7 @@ public:
 		return _isStarted;
 	}
 
-//	static void yield();
+	static void yield();
 	static void sleepMs(uint32_t ms);
 
 private:

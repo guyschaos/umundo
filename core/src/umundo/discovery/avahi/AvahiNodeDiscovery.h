@@ -38,6 +38,7 @@ private:
 	AvahiNodeDiscovery();
 
 	AvahiSimplePoll *_simplePoll;
+	Mutex _mutex;
 
 	static void entryGroupCallback(AvahiEntryGroup*, AvahiEntryGroupState, void*);
 	static void clientCallback(AvahiClient*, AvahiClientState, void*);

@@ -26,13 +26,35 @@ namespace umundo {
 
 ZeroMQNode::~ZeroMQNode() {
 	DEBUG_DTOR("ZeroMQNode");
+  Discovery::unbrowse(_nodeQuery);
 	stop();
+  
+  // this is awkward .. the thread is blocking at zmq_recvmsg - unblock by sending a message
+  void* closer;
+  (closer = zmq_socket(getZeroMQContext(), ZMQ_DEALER)) || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));  
+  std::stringstream ss;
+	ss << _transport << "://127.0.0.1:" << _port;
+  zmq_connect(closer, ss.str().c_str()) && LOG_WARN("zmq_connect: %s",zmq_strerror(errno));
+  zmq_msg_t msg;
+	ZMQ_PREPARE(msg, 0);
+	zmq_sendmsg(closer, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
+	zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+  zmq_close(closer);
+  
+  map<string, void*>::iterator sockIter;
+  for (sockIter = _sockets.begin(); sockIter != _sockets.end(); sockIter++) {
+    while(zmq_close(sockIter->second) != 0) {
+      LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
+      Thread::sleepMs(50);
+    }
+  }
+  
 	join();
 	if (_responder)
-		zmq_close(_responder) || LOG_WARN("zmq_close: %s",zmq_strerror(errno));
-// we share one ZeroMQ context among all nodes, publishers and subscribers
-//	if (_zmqContext)
-//		zmq_term(_zmqContext) || LOG_WARN("zmq_term: %s",zmq_strerror(errno));
+    while(zmq_close(_responder) != 0) {
+      LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
+      Thread::sleepMs(50);
+    }
 }
 
 ZeroMQNode::ZeroMQNode() {
@@ -104,7 +126,36 @@ void ZeroMQNode::run() {
 		while (1) {
 			zmq_msg_t message;
 			zmq_msg_init(&message) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
-			zmq_recvmsg(_responder, &message, 0) >= 0 || LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno))
+
+#if 0
+      int rv;
+			while(rv <= 0) {
+        rv = zmq_recvmsg(_responder, &message, ZMQ_DONTWAIT);
+        if (!isStarted()) {
+          // node was stopped - close message and return;
+          zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+          return;
+        } else if (rv > 0) {
+          // we read data, continue processing
+          continue;
+        } else if (errno == EAGAIN) {
+          // no data to read, sleep to avoid busy wait
+          Thread::sleepMs(10);
+        } else {
+          // something else went wrong
+          LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
+        }
+      }
+#else
+      // this is problematic for thread::join() ..
+      zmq_recvmsg(_responder, &message, 0) || LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
+#endif
+      // we will stop the thread by sending an empty packet to unblock
+      if (!isStarted()) {
+        zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+        return;
+      }
+      
 			int msgSize = zmq_msg_size(&message);
 
 			if (msgSize == 36 && remoteId == NULL) {
@@ -399,15 +450,17 @@ void ZeroMQNode::removed(shared_ptr<NodeStub> node) {
 			}
 		}
 
-		map<uint16_t, int >::iterator subIter;
-		for (subIter = _remoteSubs[node->getUUID()].begin(); subIter != _remoteSubs[node->getUUID()].end(); subIter++) {
-			if (_localPubs.find(subIter->first) != _localPubs.end()) {
-				_localPubs[subIter->first]->removedSubscriber();
-			} else {
-				LOG_DEBUG("Removed node was subscribed to non-existent publisher");
-			}
-		}
-
+    if (_remoteSubs.find(node->getUUID()) != _remoteSubs.end()) {
+      map<uint16_t, int >::iterator subIter;
+      for (subIter = _remoteSubs[node->getUUID()].begin(); subIter != _remoteSubs[node->getUUID()].end(); subIter++) {
+        if (_localPubs.find(subIter->first) != _localPubs.end()) {
+          _localPubs[subIter->first]->removedSubscriber();
+        } else {
+          LOG_DEBUG("Removed node was subscribed to non-existent publisher");
+        }
+      }
+    }
+    
 		if (_sockets.find(node->getUUID()) == _sockets.end()) {
 			LOG_WARN("Removed client that was never added: %s", node->getUUID().c_str());
 			assert(validateState());

@@ -30,8 +30,13 @@ private:
 
 	bool _isOurOwn;
 	bool _isWan;
-	map<int, string> _interfaces;
 	string _txtRecord;
+
+	map<int, string> _interfacesIPv4;
+	map<int, string> _interfacesIPv6;
+
+	std::set<string> _domains;
+	std::set<int> _interfaceIndices;
 
 	friend std::ostream& operator<<(std::ostream&, const AvahiNodeStub*);
 	friend class AvahiNodeDiscovery;

@@ -43,6 +43,9 @@ FIND_LIBRARY(Bonjour_LIBRARY_DEBUG
   /opt
 )
 
+message(STATUS "Bonjour_LIBRARY ${Bonjour_LIBRARY}")
+message(STATUS "Bonjour_LIBRARY_DEBUG ${Bonjour_LIBRARY_DEBUG}")
+
 # handle the QUIETLY and REQUIRED arguments and set OPENAL_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)

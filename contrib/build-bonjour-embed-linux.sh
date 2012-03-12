@@ -4,7 +4,6 @@
 set -e
 
 ME=`basename $0`
-TARGET_DEVICE="arm-linux-androideabi"
 DEST_DIR="${PWD}/../../prebuilt/linux-i686/gnu/lib"
 
 if [ ! -d mDNSPosix ]; then
@@ -35,7 +34,7 @@ LD=ld
 CC_FLAGS="\
  -ImDNSCore -ImDNSShared -fwrapv -fno-strict-aliasing -W -Wall -DPID_FILE=\"/var/run/mdnsd.pid\" \
  -DMDNS_UDS_SERVERPATH=\"/var/run/mdnsd\" -DTARGET_OS_LINUX -DNOT_HAVE_SA_LEN -DHAVE_LINUX -DUSES_NETLINK -fpic\
- -Wdeclaration-after-statement -Os -DMDNS_DEBUGMSGS=0 -llog"
+ -Wdeclaration-after-statement -Os -DMDNS_DEBUGMSGS=0"
 
 if [ -d build ]; then
 	rm -rf build

@@ -20,12 +20,14 @@ NodeImpl::NodeImpl() {
 	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
 }
 
+int Node::instances = 0;
 Node::Node() {
 	_impl = boost::static_pointer_cast<NodeImpl>(Factory::create("node"));
 	shared_ptr<Configuration> config = Factory::config("node");
 	_impl->init(config);
 	// add our node query
 	Discovery::add(this);
+  instances++;
 }
 
 Node::Node(string domain) {
@@ -34,10 +36,12 @@ Node::Node(string domain) {
 	_impl->setDomain(domain);
 	_impl->init(config);
 	Discovery::add(this);
+  instances++;
 }
 
 Node::~Node() {
   Discovery::remove(this);
+  instances--;
 }
   
 void Node::addSubscriber(Subscriber* sub) {

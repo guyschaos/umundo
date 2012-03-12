@@ -1,7 +1,5 @@
 #include "PBSerializer.h"
 #include "umundo/common/Factory.h"
-#include "interfaces/protobuf/custom_typed_message.pb.h"
-#include "interfaces/protobuf/typed_message.pb.h"
 
 namespace umundo {
 	

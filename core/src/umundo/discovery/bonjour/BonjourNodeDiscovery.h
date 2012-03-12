@@ -12,7 +12,7 @@
 #include "umundo/thread/Thread.h"
 #include "umundo/discovery/Discovery.h"
 
-#define BONJOUR_REPOLL_USEC 10000
+#define BONJOUR_REPOLL_USEC 100000
 #define BONJOUR_REPOLL_SEC 0
 
 namespace umundo {
@@ -51,7 +51,8 @@ protected:
 	BonjourNodeDiscovery();
 
   bool validateState();
-  
+	void forgetRemoteNodesFDs(shared_ptr<BonjourNodeStub>); ///< Remove a remote node with all its queries
+
 	/** @name Bonjour callbacks */
 	//@{
 	static void DNSSD_API browseReply(
@@ -103,7 +104,7 @@ protected:
 	map<int, DNSServiceRef> _activeFDs;                       ///< Socket file descriptors to bonjour handle.
   
 	map<intptr_t, shared_ptr<NodeImpl> > _localNodes;         ///< Local node addresses to nodes.
-	map<intptr_t, DNSServiceRef> _registerClients;            ///< local node address to bonjour handles.
+	map<intptr_t, DNSServiceRef> _registerClients;            ///< local node address to bonjour handles for registration.
 
 	map<intptr_t, shared_ptr<NodeQuery> > _queries;           ///< query address to query object for browseReply.
 	map<intptr_t, DNSServiceRef> _queryClients;               ///< query address to bonjour handles.

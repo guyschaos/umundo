@@ -1,5 +1,8 @@
 #include "umundo/core.h"
 #include <iostream>
+#include <stdio.h>
+
+#define BUFFER_SIZE 1024*1024
 
 using namespace umundo;
 
@@ -23,59 +26,105 @@ public:
 void testDifferentDomain() {
 	Node* fooNode = new Node("foo");
   Node* barNode = new Node("bar");
+  printf("%d\n", Node::instances);
+  assert(Node::instances == 2);
 
   Subscriber* sub = new Subscriber("test1", new TestReceiver("test1"));
   Publisher* pub = new Publisher("test1");
 
 	fooNode->addPublisher(pub);
 	barNode->addSubscriber(sub);
-	Thread::sleepMs(2000);
+  Thread::sleepMs(1000);
 	assert(pub->waitForSubscribers(0) == 0);
 	
 	delete(fooNode);
 	delete(barNode);
+
+	delete(sub);
+	delete(pub);
 }
 
 void testSameDomain() {
 	Node* fooNode = new Node("foo");
   Node* barNode = new Node("foo");
+  assert(Node::instances == 2);
 
   Subscriber* sub = new Subscriber("test1", new TestReceiver("test1"));
   Publisher* pub = new Publisher("test1");
 
 	fooNode->addPublisher(pub);
 	barNode->addSubscriber(sub);
-	Thread::sleepMs(2000);
-	assert(pub->waitForSubscribers(1) == 1);
+	assert(pub->waitForSubscribers(1) >= 1);
 	
 	delete(fooNode);
 	delete(barNode);
+	
+	delete(sub);
+	delete(pub);
 }
 
-#define BUFFER_SIZE 1024*1024
+void testDomainReception() {
+  Node* fooNode1 = new Node("foo");
+  Node* fooNode2 = new Node("foo");
+  Node* barNode = new Node("bar");
+  assert(Node::instances == 3);
 
-int main(int argc, char** argv, char** envp) {	
-	
-	testDifferentDomain();
-	testSameDomain();
-	return EXIT_SUCCESS;
-
+  Subscriber* sub = new Subscriber("test1", new TestReceiver("test1"));
+  Publisher* pub = new Publisher("test1");
+  
+	fooNode1->addPublisher(pub);
+	fooNode2->addPublisher(pub);
+	barNode->addPublisher(pub);
+  
+	fooNode1->addSubscriber(sub);
+	fooNode2->addSubscriber(sub);
+	barNode->addSubscriber(sub);
+  
   char buffer[BUFFER_SIZE];
   for (int i = 0; i < BUFFER_SIZE; i++) {
     buffer[i] = (char)i%255;
   }
 
-  // get connected
-  Thread::sleepMs(1500);
-  int iterations = 500; // this has to be less or equal to the high water mark
+  assert(pub->waitForSubscribers(2) >= 2);
+  Thread::sleepMs(100);
+
+  int iterations = 100; // this has to be less or equal to the high water mark / 3
+  receives = 0;
   for (int i = 0; i < iterations; i++) {
     Message* msg = new Message();
     msg->setData(string(buffer, BUFFER_SIZE));
     msg->setMeta("type", "foo!");
-//    test1Pub->send(msg);
+    pub->send(msg);
+    delete(msg);
   }
-  // yield to give subscriber a chance to receive
+
   Thread::sleepMs(200);
-  std::cout << "Received " << receives << " messages, expected " << 2 * iterations << " messages" << std::endl;
-//  assert(receives == 2 * iterations);
+  std::cout << "Received " << receives << " messages, expected " << iterations << " messages" << std::endl;
+//  assert(receives == iterations);
+  
+	delete(fooNode1);
+	delete(fooNode2);
+	delete(barNode);
+	
+	delete(sub);
+	delete(pub);
+
+}
+
+int main(int argc, char** argv, char** envp) {	
+	setenv("UMUNDO_LOGLEVEL_DISC", "4", 1);
+	setenv("UMUNDO_LOGLEVEL_NET", "2", 1);
+  int i = 5;
+  while(i-- > 0) {
+    printf("##### testDifferentDomain #####################################\n");
+    testDifferentDomain();
+    assert(Node::instances == 0);
+    printf("##### testSameDomain ##########################################\n");
+    testSameDomain();
+    assert(Node::instances == 0);
+    printf("##### testDomainReception #####################################\n");
+    testDomainReception();
+    assert(Node::instances == 0);
+  }
+  return EXIT_SUCCESS;
 }

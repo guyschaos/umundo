@@ -1,0 +1,22 @@
+# from (http://www.cmake.org/cmake/help/cmake-2-8-docs.html#command:file):
+#
+# We do not recommend using GLOB to collect a list of source files from your source tree. 
+# If no CMakeLists.txt file changes when a source is added or removed then the generated 
+# build system cannot know when to ask CMake to regenerate.)
+#
+# - keep in mind
+
+# build a list of all source files one directory beneath
+
+file(GLOB RPC_FILES rpc/*.cpp)
+list(APPEND UMUNDORPC_FILES  ${RPC_FILES})
+
+if (RPC_PROTOBUF)
+	file(GLOB_RECURSE RPC_PROTOBUF_FILES protoc-rpc/*.cpp)
+
+	add_executable(protoc-umundo-rpc ${RPC_PROTOBUF_FILES})
+	target_link_libraries(protoc-umundo-rpc ${PROTOBUF_PROTOC_LIBRARIES} ${PROTOBUF_LIBRARIES})
+
+endif(RPC_PROTOBUF)
+
+set(UMUNDORPC_FILES "${UMUNDORPC_FILES}" PARENT_SCOPE)

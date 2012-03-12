@@ -111,6 +111,8 @@ public:
 	}
 	//@{
 
+  static int instances;
+
 protected:
 	shared_ptr<NodeImpl> _impl;
 	shared_ptr<NodeConfig> _config;

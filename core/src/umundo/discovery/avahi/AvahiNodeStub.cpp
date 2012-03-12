@@ -11,7 +11,7 @@ AvahiNodeStub::~AvahiNodeStub() {
 }
 
 const string& AvahiNodeStub::getIP() const {
-	return (_interfaces.begin())->second;
+	return (_interfacesIPv4.begin())->second;
 }
 
 std::ostream& operator<<(std::ostream &out, const AvahiNodeStub* n) {

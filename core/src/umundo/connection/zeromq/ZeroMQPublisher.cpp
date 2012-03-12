@@ -39,7 +39,7 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
 	_pubCount = 0;
-	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_XPUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
+	(_socket = zmq_socket(ZeroMQNode::getZeroMQContext(), ZMQ_PUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
 
 	int hwm = NET_ZEROMQ_SND_HWM;
 	zmq_setsockopt(_socket, ZMQ_SNDHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
@@ -103,12 +103,9 @@ void ZeroMQPublisher::removedSubscriber() {
 void ZeroMQPublisher::send(Message* msg) {
 	//LOG_DEBUG("ZeroMQPublisher sending msg on %s", _channelName.c_str());
 
-	// topic name as envelope
+	// topic name is first message in envelope
 	zmq_msg_t channelEnvlp;
-	zmq_msg_init(&channelEnvlp) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
-	zmq_msg_init_size (&channelEnvlp, _channelName.size() + 1) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
-	memcpy(zmq_msg_data(&channelEnvlp), _channelName.c_str(), _channelName.size());
-	((char*)zmq_msg_data(&channelEnvlp))[_channelName.size()] = '\0';
+	ZMQ_PREPARE_STRING(channelEnvlp, _channelName.c_str(), _channelName.size());
 	zmq_sendmsg(_socket, &channelEnvlp, ZMQ_SNDMORE) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&channelEnvlp) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 
@@ -126,8 +123,7 @@ void ZeroMQPublisher::send(Message* msg) {
 		// string length of key + value + two null bytes as string delimiters
 		size_t metaSize = (metaIter->first).length() + (metaIter->second).length() + 2;
 		zmq_msg_t metaMsg;
-		zmq_msg_init(&metaMsg) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
-		zmq_msg_init_size (&metaMsg, metaSize) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
+		ZMQ_PREPARE(metaMsg, metaSize);
 
 		char* writePtr = (char*)zmq_msg_data(&metaMsg);
 
@@ -154,9 +150,7 @@ void ZeroMQPublisher::send(Message* msg) {
 
 	// data as the second part of a multipart message
 	zmq_msg_t publication;
-	zmq_msg_init(&publication) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
-	zmq_msg_init_size (&publication, msg->getData().size()) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
-	memcpy(zmq_msg_data(&publication), msg->getData().data(), msg->getData().size());
+	ZMQ_PREPARE_DATA(publication, msg->getData().data(), msg->getData().size());
 	zmq_sendmsg(_socket, &publication, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&publication) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 }

@@ -15,10 +15,10 @@ void NodeQuery::found(shared_ptr<NodeStub> node) {
 	_mutex.lock();
 	if (_notifyImmediately) {
 		if (_nodes.find(node->getUUID()) != _nodes.end()) {
-      LOG_DEBUG("Changed node %s", node->getUUID().c_str());
+      LOG_DEBUG("Changed node %s", SHORT_UUID(node->getUUID()).c_str());
 			_listener->changed(node);
 		} else {
-      LOG_DEBUG("Added node %s", node->getUUID().c_str());
+      LOG_DEBUG("Added node %s", SHORT_UUID(node->getUUID()).c_str());
 			_listener->added(node);
       _nodes[node->getUUID()] = node;
 		}
@@ -31,7 +31,7 @@ void NodeQuery::found(shared_ptr<NodeStub> node) {
 void NodeQuery::removed(shared_ptr<NodeStub> node) {
 	_mutex.lock();
 	if (_notifyImmediately) {
-    LOG_DEBUG("Removed node %s", node->getUUID().c_str());
+    LOG_DEBUG("Removed node %s", SHORT_UUID(node->getUUID()).c_str());
 		_listener->removed(node);
     _nodes.erase(node->getUUID());
 	} else {
@@ -49,17 +49,17 @@ void NodeQuery::notifyResultSet() {
 	set<shared_ptr<NodeStub> >::const_iterator nodeIter;
 
 	for (nodeIter = _pendingRemovals.begin(); nodeIter != _pendingRemovals.end(); nodeIter++) {
-    LOG_DEBUG("Removed node %s", (*nodeIter)->getUUID().c_str());
+    LOG_DEBUG("Removed node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
 		_listener->removed(*nodeIter);
 		_nodes.erase((*nodeIter)->getUUID());
 	}
 
 	for (nodeIter = _pendingFinds.begin(); nodeIter != _pendingFinds.end(); nodeIter++) {
 		if (_nodes.find((*nodeIter)->getUUID()) != _nodes.end()) {
-      LOG_DEBUG("Changed node %s", (*nodeIter)->getUUID().c_str());
+      LOG_DEBUG("Changed node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
 			_listener->changed(*nodeIter);			
 		} else {
-      LOG_DEBUG("Added node %s", (*nodeIter)->getUUID().c_str());
+      LOG_DEBUG("Added node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
 			_listener->added(*nodeIter);
 			_nodes[(*nodeIter)->getUUID()] = *nodeIter;
 		}

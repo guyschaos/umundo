@@ -16,10 +16,18 @@ if(NET_ZEROMQ)
 	include_directories(${ZeroMQ_INCLUDE_DIR})
 endif()
 
-if(DISC_BONJOUR AND NOT APPLE AND NOT IOS)
-	find_package(Bonjour REQUIRED)
-	LIST(APPEND UMUNDOCORE_LIBRARIES optimized ${Bonjour_LIBRARY})
-	LIST(APPEND UMUNDOCORE_LIBRARIES debug ${Bonjour_LIBRARY_DEBUG})
+if(DISC_BONJOUR)
+	# do not search for embedded bonjour libraries
+	if (NOT APPLE AND NOT IOS)
+		find_package(Bonjour REQUIRED)
+		LIST(APPEND UMUNDOCORE_LIBRARIES optimized ${Bonjour_LIBRARY})
+		LIST(APPEND UMUNDOCORE_LIBRARIES debug ${Bonjour_LIBRARY_DEBUG})
+	elseif(DISC_BONJOUR_EMBED AND NOT IOS)
+		# except when building with embedded mdns
+		find_package(Bonjour REQUIRED)
+		LIST(APPEND UMUNDOCORE_LIBRARIES optimized ${Bonjour_LIBRARY})
+		LIST(APPEND UMUNDOCORE_LIBRARIES debug ${Bonjour_LIBRARY_DEBUG})
+	endif()
 endif()
 
 if(DISC_AVAHI)

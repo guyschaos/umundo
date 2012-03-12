@@ -2,6 +2,7 @@
 #define TYPEDPUBLISHER_H_9RTI6TXT
 
 #include "umundo/common/Common.h"
+#include "umundo/common/Message.h"
 #include "umundo/common/Implementation.h"
 #include "umundo/connection/Publisher.h"
 
@@ -10,7 +11,6 @@ namespace umundo {
 	class TypeSerializerImpl : public Implementation {
 	public:
 		virtual string serialize(const string& type, void* obj) = 0;
-//		virtual string serialize(void* obj) = 0;
 		virtual void registerType(const string& type, void* serializer) = 0;
 	};
 	
@@ -18,7 +18,8 @@ namespace umundo {
 	public:
 		TypedPublisher(string channelName);
 		virtual ~TypedPublisher();
-//		void sendObj(void* obj);
+
+		Message* prepareMsg(const string&, void*);
 		void sendObj(const string& type, void* obj);
 		void registerType(const string& type, void* serializer);
 	private:

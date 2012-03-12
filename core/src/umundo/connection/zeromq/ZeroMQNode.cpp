@@ -16,12 +16,6 @@
 #include "umundo/connection/zeromq/ZeroMQPublisher.h"
 #include "umundo/connection/zeromq/ZeroMQSubscriber.h"
 
-/// Convinience macro to initialize a zeromq message with a given size
-#define ZMQ_PREPARE(msg, size) \
-zmq_msg_init(&msg) && LOG_WARN("zmq_msg_init: %s", zmq_strerror(errno)); \
-zmq_msg_init_size (&msg, size) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
-
-
 namespace umundo {
 
 ZeroMQNode::~ZeroMQNode() {
@@ -29,17 +23,21 @@ ZeroMQNode::~ZeroMQNode() {
   Discovery::unbrowse(_nodeQuery);
 	stop();
   
-  // this is awkward .. the thread is blocking at zmq_recvmsg - unblock by sending a message
+  // this is a hack .. the thread is blocking at zmq_recvmsg - unblock by sending a message
   void* closer;
   (closer = zmq_socket(getZeroMQContext(), ZMQ_DEALER)) || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));  
   std::stringstream ss;
 	ss << _transport << "://127.0.0.1:" << _port;
   zmq_connect(closer, ss.str().c_str()) && LOG_WARN("zmq_connect: %s",zmq_strerror(errno));
   zmq_msg_t msg;
-	ZMQ_PREPARE(msg, 0);
+	ZMQ_PREPARE_STRING(msg, "quit", 4);
+  
 	zmq_sendmsg(closer, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
-  zmq_close(closer);
+  while(zmq_close(closer) != 0) {
+    LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
+    Thread::sleepMs(50);
+  }
   
   map<string, void*>::iterator sockIter;
   for (sockIter = _sockets.begin(); sockIter != _sockets.end(); sockIter++) {
@@ -106,7 +104,7 @@ void ZeroMQNode::init(shared_ptr<Configuration> config) {
 		}
 	}
 	_port = port;
-	LOG_INFO("Node %s listening as %s", _uuid.c_str(), ss.str().c_str());
+	LOG_INFO("Node %s listening as %s", SHORT_UUID(_uuid).c_str(), ss.str().c_str());
 
 	start();
 	Discovery::browse(_nodeQuery);
@@ -126,31 +124,9 @@ void ZeroMQNode::run() {
 		while (1) {
 			zmq_msg_t message;
 			zmq_msg_init(&message) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
-
-#if 0
-      int rv;
-			while(rv <= 0) {
-        rv = zmq_recvmsg(_responder, &message, ZMQ_DONTWAIT);
-        if (!isStarted()) {
-          // node was stopped - close message and return;
-          zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
-          return;
-        } else if (rv > 0) {
-          // we read data, continue processing
-          continue;
-        } else if (errno == EAGAIN) {
-          // no data to read, sleep to avoid busy wait
-          Thread::sleepMs(10);
-        } else {
-          // something else went wrong
-          LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
-        }
-      }
-#else
-      // this is problematic for thread::join() ..
       zmq_recvmsg(_responder, &message, 0) || LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
-#endif
-      // we will stop the thread by sending an empty packet to unblock
+
+      // we will stop the thread by sending an empty packet to unblock in our destructor
       if (!isStarted()) {
         zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
         return;
@@ -171,8 +147,22 @@ void ZeroMQNode::run() {
 
 				// first two bytes are type of message
 				uint16_t type = ntohs(*(short*)(zmq_msg_data(&message)));
-				LOG_DEBUG("Received message type %d with %d bytes from %s", type, msgSize, remoteId);
+				LOG_DEBUG("Received message type %s with %d bytes from %s", Message::typeToString(type), msgSize, strndup(remoteId, 8));
 
+        _mutex.lock();
+
+        /**
+         * We may receive data and other messages from nodes that are about to vanish
+         * only accept PUB_ADDED messages for unknown nodes.
+         */
+        if (type != Message::PUB_ADDED && _nodes.find(remoteId) == _nodes.end()) {
+          zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+          string remoteIdStr(remoteId);
+          LOG_WARN("Ignoring message from unconnected node %s", SHORT_UUID(remoteIdStr).c_str());
+          _mutex.unlock();
+          continue;
+        }
+        
 				// dispatch message type
 				switch (type) {
 				case Message::DATA:
@@ -195,6 +185,8 @@ void ZeroMQNode::run() {
 			} else {
 				LOG_WARN("Received message without remote id in header");
 			}
+
+      _mutex.unlock();
 
 			// are there more messages in the envelope?
 			zmq_getsockopt(_responder, ZMQ_RCVMORE, &more, &more_size) && LOG_WARN("zmq_getsockopt: %s",zmq_strerror(errno));
@@ -223,6 +215,9 @@ void ZeroMQNode::processUnsubscription(const char* remoteId, zmq_msg_t message) 
 	processPubSub(remoteId, message, false);
 }
 
+/**
+ * A remote subscriber either subscribed or unsubscribed from one of our publishers.
+ */
 void ZeroMQNode::processPubSub(const char* remoteId, zmq_msg_t message, bool subscribe) {
 	_mutex.lock();
 
@@ -246,8 +241,9 @@ void ZeroMQNode::processPubSub(const char* remoteId, zmq_msg_t message, bool sub
 	assert(pub.get() != NULL);
 	if (subscribe) {
 		// remember remote node subscription to local pub for vanishing nodes
-		if (_remoteSubs.find(remoteId) == _remoteSubs.end())
+		if (_remoteSubs.find(remoteId) == _remoteSubs.end()) {
 			_remoteSubs[remoteId] = map<uint16_t, int>();
+    }
 		if (_remoteSubs[remoteId].find(port) == _remoteSubs[remoteId].end())
 			_remoteSubs[remoteId][port] = 0;
 		_remoteSubs[remoteId][port] = _remoteSubs[remoteId][port] + 1;
@@ -298,7 +294,7 @@ void ZeroMQNode::processPubAdded(const char* remoteId, zmq_msg_t message) {
 		_mutex.unlock();
 		return;
 	}
-	LOG_DEBUG("received publisher %s from %s", channel, remoteId);
+	LOG_DEBUG("received publisher %s from %s", channel, strndup(remoteId, 8));
 
 	shared_ptr<PublisherStub> pubStub = shared_ptr<PublisherStub>(new PublisherStub());
 	pubStub->setChannelName(channel);
@@ -378,12 +374,10 @@ void ZeroMQNode::added(shared_ptr<NodeStub> node) {
 	assert(node);
 	assert(node->getUUID().length() == 36);
 	if (node->getUUID().compare(_uuid) != 0) {
+		LOG_INFO("%s added %s at %s", SHORT_UUID(_uuid).c_str(), SHORT_UUID(node->getUUID()).c_str(), node->getIP().c_str());
+
 		// we found ourselves a remote node, lets get some privacy
 		_mutex.lock();
-
-		std::stringstream nodeDesc;
-		nodeDesc << node;
-		LOG_INFO("ZeroMQNode::added %s", nodeDesc.str().c_str());
 
 		std::stringstream ss;
 		ss << node->getTransport() << "://" << node->getIP() << ":" << node->getPort();
@@ -437,7 +431,7 @@ void ZeroMQNode::removed(shared_ptr<NodeStub> node) {
 	if (node->getUUID().compare(_uuid) != 0) {
 		std::stringstream nodeDesc;
 		nodeDesc << node;
-		LOG_INFO("ZeroMQNode::removed %s", nodeDesc.str().c_str());
+		LOG_INFO("%s removed %s", SHORT_UUID(_uuid).c_str(), SHORT_UUID(node->getUUID()).c_str());
 
 		_mutex.lock();
 
@@ -462,7 +456,7 @@ void ZeroMQNode::removed(shared_ptr<NodeStub> node) {
     }
     
 		if (_sockets.find(node->getUUID()) == _sockets.end()) {
-			LOG_WARN("Removed client that was never added: %s", node->getUUID().c_str());
+			LOG_WARN("Removed client that was never added: %s", SHORT_UUID(node->getUUID()).c_str());
 			assert(validateState());
 			_mutex.unlock();
 			return;
@@ -486,9 +480,7 @@ void ZeroMQNode::removed(shared_ptr<NodeStub> node) {
 
 void ZeroMQNode::changed(shared_ptr<NodeStub> node) {
 	if (node->getUUID().compare(_uuid) != 0) {
-		std::stringstream nodeDesc;
-		nodeDesc << node;
-		LOG_INFO("ZeroMQNode::changed %s", nodeDesc.str().c_str());
+//		LOG_INFO("%s changed %s", SHORT_UUID(_uuid).c_str(), SHORT_UUID(node->getUUID()).c_str());
 	}
 }
 
@@ -633,7 +625,7 @@ void ZeroMQNode::addPublisher(shared_ptr<PublisherImpl> pub) {
 			*(uint16_t*)(buffer) = htons(Message::PUB_ADDED);
 			writePubInfo(buffer + 2, zPub->getPort(), zPub->getChannelName().c_str());
 
-			LOG_DEBUG("Informing %s", sockIter->first.c_str());
+			LOG_DEBUG("Informing %s of new publisher", SHORT_UUID(sockIter->first).c_str());
 			zmq_sendmsg(sockIter->second, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 			zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 		}
@@ -762,7 +754,6 @@ bool ZeroMQNode::validateState() {
 		for (remotePubIter = remotePubsIter->second.begin(); remotePubIter != remotePubsIter->second.end(); remotePubIter++) {
 			shared_ptr<PublisherStub> pub = remotePubIter->second;
 			assert(remotePubIter->first == pub->getPort());
-
 			assert(node->getHost().compare(pub->getHost()) == 0);
 			assert(node->getDomain().compare(pub->getDomain()) == 0);
 			assert(node->getTransport().compare(pub->getTransport()) == 0);
@@ -775,7 +766,8 @@ bool ZeroMQNode::validateState() {
 	// make sure we know the node for every remote sub
 	map<string, map<uint16_t, int > >::iterator remoteSubsIter;
 	for (remoteSubsIter = _remoteSubs.begin(); remoteSubsIter != _remoteSubs.end(); remoteSubsIter++) {
-		assert(_nodes.find(remoteSubsIter->first) != _nodes.end());
+    string uuid = remoteSubsIter->first;
+		assert(_nodes.find(uuid) != _nodes.end());
 		// we should have deleted such a thing
 		assert(remoteSubsIter->second.size() > 0);
 		map<uint16_t, int>::iterator remoteSubIter;
@@ -789,7 +781,6 @@ bool ZeroMQNode::validateState() {
 
 		}
 	}
-	LOG_DEBUG("Validated state");
 	_mutex.unlock();
 	return true;
 }

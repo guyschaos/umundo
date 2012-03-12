@@ -7,6 +7,7 @@
 #include "umundo/common/Factory.h"
 #include "umundo/common/Implementation.h"
 #include "umundo/common/Message.h"
+#include "umundo/common/UUID.h"
 #include "umundo/common/Node.h"
 #include "umundo/common/NodeStub.h"
 #include "umundo/common/portability.h"

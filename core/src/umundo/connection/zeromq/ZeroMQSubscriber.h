@@ -33,9 +33,11 @@ protected:
 	ZeroMQSubscriber(string, Receiver*);
 
 	set<string> _connections;
+	void* _closer; ///< needed to join the thread with blocking receive
 	void* _socket;
 	void* _zeroMQCtx;
-
+  Mutex _mutex;
+  
 private:
 
 	shared_ptr<SubscriberConfig> _config;

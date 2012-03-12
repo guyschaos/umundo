@@ -7,6 +7,12 @@ namespace umundo {
 class Message;
 class Type;
 
+class MemoryBuffer {
+public:
+  char* data;
+  size_t size;
+};
+
 /**
  * Definition of message types and abstraction of message (bridge pattern).
  */
@@ -20,6 +26,16 @@ public:
 	    SUBSCRIBE     = 0x0007,
 	    UNSUBSCRIBE   = 0x0008,
 	};
+
+	static const char* typeToString(uint16_t type) {
+		if (type == 0x0000) return "DATA";
+		if (type == 0x0004) return "PUB_ADDED";
+		if (type == 0x0005) return "PUB_REMOVED";
+		if (type == 0x0006) return "NODE_INFO";
+		if (type == 0x0007) return "SUBSCRIBE";
+		if (type == 0x0008) return "UNSUBSCRIBE";
+		return "UNKNOWN";
+	}
 
 	Message() {}
 	Message(string data) : _data(data) {}

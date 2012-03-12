@@ -3,8 +3,8 @@
 namespace umundo {
 
 std::ostream& operator<<(std::ostream &out, const NodeStub* n) {
-	out << n->getUUID() << ": ";
-	out << n->getHost() << ".";
+	out << SHORT_UUID(n->getUUID()) << ": ";
+	out << n->getHost() << "";
 	out << n->getDomain() << ":";
 	out << n->getPort();
 

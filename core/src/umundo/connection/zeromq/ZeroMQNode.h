@@ -9,6 +9,23 @@
 #include "umundo/common/ResultSet.h"
 #include "umundo/common/Node.h"
 
+/// Initialize a zeromq message with a given size
+#define ZMQ_PREPARE(msg, size) \
+zmq_msg_init(&msg) && LOG_WARN("zmq_msg_init: %s", zmq_strerror(errno)); \
+zmq_msg_init_size (&msg, size) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno));
+
+/// Initialize a zeromq message with a given size and memcpy data
+#define ZMQ_PREPARE_DATA(msg, data, size) \
+zmq_msg_init(&msg) && LOG_WARN("zmq_msg_init: %s", zmq_strerror(errno)); \
+zmq_msg_init_size (&msg, size) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno)); \
+memcpy(zmq_msg_data(&msg), data, size);
+
+/// Initialize a zeromq message with a given null-terminated string
+#define ZMQ_PREPARE_STRING(msg, data, size) \
+zmq_msg_init(&msg) && LOG_WARN("zmq_msg_init: %s", zmq_strerror(errno)); \
+zmq_msg_init_size (&msg, size + 1) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno)); \
+memcpy(zmq_msg_data(&msg), data, size + 1);
+
 namespace umundo {
 
 class PublisherStub;

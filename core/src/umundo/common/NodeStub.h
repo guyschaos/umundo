@@ -4,6 +4,8 @@
 #include "umundo/common/Common.h"
 #include "umundo/common/EndPoint.h"
 
+#define SHORT_UUID(uuid) uuid.substr(0, 8)
+
 namespace umundo {
 
 /**

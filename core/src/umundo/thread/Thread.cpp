@@ -190,10 +190,31 @@ Monitor::Monitor() {
 Monitor::~Monitor() {
 #ifdef THREAD_PTHREAD
 	int err;
-	err = pthread_cond_destroy(&_cond);
-	assert(err == 0);
-	err = pthread_mutex_destroy(&_mutex);
-	assert(err == 0);
+	while((err = pthread_cond_destroy(&_cond))) {
+		switch(err) {
+		case EBUSY:
+			LOG_WARN("Trying to destroy locked monitor - retrying");
+			break;
+		default:
+			LOG_WARN("pthread_mutex_destroy returned %d");
+			goto failed_cond_destroy;
+		}
+		Thread::sleepMs(50);
+	}
+failed_cond_destroy:
+	while((err = pthread_mutex_destroy(&_mutex))) {
+		switch(err) {
+		case EBUSY:
+			LOG_WARN("Trying to destroy locked monitor - retrying");
+			break;
+		default:
+			LOG_WARN("pthread_mutex_destroy returned %d");
+			goto failed_mutex_destroy;
+		}
+		Thread::sleepMs(50);
+	}
+failed_mutex_destroy:
+	return;
 #endif
 #ifdef THREAD_WIN32
 	CloseHandle(_monitor);
@@ -222,6 +243,7 @@ bool Monitor::wait(uint32_t ms) {
 	int rv;
 	pthread_mutex_lock(&_mutex);
 	if (_signaled) {
+		LOG_DEBUG("Signaled prior to waiting");
 		_signaled = false;
 		pthread_mutex_unlock(&_mutex);
 		return true;

@@ -29,45 +29,57 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
-//
-// Front-end for protoc code generator plugins written in C++.
-//
-// To implement a protoc plugin in C++, simply write an implementation of
-// CodeGenerator, then create a main() function like:
-//   int main(int argc, char* argv[]) {
-//     MyCodeGenerator generator;
-//     return google::protobuf::compiler::PluginMain(argc, argv, &generator);
-//   }
-// You must link your plugin against libprotobuf and libprotoc.
-//
-// To get protoc to use the plugin, do one of the following:
-// * Place the plugin binary somewhere in the PATH and give it the name
-//   "protoc-gen-NAME" (replacing "NAME" with the name of your plugin).  If you
-//   then invoke protoc with the parameter --NAME_out=OUT_DIR (again, replace
-//   "NAME" with your plugin's name), protoc will invoke your plugin to generate
-//   the output, which will be placed in OUT_DIR.
-// * Place the plugin binary anywhere, with any name, and pass the --plugin
-//   parameter to protoc to direct it to your plugin like so:
-//     protoc --plugin=protoc-gen-NAME=path/to/mybinary --NAME_out=OUT_DIR
-//   On Windows, make sure to include the .exe suffix:
-//     protoc --plugin=protoc-gen-NAME=path/to/mybinary.exe --NAME_out=OUT_DIR
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__
-#define GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
+#define GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
 
+#include <string>
 #include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
+  class FieldDescriptor;       // descriptor.h
+  namespace io {
+    class Printer;             // printer.h
+  }
+}
+
+namespace protobuf {
 namespace compiler {
+namespace cpp {
 
-class CodeGenerator;    // code_generator.h
+// Generates code for an extension, which may be within the scope of some
+// message or may be at file scope.  This is much simpler than FieldGenerator
+// since extensions are just simple identifiers with interesting types.
+class ExtensionGenerator {
+ public:
+  // See generator.cc for the meaning of dllexport_decl.
+  explicit ExtensionGenerator(const FieldDescriptor* descriptor,
+                              const string& dllexport_decl);
+  ~ExtensionGenerator();
 
-// Implements main() for a protoc plugin exposing the given code generator.
-int PluginMain(int argc, char* argv[], const CodeGenerator* generator);
+  // Header stuff.
+  void GenerateDeclaration(io::Printer* printer);
 
+  // Source file stuff.
+  void GenerateDefinition(io::Printer* printer);
+
+  // Generate code to register the extension.
+  void GenerateRegistration(io::Printer* printer);
+
+ private:
+  const FieldDescriptor* descriptor_;
+  string type_traits_;
+  string dllexport_decl_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
+};
+
+}  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__

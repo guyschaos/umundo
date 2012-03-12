@@ -26,12 +26,18 @@ TypeSerializerImpl* TypedPublisher::_registeredPrototype = NULL;
 TypedPublisher::~TypedPublisher() {
 }
 
-void TypedPublisher::sendObj(const string& type, void* obj) {
+Message* TypedPublisher::prepareMsg(const string& type, void* obj) {
 	Message* msg = new Message();
 	string buffer(_impl->serialize(type, obj));
 	msg->setData(buffer);
 	msg->setMeta("type", type);
+	return msg;
+}
+
+void TypedPublisher::sendObj(const string& type, void* obj) {
+	Message* msg = prepareMsg(type, obj);
 	send(msg);
+	delete msg;
 }
 
 // void TypedPublisher::sendObj(void* obj) {

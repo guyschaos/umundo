@@ -40,6 +40,8 @@ private:
 	AvahiSimplePoll *_simplePoll;
 	Mutex _mutex;
 
+	bool validateState();
+
 	static void entryGroupCallback(AvahiEntryGroup*, AvahiEntryGroupState, void*);
 	static void clientCallback(AvahiClient*, AvahiClientState, void*);
 	static void browseClientCallback(AvahiClient*, AvahiClientState, void*);
@@ -76,7 +78,7 @@ private:
 	map<intptr_t, shared_ptr<NodeImpl> > _nodes;	             ///< memory addresses of local nodes for static callbacks
 	map<intptr_t, AvahiClient* > _avahiClients;            ///< memory addresses of local nodes to avahi clients
 	map<intptr_t, AvahiEntryGroup* > _avahiGroups;         ///< memory addresses of local nodes to avahi groups
-	map<intptr_t, AvahiServiceBrowser* > _avahiBrowser;        ///< memory addresses of local nodes to avahi service browsers
+	map<intptr_t, AvahiServiceBrowser* > _avahiBrowsers;        ///< memory addresses of local nodes to avahi service browsers
 
 	map<shared_ptr<NodeQuery>, map<string, shared_ptr<AvahiNodeStub> > > _queryNodes;
 

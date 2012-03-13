@@ -7,14 +7,9 @@
 
 #include "umundo/connection/zeromq/ZeroMQPublisher.h"
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-
-
 #include "umundo/connection/zeromq/ZeroMQNode.h"
 #include "umundo/common/Message.h"
+#include "umundo/common/UUID.h"
 
 #include "umundo/config.h"
 #if defined UNIX || defined IOS || defined IOSSIM
@@ -35,7 +30,7 @@ void ZeroMQPublisher::destroy() {
 
 void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 
-	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
+	_uuid = UUID::getUUID();
 	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
 	_pubCount = 0;
@@ -68,14 +63,11 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 }
 
 ZeroMQPublisher::ZeroMQPublisher() {
-	DEBUG_CTOR("ZeroMQPublisher");
 }
 
 ZeroMQPublisher::~ZeroMQPublisher() {
-	DEBUG_DTOR("ZeroMQPublisher start");
 	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 	//zmq_term(_zeroMQCtx) && LOG_WARN("zmq_term: %s",zmq_strerror(errno));
-	DEBUG_DTOR("ZeroMQPublisher finished");
 }
 
 /**

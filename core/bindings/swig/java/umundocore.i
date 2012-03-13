@@ -123,6 +123,5 @@ import java.util.HashMap;
 %include "../../../../core/src/umundo/common/EndPoint.h"
 %include "../../../../core/src/umundo/connection/Publisher.h"
 %include "../../../../core/src/umundo/connection/Subscriber.h"
-%include "../../../../core/src/umundo/common/NodeStub.h"
 %include "../../../../core/src/umundo/common/Node.h"
 

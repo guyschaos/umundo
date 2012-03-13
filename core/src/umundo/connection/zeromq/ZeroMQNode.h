@@ -83,7 +83,6 @@ protected:
 	void processUnsubscription(const char*, zmq_msg_t);
 	void notifyOfUnsubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
 	void notifyOfSubscription(void*, shared_ptr<ZeroMQSubscriber>, shared_ptr<PublisherStub>);
-
 	//@}
 
 	/** @name Local subscriber maintenance */
@@ -101,7 +100,6 @@ private:
 	void processPubSub(const char*, zmq_msg_t, bool); ///< notify local publishers about subscriptions
 	bool validateState(); ///< check the nodes state
 
-//	static void initPubMgmtMsg(zmq_msg_t&, shared_ptr<PublisherStub>); ///< prepare a control message regarding a Publisher.
 	static char* writePubInfo(char*, uint16_t, const char*); ///< write publisher info into given byte array
 	static char* readPubInfo(char*, uint16_t&, char*&); ///< read publisher from into given byte array
 
@@ -121,7 +119,6 @@ private:
 
 	static shared_ptr<ZeroMQNode> _instance; ///< Singleton instance.
 
-	friend std::ostream& operator<<(std::ostream&, const ZeroMQNode*);
 	friend class Factory;
 };
 

@@ -9,7 +9,6 @@
 #include "umundo/common/Message.h"
 #include "umundo/common/UUID.h"
 #include "umundo/common/Node.h"
-#include "umundo/common/NodeStub.h"
 #include "umundo/common/portability.h"
 #include "umundo/common/ResultSet.h"
 #include "umundo/connection/Publisher.h"

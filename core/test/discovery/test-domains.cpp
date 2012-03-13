@@ -85,6 +85,7 @@ void testDomainReception() {
     buffer[i] = (char)i%255;
   }
 
+	pub->waitForSubscribers(2);
   assert(pub->waitForSubscribers(2) >= 2);
   Thread::sleepMs(100);
 
@@ -116,12 +117,12 @@ int main(int argc, char** argv, char** envp) {
 	setenv("UMUNDO_LOGLEVEL_NET", "2", 1);
   int i = 5;
   while(i-- > 0) {
-    printf("##### testDifferentDomain #####################################\n");
-    testDifferentDomain();
-    assert(Node::instances == 0);
-    printf("##### testSameDomain ##########################################\n");
-    testSameDomain();
-    assert(Node::instances == 0);
+    // printf("##### testDifferentDomain #####################################\n");
+    // testDifferentDomain();
+    // assert(Node::instances == 0);
+    // printf("##### testSameDomain ##########################################\n");
+    // testSameDomain();
+    // assert(Node::instances == 0);
     printf("##### testDomainReception #####################################\n");
     testDomainReception();
     assert(Node::instances == 0);

@@ -43,13 +43,26 @@ int main(int argc, char** argv) {
 	delete pingReq;
 	delete pingRep;
 	
-	int i = 100;
+	// test rpc throughput with the echo service
+	int iterations = 60;
+	int sends = 0;
 	EchoServiceStub* echoSvc = new EchoServiceStub(svcMgr2);
   EchoRequest* echoReq = new EchoRequest();
-	while (i > 0) {
+	time_t now;
+	time_t start;
+	time(&start);
+	while (iterations > 0) {
 	  echoReq->set_name(".");
 		EchoReply* echoRep = echoSvc->echo(echoReq);
-	  std::cout << echoRep->name() << std::flush;
+		assert(echoRep->name().compare(".") == 0);
+		sends++;
+		time(&now);
+		if ((now - start) > 0) {
+			std::cout << sends << " messages per second" << std::endl;
+			time(&start);
+			sends = 0;
+			iterations--;
+		}
 		delete echoRep;
 	}
 	delete echoReq;

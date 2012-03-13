@@ -147,7 +147,7 @@ void ZeroMQNode::run() {
 
 				// first two bytes are type of message
 				uint16_t type = ntohs(*(short*)(zmq_msg_data(&message)));
-				LOG_DEBUG("Received message type %s with %d bytes from %s", Message::typeToString(type), msgSize, strndup(remoteId, 8));
+				LOG_DEBUG("%s received message type %s with %d bytes from %s", SHORT_UUID(_uuid).c_str(), Message::typeToString(type), msgSize, strndup(remoteId, 8));
 
         _mutex.lock();
 
@@ -699,35 +699,6 @@ char* ZeroMQNode::readPubInfo(char* buffer, uint16_t& port, char*& channel) {
 	buffer += 2;
 	assert(buffer - start == (int)strlen(channel) + 3);
 	return buffer;
-}
-
-std::ostream& operator<<(std::ostream &out, const ZeroMQNode* n) {
-	return out;
-
-	out << std::endl;
-	out << "ZeroMQNode " << n->_uuid << ": ";
-	out << n->_host << ".";
-	out << n->_domain << ":";
-	out << n->_port;
-	out << std::endl << "known nodes:" << std::endl;
-
-	map<string, shared_ptr<NodeStub> >::const_iterator nodeIter;
-	for (nodeIter = n->_nodes.begin(); nodeIter != n->_nodes.end(); nodeIter++) {
-		out << "\t" << nodeIter->first << ":" << nodeIter->second << std::endl;
-	}
-
-	out << std::endl << "known publishers:" << std::endl;
-
-	map<string, map<uint16_t, shared_ptr<PublisherStub> > >::const_iterator nodeIdIter;
-	map<uint16_t, shared_ptr<PublisherStub> >::const_iterator pubIter;
-	for (nodeIdIter = n->_remotePubs.begin(); nodeIdIter != n->_remotePubs.end(); nodeIdIter++) {
-		out << "\t" << nodeIdIter->first << ":" << std::endl;
-		for (pubIter = nodeIdIter->second.begin(); pubIter != nodeIdIter->second.end(); pubIter++) {
-			out << "\t\t" << pubIter->second->getChannelName() << std::endl;
-		}
-	}
-	out << std::endl;
-	return out;
 }
 
 bool ZeroMQNode::validateState() {

@@ -1,11 +1,7 @@
 #include "umundo/common/Node.h"
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include "umundo/common/Factory.h"
+#include "umundo/common/UUID.h"
 #include "umundo/discovery/Discovery.h"
 #include "umundo/connection/Subscriber.h"
 #include "umundo/connection/Publisher.h"
@@ -17,7 +13,7 @@ shared_ptr<Configuration> NodeConfig::create() {
 }
 
 NodeImpl::NodeImpl() {
-	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
+	_uuid = UUID::getUUID();
 }
 
 int Node::instances = 0;
@@ -58,6 +54,19 @@ void Node::addPublisher(Publisher* pub) {
 
 void Node::removePublisher(Publisher* pub) {
 	_impl->removePublisher(pub->_impl);
+}
+
+std::ostream& operator<<(std::ostream &out, const NodeStub* n) {
+	out << SHORT_UUID(n->getUUID()) << ": ";
+	out << n->getHost() << "";
+	out << n->getDomain() << ":";
+	out << n->getPort();
+
+	// map<int, string>::const_iterator iFaceIter;
+	// for (iFaceIter = n->_interfaces.begin(); iFaceIter != n->_interfaces.end(); iFaceIter++) {
+	// 	out << "\t" << iFaceIter->first << ": " << iFaceIter->second << std::endl;
+	// }
+	return out;
 }
 
 }

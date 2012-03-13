@@ -1,6 +1,7 @@
 #include "umundo/discovery/avahi/AvahiNodeDiscovery.h"
 
 #include <stdio.h> // asprintf
+#include <string.h> // strndup
 
 #include "umundo/common/Node.h"
 #include "umundo/discovery/NodeQuery.h"
@@ -17,7 +18,7 @@ shared_ptr<Implementation> AvahiNodeDiscovery::create() {
 shared_ptr<AvahiNodeDiscovery> AvahiNodeDiscovery::getInstance() {
 	if (_instance.get() == NULL) {
 		_instance = shared_ptr<AvahiNodeDiscovery>(new AvahiNodeDiscovery());
-		(_instance->_simplePoll = avahi_simple_poll_new()) || LOG_WARN("avahi_simple_poll_new", 0);
+		(_instance->_simplePoll = avahi_simple_poll_new()) || LOG_WARN("avahi_simple_poll_new");
 	}
 	return _instance;
 }
@@ -68,7 +69,7 @@ void AvahiNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
 	_mutex.lock();
 	intptr_t address = (intptr_t)(query.get());
 
-	LOG_INFO("Removing query for %s", query->getDomain().c_str());
+	LOG_INFO("Removing query %p for nodes in '%s'", address, query->getDomain().c_str());
 
 	if(_avahiClients.find(address) == _avahiClients.end()) {
 		LOG_WARN("Unbrowsing query that was never added");
@@ -91,7 +92,7 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	intptr_t address = (intptr_t)(query.get());
 	int error;
 
-	LOG_INFO("Adding query for %s", query->getDomain().c_str());
+	LOG_INFO("Adding query %p for nodes in '%s'", address, query->getDomain().c_str());
 
 	client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, browseClientCallback, (void*)address, &error);
 	if (client == NULL) {
@@ -128,19 +129,19 @@ void AvahiNodeDiscovery::browseClientCallback(AvahiClient *c, AvahiClientState s
 
 	switch(state) {
 	case AVAHI_CLIENT_CONNECTING:
-		LOG_WARN("browseClientCallback: Client still connecting", avahi_client_errno(c));
+		LOG_WARN("browseClientCallback: Query %p - client still connecting %s", userdata, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_FAILURE:
-		LOG_WARN("browseClientCallback: Server connection failure", avahi_client_errno(c));
+		LOG_WARN("browseClientCallback: Query %p - server connection failure %s", userdata, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_RUNNING:
-		LOG_INFO("browseClientCallback: Server state: RUNNING", avahi_client_errno(c));
+		LOG_INFO("browseClientCallback: Query %p - server state: RUNNING %s", userdata, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_REGISTERING:
-		LOG_WARN("browseClientCallback: Server state: REGISTERING", avahi_client_errno(c));
+		LOG_WARN("browseClientCallback: Query %p - server state: REGISTERING %s", userdata, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_COLLISION:
-		LOG_WARN("browseClientCallback: Server state: COLLISION", avahi_client_errno(c));
+		LOG_WARN("browseClientCallback: Query %p - server state: COLLISION %s", userdata, avahi_strerror(avahi_client_errno(c)));
 		break;
 	default:
 		LOG_WARN("Unknown state");
@@ -163,7 +164,7 @@ void AvahiNodeDiscovery::browseCallback(
 	getInstance()->_mutex.lock();
 	LOG_DEBUG("browseCallback: %s %s/%s as %s at if %d with protocol %d",
 	          (event == AVAHI_BROWSER_NEW ? "Added" : "Called for"),
-	          (name == NULL ? "NULL" : name),
+	          (name == NULL ? "NULL" : strndup(name, 8)),
 	          (domain == NULL ? "NULL" : domain),
 	          type,
 	          interface,
@@ -190,19 +191,19 @@ void AvahiNodeDiscovery::browseCallback(
 			myself->_queryNodes[query][name] = node;
 		}
 		if (!(avahi_service_resolver_new(client, interface, protocol, name, type, domain, AVAHI_PROTO_UNSPEC, (AvahiLookupFlags)0, resolveCallback, userdata)))
-			LOG_WARN("avahi_service_resolver_new failed", avahi_client_errno(client));
+			LOG_WARN("avahi_service_resolver_new failed for query %p: %s",userdata, avahi_strerror(avahi_client_errno(client)));
 		break;
 	}
 	case AVAHI_BROWSER_REMOVE: {
 		assert(name != NULL);
 		if (myself->_queryNodes[query].find(name) == myself->_queryNodes[query].end()) {
-	        LOG_INFO("Node already removed '%s' of type '%s' in domain '%s' at iface %d with proto %d\n", name, type, domain, interface, protocol);
+	        LOG_INFO("Node '%s' already removed of type '%s' in domain '%s' at iface %d with proto %d\n", strndup(name, 8), type, domain, interface, protocol);
 	    	getInstance()->_mutex.unlock();
 	    	return;
 		}
 
 		shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
-        LOG_INFO("Removing node '%s' of type '%s' in domain '%s' at iface %d with proto %d\n", name, type, domain, interface, protocol);
+        LOG_INFO("Removing node '%s' of type '%s' in domain '%s' at iface %d with proto %d\n", strndup(name, 8), type, domain, interface, protocol);
         if (protocol == AVAHI_PROTO_INET6)
     		node->_interfacesIPv6.erase(interface);
         if (protocol == AVAHI_PROTO_INET)
@@ -224,7 +225,7 @@ void AvahiNodeDiscovery::browseCallback(
 		break;
 	}
 	case AVAHI_BROWSER_FAILURE:
-		LOG_WARN("avahi browser failure", avahi_client_errno(avahi_service_browser_get_client(b)));
+		LOG_WARN("avahi browser failure: %s", avahi_strerror(avahi_client_errno(avahi_service_browser_get_client(b))));
 		break;
 	}
 	getInstance()->_mutex.unlock();
@@ -248,7 +249,7 @@ void AvahiNodeDiscovery::resolveCallback(
 	getInstance()->_mutex.lock();
 	LOG_DEBUG("resolveCallback: %s %s/%s:%d as %s at if %d with protocol %d",
 	          (host_name == NULL ? "NULL" : host_name),
-	          (name == NULL ? "NULL" : name),
+	          (name == NULL ? "NULL" : strndup(name, 8)),
 	          (domain == NULL ? "NULL" : domain),
 	          port,
 	          type,
@@ -262,7 +263,7 @@ void AvahiNodeDiscovery::resolveCallback(
 
 	(query.get() != NULL) || LOG_ERR("no browser known for userdata");
 	(client != NULL) || LOG_ERR("no client known for userdata");
-	(node != NULL) || LOG_ERR("no node named %s known for query", name);
+	(node != NULL) || LOG_ERR("no node named %s known for query", strndup(name, 8));
 
 	if (protocol == AVAHI_PROTO_INET6) {
 		LOG_INFO("Ignoring %s IPv6", host_name);
@@ -273,7 +274,11 @@ void AvahiNodeDiscovery::resolveCallback(
 
 	switch (event) {
 	case AVAHI_RESOLVER_FAILURE:
-		LOG_WARN("resolving failed", avahi_client_errno(avahi_service_resolver_get_client(r)));
+		LOG_WARN("resolving %s at if %d for proto %s failed: %s", 
+			strndup(name, 8), 
+			interface,
+			(protocol == AVAHI_PROTO_INET6 ? "IPv6" : "IPv4"),
+			avahi_strerror(avahi_client_errno(avahi_service_resolver_get_client(r))));
 		break;
 
 	case AVAHI_RESOLVER_FOUND: {
@@ -290,9 +295,9 @@ void AvahiNodeDiscovery::resolveCallback(
 
 		avahi_free(t);
 		// this is the wrong place to notify the query listener ...
-		if (node->_interfaceIndices.size() == node->_interfacesIPv4.size())
+  	if (node->_interfacesIPv4.begin() != node->_interfacesIPv4.end()) {
 			query->found(node);
-
+		}
 		break;
 	}
 	default:
@@ -327,7 +332,7 @@ void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupS
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE :
-		LOG_WARN("AVAHI_ENTRY_GROUP_FAILURE", avahi_client_errno(avahi_entry_group_get_client(g)));
+		LOG_WARN("AVAHI_ENTRY_GROUP_FAILURE: %s", avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
 
 		/* Some kind of failure happened while we were registering our services */
 		avahi_simple_poll_quit(myself->_simplePoll);
@@ -364,7 +369,7 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 		 * name on the network, so it's time to create our services */
 		if (!group) {
 			if (!(group = avahi_entry_group_new(c, entryGroupCallback, userdata))) {
-				LOG_WARN("avahi_entry_group_new failed ", avahi_client_errno(c));
+				LOG_WARN("avahi_entry_group_new failed: %s", avahi_strerror(avahi_client_errno(c)));
 				avahi_simple_poll_quit(myself->_simplePoll);
 			} else {
 				myself->_avahiGroups[(intptr_t)userdata] = group;
@@ -395,25 +400,25 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 		break;
 
 	case AVAHI_CLIENT_FAILURE:
-		LOG_WARN("Client failure ", avahi_client_errno(c));
+		LOG_WARN("Client failure: %s", avahi_strerror(avahi_client_errno(c)));
 		avahi_simple_poll_quit(myself->_simplePoll);
 		break;
 
 	case AVAHI_CLIENT_S_COLLISION:
-		LOG_WARN("AVAHI_CLIENT_S_COLLISION ", avahi_client_errno(c));
+		LOG_WARN("AVAHI_CLIENT_S_COLLISION: %s", avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_REGISTERING:
 		/* The server records are now being established. This
 		 * might be caused by a host name change. We need to wait
 		 * for our own records to register until the host name is
 		 * properly esatblished. */
-		LOG_WARN("AVAHI_CLIENT_S_REGISTERING ", avahi_client_errno(c));
+		LOG_WARN("AVAHI_CLIENT_S_REGISTERING: %s", avahi_strerror(avahi_client_errno(c)));
 		if (group)
 			avahi_entry_group_reset(group);
 		break;
 
 	case AVAHI_CLIENT_CONNECTING:
-		LOG_WARN("AVAHI_CLIENT_CONNECTING ", avahi_client_errno(c));
+		LOG_WARN("AVAHI_CLIENT_CONNECTING: %s", avahi_strerror(avahi_client_errno(c)));
 		break;
 	}
 	getInstance()->_mutex.unlock();

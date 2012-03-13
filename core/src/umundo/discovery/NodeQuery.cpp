@@ -1,4 +1,4 @@
-#include "umundo/common/NodeStub.h"
+#include "umundo/common/Node.h"
 #include "umundo/discovery/NodeQuery.h"
 #include "umundo/common/Factory.h"
 
@@ -15,7 +15,7 @@ void NodeQuery::found(shared_ptr<NodeStub> node) {
 	_mutex.lock();
 	if (_notifyImmediately) {
 		if (_nodes.find(node->getUUID()) != _nodes.end()) {
-      LOG_DEBUG("Changed node %s", SHORT_UUID(node->getUUID()).c_str());
+//      LOG_DEBUG("Changed node %s", SHORT_UUID(node->getUUID()).c_str());
 			_listener->changed(node);
 		} else {
       LOG_DEBUG("Added node %s", SHORT_UUID(node->getUUID()).c_str());
@@ -56,7 +56,7 @@ void NodeQuery::notifyResultSet() {
 
 	for (nodeIter = _pendingFinds.begin(); nodeIter != _pendingFinds.end(); nodeIter++) {
 		if (_nodes.find((*nodeIter)->getUUID()) != _nodes.end()) {
-      LOG_DEBUG("Changed node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
+//      LOG_DEBUG("Changed node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
 			_listener->changed(*nodeIter);			
 		} else {
       LOG_DEBUG("Added node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());

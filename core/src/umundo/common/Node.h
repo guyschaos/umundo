@@ -1,12 +1,11 @@
 #ifndef NODE_H_AA94X8L6
 #define NODE_H_AA94X8L6
 
-//#include <boost/lexical_cast.hpp>
-
 #include "umundo/common/Common.h"
-
+#include "umundo/common/EndPoint.h"
 #include "umundo/common/Implementation.h"
-#include "umundo/common/NodeStub.h"
+
+#define SHORT_UUID(uuid) uuid.substr(0, 8)
 
 namespace umundo {
 
@@ -15,6 +14,39 @@ class PublisherImpl;
 class Subscriber;
 class SubscriberImpl;
 class NodeStub;
+
+/**
+ * Representation of a remote umundo Node.
+ */
+class NodeStub : public EndPoint {
+public:
+	virtual ~NodeStub() {}
+
+	/** @name Remote Node */
+	//@{
+	virtual const string& getUUID() const       {
+		return _uuid;
+	}
+	virtual void setUUID(string uuid)           {
+		_uuid = uuid;
+	}
+	//@}
+
+	inline bool operator==(NodeStub* n) const {
+		return (getUUID().compare(n->getUUID()) == 0);
+	}
+
+	inline bool operator!=(NodeStub* n) const {
+		return (getUUID().compare(n->getUUID()) != 0);
+	}
+
+protected:
+	string _uuid;
+
+private:
+	friend std::ostream& operator<<(std::ostream&, const NodeStub*);
+
+};
 
 class NodeConfig : public Configuration {
 public:

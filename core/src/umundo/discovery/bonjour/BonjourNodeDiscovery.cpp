@@ -175,7 +175,7 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 		asprintf(&domain, "local.");
 	}
 
-	LOG_DEBUG("Trying to registering: %s.%s as %s",
+	LOG_DEBUG("Trying to register: %s.%s as %s",
 	          (name == NULL ? "null" : name),
 	          (domain == NULL ? "null" : domain),
 	          regtype);
@@ -201,7 +201,9 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	if(registerClient && err == 0) {
     // everything is fine, add FD to query set, remember query and node
 		int sockFD = DNSServiceRefSockFD(registerClient); // this is a noop in embedded
+#ifndef DISC_BONJOUR_EMBED
 		assert(getInstance()->_activeFDs.find(sockFD) == getInstance()->_activeFDs.end());
+#endif
 		assert(getInstance()->_registerClients.find(address) == getInstance()->_registerClients.end());
 		assert(getInstance()->_localNodes.find(address) == getInstance()->_localNodes.end());
 		getInstance()->_activeFDs[sockFD] = registerClient;
@@ -290,7 +292,6 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
     // query started succesfully, remember
 #ifndef DISC_BONJOUR_EMBED
 		int sockFD = DNSServiceRefSockFD(queryClient);
-		LOG_DEBUG("Registered with fd %d", sockFD);
 		assert(getInstance()->_activeFDs.find(sockFD) == getInstance()->_activeFDs.end());
 		getInstance()->_activeFDs[sockFD] = queryClient;
 #endif
@@ -563,32 +564,36 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 		if (err == kDNSServiceErr_NoError && addrInfoClient) {
 			if (node->_addrInfoClients.find(interfaceIndex) != node->_addrInfoClients.end()) {
 				// remove old query
-				int sockFD = DNSServiceRefSockFD(node->_addrInfoClients[interfaceIndex]);
 				DNSServiceRefDeallocate(node->_addrInfoClients[interfaceIndex]);
+#ifndef DISC_BONJOUR_EMBED
+				int sockFD = DNSServiceRefSockFD(node->_addrInfoClients[interfaceIndex]);
 				assert(getInstance()->_activeFDs.find(sockFD) != getInstance()->_activeFDs.end());
 				getInstance()->_activeFDs.erase(sockFD);
+#endif
 				node->_addrInfoClients.erase(interfaceIndex);
 			}
 			assert(node->_addrInfoClients.find(interfaceIndex) == node->_addrInfoClients.end());
       node->_addrInfoClients[interfaceIndex] = addrInfoClient;
+#ifndef DISC_BONJOUR_EMBED
 			int sockFD = DNSServiceRefSockFD(addrInfoClient);
 			assert(getInstance()->_activeFDs.find(sockFD) == getInstance()->_activeFDs.end());
 			getInstance()->_activeFDs[sockFD] = addrInfoClient;
+#endif
 		} else {
 			LOG_ERR("DNSServiceGetAddrInfo returned error");
 		}
 
 		if (!(flags & kDNSServiceFlagsMoreComing)) {
-#ifndef DISC_BONJOUR_EMBED
 			// remove the service resolver for this domain
 			assert(node->_serviceResolveClients.find(node->_domain) != node->_serviceResolveClients.end());
 			assert(node->_serviceResolveClients[node->_domain] == sdref);
+#ifndef DISC_BONJOUR_EMBED
 			int sockFD = DNSServiceRefSockFD(node->_serviceResolveClients[node->_domain]);
 			assert(getInstance()->_activeFDs.find(sockFD) != getInstance()->_activeFDs.end());
 			getInstance()->_activeFDs.erase(sockFD);
+#endif
 			DNSServiceRefDeallocate(node->_serviceResolveClients[node->_domain]);
 			node->_serviceResolveClients.erase(node->_domain);
-#endif
 		}
 	} else {
 		LOG_WARN("serviceResolveReply called with error: %d", errorCode);
@@ -675,24 +680,24 @@ void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
       LOG_WARN("addrInfoReply error %d for %s at interface %d", errorCode, hostname, interfaceIndex);
 		break;
 	}
-#ifndef DISC_BONJOUR_EMBED
   if (node->_interfacesIPv6.find(interfaceIndex) != node->_interfacesIPv6.end() && 
       node->_interfacesIPv4.find(interfaceIndex) != node->_interfacesIPv4.end()) {
     // we resolved this iface ipv4 and ipv6 addresses - remove the address resolver for this interface
     assert(node->_addrInfoClients.find(interfaceIndex) != node->_addrInfoClients.end());
     assert(node->_addrInfoClients[interfaceIndex] == sdRef);
+#ifndef DISC_BONJOUR_EMBED
     int sockFD = DNSServiceRefSockFD(node->_addrInfoClients[interfaceIndex]);
     assert(getInstance()->_activeFDs.find(sockFD) != getInstance()->_activeFDs.end());
     getInstance()->_activeFDs.erase(sockFD);
+#endif
     DNSServiceRefDeallocate(node->_addrInfoClients[interfaceIndex]);
     node->_addrInfoClients.erase(interfaceIndex);
   }
-#endif
-  // is this node fully resolved?
-  if (node->_interfaceIndices.size() == node->_interfacesIPv4.size()) {
+  // is this node sufficiently resolved?
+  if (node->_interfacesIPv4.begin() != node->_interfacesIPv4.end()) {
 //      node->_interfaceIndices.size() == node->_interfacesIPv6.size()) {
     // we resolved all interfaces
-    LOG_DEBUG("%p fully resolved node %s", query.get(), SHORT_UUID(node->getUUID()).c_str());
+    LOG_DEBUG("%p sufficiently resolved node %s", query.get(), SHORT_UUID(node->getUUID()).c_str());
     query->found(boost::static_pointer_cast<NodeStub>(node));
   }
 
@@ -805,7 +810,6 @@ bool BonjourNodeDiscovery::validateState() {
     shared_ptr<NodeQuery> query = queryToNodeIter->first;
     map<string, shared_ptr<BonjourNodeStub> > remoteNodes = queryToNodeIter->second;
     assert(_queries.find((intptr_t)query.get()) != _queries.end());
-#ifndef DISC_BONJOUR_EMBED
     map<string, shared_ptr<BonjourNodeStub> >::iterator remoteNodeIter;
     for (remoteNodeIter = remoteNodes.begin(); remoteNodeIter != remoteNodes.end(); remoteNodeIter++) {
       shared_ptr<BonjourNodeStub> remoteNode = remoteNodeIter->second;
@@ -813,18 +817,21 @@ bool BonjourNodeDiscovery::validateState() {
       map<string, DNSServiceRef>::iterator serviceResolverIter;
       for (serviceResolverIter = remoteNode->_serviceResolveClients.begin(); serviceResolverIter != remoteNode->_serviceResolveClients.end(); serviceResolverIter++) {
         // every service resolver is in the active FDs
+#ifndef DISC_BONJOUR_EMBED
         assert(socketFDs.find(DNSServiceRefSockFD(serviceResolverIter->second)) != socketFDs.end());
         socketFDs.erase(DNSServiceRefSockFD(serviceResolverIter->second));
+#endif
       }
       
       map<int, DNSServiceRef>::iterator adressResolverIter;
       for (adressResolverIter = remoteNodeIter->second->_addrInfoClients.begin(); adressResolverIter != remoteNodeIter->second->_addrInfoClients.end(); adressResolverIter++) {
         // every service resolver is in the active FDs
+#ifndef DISC_BONJOUR_EMBED
         assert(socketFDs.find(DNSServiceRefSockFD(adressResolverIter->second)) != socketFDs.end());
         socketFDs.erase(DNSServiceRefSockFD(adressResolverIter->second));
+#endif
       }
     }
-#endif
   }
   
 #ifndef DISC_BONJOUR_EMBED

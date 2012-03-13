@@ -1,12 +1,8 @@
 #include "umundo/connection/zeromq/ZeroMQNode.h"
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include "umundo/connection/Publisher.h"
 #include "umundo/common/Message.h"
+#include "umundo/common/UUID.h"
 
 // include order matters with MSVC ...
 #include "umundo/connection/zeromq/ZeroMQSubscriber.h"
@@ -50,7 +46,7 @@ ZeroMQSubscriber::~ZeroMQSubscriber() {
 
 void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<SubscriberConfig>(config);
-	_uuid = boost::lexical_cast<string>(boost::uuids::random_generator()());
+	_uuid = UUID::getUUID();
 
 	void* ctx = ZeroMQNode::getZeroMQContext();
 	(_socket = zmq_socket(ctx, ZMQ_SUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));

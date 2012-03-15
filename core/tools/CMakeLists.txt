@@ -5,6 +5,7 @@ else()
 	add_executable(umundo-monitor umundo-monitor.cpp)
 endif()
 target_link_libraries(umundo-monitor ${UMUNDOCORE_LIBRARIES})
+set_target_properties(umundo-monitor PROPERTIES FOLDER "Tools")
 
 install(
 	TARGETS umundo-monitor
@@ -15,6 +16,7 @@ install(
 
 add_executable(umundo-pingpong umundo-pingpong.cpp)
 target_link_libraries(umundo-pingpong ${UMUNDOCORE_LIBRARIES})
+set_target_properties(umundo-pingpong PROPERTIES FOLDER "Tools")
 
 install(
 	TARGETS umundo-pingpong

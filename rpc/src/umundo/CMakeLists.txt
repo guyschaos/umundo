@@ -16,6 +16,14 @@ if (RPC_PROTOBUF)
 
 	add_executable(protoc-umundo-rpc ${RPC_PROTOBUF_FILES})
 	target_link_libraries(protoc-umundo-rpc ${PROTOBUF_PROTOC_LIBRARIES} ${PROTOBUF_LIBRARIES})
+	set_target_properties(protoc-umundo-rpc PROPERTIES FOLDER "Tools")
+
+	install(
+		TARGETS protoc-umundo-rpc
+		DESTINATION bin
+		PERMISSIONS WORLD_EXECUTE OWNER_EXECUTE GROUP_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+		COMPONENT tools 
+	)
 
 endif(RPC_PROTOBUF)
 

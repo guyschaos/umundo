@@ -85,6 +85,7 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.
 		${UMUNDOCORE_HEADER_FILES}
 	)
 	LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
+	set_target_properties(umundocore PROPERTIES FOLDER "Libraries")
 else()
 	if (CMAKE_BUILD_TYPE MATCHES "Debug")
 		add_library(umundocore_d
@@ -92,12 +93,14 @@ else()
 			${UMUNDOCORE_HEADER_FILES}
 		)
 		LIST(APPEND UMUNDOCORE_LIBRARIES debug umundocore_d)
+		set_target_properties(umundocore_d PROPERTIES FOLDER "Libraries")
 	else()
 		add_library(umundocore
 			${UMUNDOCORE_FILES}
 			${UMUNDOCORE_HEADER_FILES}
 		)
 		LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
+		set_target_properties(umundocore PROPERTIES FOLDER "Libraries")
 	endif()
 endif()
 

@@ -31,17 +31,20 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.
 	SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
 	SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARIES})
 	SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
+	set_target_properties(umundocoreSwig PROPERTIES FOLDER "Bindings")
 else()
 	if (CMAKE_BUILD_TYPE MATCHES "Debug")
 		SWIG_ADD_MODULE(umundocoreSwig_d java umundocore.i)
 		SWIG_LINK_LIBRARIES(umundocoreSwig_d
 		${JNI_LIBRARIES}
 		${UMUNDOCORE_LIBRARIES})
+		set_target_properties(umundocoreSwig_d PROPERTIES FOLDER "Bindings")
 	else()
 		SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
 		SWIG_LINK_LIBRARIES(umundocoreSwig
 		${JNI_LIBRARIES}
 		${UMUNDOCORE_LIBRARIES})
+		set_target_properties(umundocoreSwig PROPERTIES FOLDER "Bindings")
 	endif()
 endif()
 
@@ -76,6 +79,8 @@ if(Java_JAVAC_EXECUTABLE AND CMAKE_PATCH_VERSION GREATER 5)
 		else()
 			add_dependencies(umundocoreSwigJNI umundocoreSwig)
 		endif()
+		set_target_properties(umundocoreSwigJNI PROPERTIES FOLDER "Bindings")
+
 	endif()
 else()
 	message("Could not find javac or cmake not >= 2.8.6, not building jar")

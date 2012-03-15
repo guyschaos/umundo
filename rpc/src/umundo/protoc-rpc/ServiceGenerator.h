@@ -22,6 +22,8 @@ public:
 	void writeServiceImplConstructor(io::Printer& printer, const ServiceDescriptor* svcDesc) const;
 	void writeServiceImplDispatcher(io::Printer& printer, const ServiceDescriptor* svcDesc) const;
 
+	static const Descriptor* container(const Descriptor* desc);
+
 };
 
 }

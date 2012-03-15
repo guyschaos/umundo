@@ -123,6 +123,7 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
 		${UMUNDOS11N_HEADER_FILES}
 	)
 	LIST(APPEND UMUNDOS11N_LIBRARIES umundoserial)
+	set_target_properties(umundoserial PROPERTIES FOLDER "Libraries")
 else()
 	if (CMAKE_BUILD_TYPE MATCHES "Debug")
 		add_library(umundoserial_d
@@ -130,12 +131,14 @@ else()
 			${UMUNDOS11N_HEADER_FILES}
 		)
 		LIST(APPEND UMUNDOS11N_LIBRARIES debug umundoserial_d)
+		set_target_properties(umundoserial_d PROPERTIES FOLDER "Libraries")
 	else()
 		add_library(umundoserial
 			${UMUNDOS11N_FILES}
 			${UMUNDOS11N_HEADER_FILES}
 		)
 		LIST(APPEND UMUNDOS11N_LIBRARIES umundoserial)
+		set_target_properties(umundoserial PROPERTIES FOLDER "Libraries")
 	endif()
 endif()
 

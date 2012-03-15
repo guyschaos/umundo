@@ -52,18 +52,18 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP SRCS HDRS)
 
 	#message("CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
 	# try hard to find protoc-umundo-rpc
-	set(PROTOBUF_UMUNDO_RPC_EXECUTABLE)
+	set(UMUNDO_PROTOBUF_RPC_EXECUTABLE)
 	if (CMAKE_GENERATOR MATCHES "Xcode")
-		set(PROTOBUF_UMUNDO_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/${CMAKE_BUILD_TYPE}/protoc-umundo-rpc")
+		set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/${CMAKE_BUILD_TYPE}/protoc-umundo-rpc")
 	elseif(CMAKE_GENERATOR MATCHES "Unix Makefiles")
-		set(PROTOBUF_UMUNDO_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/protoc-umundo-rpc")
+		set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/protoc-umundo-rpc")
 	else()
-		find_program(PROTOBUF_UMUNDO_RPC_EXECUTABLE 
+		find_program(UMUNDO_PROTOBUF_RPC_EXECUTABLE 
 			NAMES protoc-umundo-rpc protoc-umundo-rpc.exe
 		)
 	endif()
 
-	if (PROTOBUF_UMUNDO_RPC_EXECUTABLE MATCHES PROTOBUF_UMUNDO_RPC_EXECUTABLE-NOTFOUND)
+	if (UMUNDO_PROTOBUF_RPC_EXECUTABLE MATCHES UMUNDO_PROTOBUF_RPC_EXECUTABLE-NOTFOUND)
 		message(FATAL_ERROR "Could not find protoc-umundo-rpc")
 		RETURN()
 	endif()
@@ -72,7 +72,7 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP SRCS HDRS)
       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.rpc.pb.cc"
              "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.rpc.pb.h"
       COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-      ARGS --plugin=protoc-gen-cpp_rpc=${PROTOBUF_UMUNDO_RPC_EXECUTABLE} --cpp_rpc_out ${CMAKE_CURRENT_BINARY_DIR}${REL_PATH} ${_protobuf_include_path} ${ABS_FIL}
+      ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_RPC_EXECUTABLE} --cpp_rpc_out ${CMAKE_CURRENT_BINARY_DIR}${REL_PATH} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL} protoc-umundo-rpc
       COMMENT "Running C++ RPC protocol buffer compiler on ${FIL}"
       VERBATIM )
@@ -152,6 +152,7 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
 		${UMUNDORPC_HEADER_FILES}
 	)
 	LIST(APPEND UMUNDORPC_LIBRARIES umundorpc)
+	set_target_properties(umundorpc PROPERTIES FOLDER "Libraries")
 else()
 	if (CMAKE_BUILD_TYPE MATCHES "Debug")
 		add_library(umundorpc_d
@@ -159,12 +160,14 @@ else()
 			${UMUNDORPC_HEADER_FILES}
 		)
 		LIST(APPEND UMUNDORPC_LIBRARIES debug umundorpc_d)
+		set_target_properties(umundorpc_d PROPERTIES FOLDER "Libraries")
 	else()
 		add_library(umundorpc
 			${UMUNDORPC_FILES}
 			${UMUNDORPC_HEADER_FILES}
 		)
 		LIST(APPEND UMUNDORPC_LIBRARIES umundorpc)
+		set_target_properties(umundorpc PROPERTIES FOLDER "Libraries")
 	endif()
 endif()
 

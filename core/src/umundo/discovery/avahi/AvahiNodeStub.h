@@ -1,7 +1,7 @@
 #ifndef AVAHINODESTUB_H_ACCARM71
 #define AVAHINODESTUB_H_ACCARM71
 
-#include "umundo/common/Node.h"
+#include "umundo/connection/Node.h"
 
 #include <avahi-client/client.h>
 #include <avahi-client/publish.h>

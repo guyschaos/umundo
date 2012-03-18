@@ -3,7 +3,7 @@
 #include <stdio.h> // asprintf
 #include <string.h> // strndup
 
-#include "umundo/common/Node.h"
+#include "umundo/connection/Node.h"
 #include "umundo/discovery/NodeQuery.h"
 #include "umundo/discovery/avahi/AvahiNodeStub.h"
 #include <avahi-common/error.h>

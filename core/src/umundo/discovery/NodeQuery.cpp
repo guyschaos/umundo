@@ -1,4 +1,4 @@
-#include "umundo/common/Node.h"
+#include "umundo/connection/Node.h"
 #include "umundo/discovery/NodeQuery.h"
 #include "umundo/common/Factory.h"
 

@@ -38,6 +38,8 @@ public:
 	shared_ptr<Implementation> create();
 	void destroy();
 	void init(shared_ptr<Configuration>);
+	void suspend();
+	void resume();
 
 	void add(shared_ptr<NodeImpl> node);
 	void remove(shared_ptr<NodeImpl> node);
@@ -104,6 +106,7 @@ protected:
 	map<int, DNSServiceRef> _activeFDs;                       ///< Socket file descriptors to bonjour handle.
   
 	map<intptr_t, shared_ptr<NodeImpl> > _localNodes;         ///< Local node addresses to nodes.
+	map<intptr_t, shared_ptr<NodeImpl> > _suspendedNodes;     ///< Save local nodes when suspending.
 	map<intptr_t, DNSServiceRef> _registerClients;            ///< local node address to bonjour handles for registration.
 
 	map<intptr_t, shared_ptr<NodeQuery> > _queries;           ///< query address to query object for browseReply.

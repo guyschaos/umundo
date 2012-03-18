@@ -38,7 +38,7 @@ public:
 	Thread();
 	virtual ~Thread();
 	virtual void run() = 0;
-	void join();
+	virtual void join();
 	void start();
 	void stop();
 	bool isStarted() {

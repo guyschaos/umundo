@@ -50,14 +50,19 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP SRCS HDRS)
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
 
-	#message("CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
 	# try hard to find protoc-umundo-rpc
 	set(UMUNDO_PROTOBUF_RPC_EXECUTABLE)
-	if (CMAKE_GENERATOR MATCHES "Xcode")
-		set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/${CMAKE_BUILD_TYPE}/protoc-umundo-rpc")
-	elseif(CMAKE_GENERATOR MATCHES "Unix Makefiles")
-		set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/protoc-umundo-rpc")
-	else()
+	set(UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP)
+	if (NOT CMAKE_CROSSCOMPILING)
+		if (CMAKE_GENERATOR MATCHES "Xcode")
+			set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/${CMAKE_BUILD_TYPE}/protoc-umundo-rpc")
+		elseif(CMAKE_GENERATOR MATCHES "Unix Makefiles")
+			set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/src/umundo/protoc-umundo-rpc")
+		endif()
+		set(UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP "protoc-umundo-rpc")
+	endif()
+
+	if (NOT UMUNDO_PROTOBUF_RPC_EXECUTABLE)
 		find_program(UMUNDO_PROTOBUF_RPC_EXECUTABLE 
 			NAMES protoc-umundo-rpc protoc-umundo-rpc.exe
 		)
@@ -73,7 +78,7 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP SRCS HDRS)
              "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.rpc.pb.h"
       COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_RPC_EXECUTABLE} --cpp_rpc_out ${CMAKE_CURRENT_BINARY_DIR}${REL_PATH} ${_protobuf_include_path} ${ABS_FIL}
-      DEPENDS ${ABS_FIL} protoc-umundo-rpc
+      DEPENDS ${ABS_FIL} ${UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP}
       COMMENT "Running C++ RPC protocol buffer compiler on ${FIL}"
       VERBATIM )
 

@@ -15,7 +15,7 @@
 #include <string.h>
 #endif
 
-#include "umundo/common/Node.h"
+#include "umundo/connection/Node.h"
 #include "umundo/discovery/NodeQuery.h"
 #include "umundo/discovery/bonjour/BonjourNodeStub.h"
 
@@ -67,6 +67,49 @@ BonjourNodeDiscovery::~BonjourNodeDiscovery() {
 #endif
 }
 
+/**
+ * Unregister all nodes when suspending.
+ */
+void BonjourNodeDiscovery::suspend() {
+	_mutex.lock();
+	if (_isSuspended) {
+		_mutex.unlock();
+		return;
+	}
+	_isSuspended = true;
+	
+	// remove all nodes from discovery
+	_suspendedNodes = _localNodes;
+	map<intptr_t, shared_ptr<NodeImpl> >::iterator nodeIter = _localNodes.begin();
+	while(nodeIter != _localNodes.end()) {
+		shared_ptr<NodeImpl> node = nodeIter->second;
+		nodeIter++;
+		remove(node);
+	}
+	_mutex.unlock();
+}
+
+/**
+ * Re-register nodes previously suspended.
+ */
+void BonjourNodeDiscovery::resume() {
+	_mutex.lock();
+  if (!_isSuspended) {
+		_mutex.unlock();
+		return;
+	}
+	_isSuspended = false;
+	
+	map<intptr_t, shared_ptr<NodeImpl> >::iterator nodeIter = _suspendedNodes.begin();
+	while(nodeIter != _suspendedNodes.end()) {
+		shared_ptr<NodeImpl> node = nodeIter->second;
+		nodeIter++;
+		node->resume();
+		add(node);
+	}
+	_suspendedNodes.clear();
+	_mutex.unlock();
+}
 
 void BonjourNodeDiscovery::run() {
 	struct timeval tv;
@@ -169,7 +212,9 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	asprintf(&regtype, "_mundo._%s", transport);
 
 	char* domain;
-	if (node->getDomain().length() > 0) {
+	if (strstr(node->getDomain().c_str(), ".") != NULL) {
+		asprintf(&domain, "%s", node->getDomain().c_str());    
+  } else if (node->getDomain().length() > 0) {
 		asprintf(&domain, "%s.local.", node->getDomain().c_str());
 	} else {
 		asprintf(&domain, "local.");
@@ -252,7 +297,7 @@ void BonjourNodeDiscovery::remove(shared_ptr<NodeImpl> node) {
  * we will resolve its ip address.
  */
 void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
-  LOG_INFO("Adding query for node in %s", query->getDomain().c_str());
+  LOG_INFO("Adding query %p for nodes in %s", query.get(), query->getDomain().c_str());
 	DNSServiceErrorType err;
 	DNSServiceRef queryClient = NULL;
 
@@ -272,7 +317,9 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	asprintf(&regtype, "_mundo._%s", transport);
 
 	char* domain;
-	if (query->getDomain().length() > 0) {
+  if (strstr(query->getDomain().c_str(), ".") != NULL) {
+    asprintf(&domain, "%s", query->getDomain().c_str());
+	} else if (query->getDomain().length() > 0) {
 		asprintf(&domain, "%s.local.", query->getDomain().c_str());
 	} else {
 		asprintf(&domain, "local.");
@@ -311,7 +358,7 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 }
 
 void BonjourNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
-  LOG_INFO("Removing query for node in %s", query->getDomain().c_str());
+  LOG_INFO("Removing query %p for nodes in %s", query.get(), query->getDomain().c_str());
 
 	_mutex.lock();
 	intptr_t address = (intptr_t)(query.get());
@@ -367,18 +414,22 @@ void BonjourNodeDiscovery::forgetRemoteNodesFDs(shared_ptr<BonjourNodeStub> node
     _activeFDs.erase(sockFD);
 #endif
     DNSServiceRefDeallocate(serviceResolveIter->second);
-    node->_serviceResolveClients.erase(serviceResolveIter);
+		string domain = serviceResolveIter->first;
+		serviceResolveIter++;
+    node->_serviceResolveClients.erase(domain);
   }
   
-  map<int, DNSServiceRef>::iterator addrInfoIter;
-  for (addrInfoIter = node->_addrInfoClients.begin(); addrInfoIter != node->_addrInfoClients.end(); addrInfoIter++) {
+  map<int, DNSServiceRef>::iterator addrInfoIter = node->_addrInfoClients.begin();
+  while(addrInfoIter != node->_addrInfoClients.end()) {
 #ifndef DISC_BONJOUR_EMBED
     int sockFD = DNSServiceRefSockFD(addrInfoIter->second);
     assert(_activeFDs.find(sockFD) != _activeFDs.end());
     _activeFDs.erase(sockFD);
 #endif
     DNSServiceRefDeallocate(addrInfoIter->second);
-    node->_addrInfoClients.erase(addrInfoIter);
+    int ifIndex = addrInfoIter->first;
+    addrInfoIter++;
+    node->_addrInfoClients.erase(ifIndex);
   }
 
   _mutex.unlock();
@@ -564,12 +615,12 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 		if (err == kDNSServiceErr_NoError && addrInfoClient) {
 			if (node->_addrInfoClients.find(interfaceIndex) != node->_addrInfoClients.end()) {
 				// remove old query
-				DNSServiceRefDeallocate(node->_addrInfoClients[interfaceIndex]);
 #ifndef DISC_BONJOUR_EMBED
 				int sockFD = DNSServiceRefSockFD(node->_addrInfoClients[interfaceIndex]);
 				assert(getInstance()->_activeFDs.find(sockFD) != getInstance()->_activeFDs.end());
 				getInstance()->_activeFDs.erase(sockFD);
 #endif
+				DNSServiceRefDeallocate(node->_addrInfoClients[interfaceIndex]);
 				node->_addrInfoClients.erase(interfaceIndex);
 			}
 			assert(node->_addrInfoClients.find(interfaceIndex) == node->_addrInfoClients.end());
@@ -697,7 +748,7 @@ void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
   if (node->_interfacesIPv4.begin() != node->_interfacesIPv4.end()) {
 //      node->_interfaceIndices.size() == node->_interfacesIPv6.size()) {
     // we resolved all interfaces
-    LOG_DEBUG("%p sufficiently resolved node %s", query.get(), SHORT_UUID(node->getUUID()).c_str());
+    //LOG_DEBUG("%p sufficiently resolved node %s", query.get(), SHORT_UUID(node->getUUID()).c_str());
     query->found(boost::static_pointer_cast<NodeStub>(node));
   }
 

@@ -22,8 +22,25 @@ ZeroMQNode::~ZeroMQNode() {
 	DEBUG_DTOR("ZeroMQNode");
   Discovery::unbrowse(_nodeQuery);
 	stop();
+ 	join();
   
-  // this is a hack .. the thread is blocking at zmq_recvmsg - unblock by sending a message
+  map<string, void*>::iterator sockIter;
+  for (sockIter = _sockets.begin(); sockIter != _sockets.end(); sockIter++) {
+    while(zmq_close(sockIter->second) != 0) {
+      LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
+      Thread::sleepMs(50);
+    }
+  }
+  
+	if (_responder)
+    while(zmq_close(_responder) != 0) {
+      LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
+      Thread::sleepMs(50);
+    }
+}
+
+void ZeroMQNode::join() {
+	// this is a hack .. the thread is blocking at zmq_recvmsg - unblock by sending a message
   void* closer;
   (closer = zmq_socket(getZeroMQContext(), ZMQ_DEALER)) || LOG_ERR("zmq_socket: %s",zmq_strerror(errno));  
   std::stringstream ss;
@@ -34,25 +51,13 @@ ZeroMQNode::~ZeroMQNode() {
   
 	zmq_sendmsg(closer, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+	
   while(zmq_close(closer) != 0) {
     LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
     Thread::sleepMs(50);
   }
-  
-  map<string, void*>::iterator sockIter;
-  for (sockIter = _sockets.begin(); sockIter != _sockets.end(); sockIter++) {
-    while(zmq_close(sockIter->second) != 0) {
-      LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
-      Thread::sleepMs(50);
-    }
-  }
-  
-	join();
-	if (_responder)
-    while(zmq_close(_responder) != 0) {
-      LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
-      Thread::sleepMs(50);
-    }
+
+	Thread::join();
 }
 
 ZeroMQNode::ZeroMQNode() {
@@ -65,6 +70,76 @@ shared_ptr<Implementation> ZeroMQNode::create() {
 
 void ZeroMQNode::destroy() {
 	delete(this);
+}
+
+/**
+ * Disconnect all subscribers, publishers and remove node query at discovery.
+ */
+void ZeroMQNode::suspend() {
+	_mutex.lock();
+	if (_isSuspended) {
+		_mutex.unlock();
+		return;
+	}
+	_isSuspended = true;
+	
+	_suspendedLocalPubs = _localPubs;
+	// remove all local publishers
+	map<uint16_t, shared_ptr<ZeroMQPublisher> >::iterator localPubIter = _localPubs.begin();
+	while(localPubIter != _localPubs.end()) {
+		shared_ptr<ZeroMQPublisher> localPub = localPubIter->second;
+		localPubIter++;
+		removePublisher(localPub);
+	}
+	assert(_localPubs.size() == 0);
+	
+	// close connections to all nodes
+	map<string, shared_ptr<NodeStub> >::iterator nodeIter = _nodes.begin();
+	while(nodeIter != _nodes.end()) {
+		shared_ptr<NodeStub> node = nodeIter->second;
+		nodeIter++;
+		removed(node);
+	}
+	Discovery::unbrowse(_nodeQuery);
+	
+	stop();
+	join();
+	
+	if (_responder)
+    while(zmq_close(_responder) != 0) {
+      LOG_WARN("zmq_close: %s - retrying", zmq_strerror(errno));
+      Thread::sleepMs(50);
+    }
+
+	_mutex.unlock();
+}
+
+/**
+ * Reconnect subscribers, publishers and re-establish node query at discovery.
+ */
+void ZeroMQNode::resume() {
+	_mutex.lock();
+  if (!_isSuspended) {
+    _mutex.unlock();
+		return;
+  }
+  _isSuspended = false;
+	_nodeQuery = shared_ptr<NodeQuery>(new NodeQuery(_domain, this));
+	init(_config);
+
+	// add all local publishers again
+	map<uint16_t, shared_ptr<ZeroMQPublisher> >::iterator localPubIter = _suspendedLocalPubs.begin();
+	while(localPubIter != _suspendedLocalPubs.end()) {
+		shared_ptr<ZeroMQPublisher> localPub = localPubIter->second;
+		localPubIter++;
+		localPub->resume();
+		addPublisher(localPub);
+	}
+	_suspendedLocalPubs.clear();
+
+	_mutex.unlock();
+
+	// we rely on zeroconf to tell us about the nodes
 }
 
 void* ZeroMQNode::getZeroMQContext() {
@@ -320,10 +395,12 @@ void ZeroMQNode::processPubRemoved(const char* remoteId, zmq_msg_t message) {
 		_mutex.unlock();
 		return;
 	}
-	shared_ptr<PublisherStub> pubStub = _remotePubs[remoteId][port];
-
-	if (pubStub)
+  
+	if (_remotePubs[remoteId].find(port) != _remotePubs[remoteId].end()) {
+    shared_ptr<PublisherStub> pubStub = _remotePubs[remoteId][port];
 		removeRemotePubFromLocalSubs(remoteId, pubStub);
+    _remotePubs[remoteId].erase(port);
+  }
 	assert(validateState());
 	_mutex.unlock();
 }
@@ -745,7 +822,7 @@ bool ZeroMQNode::validateState() {
 		for (remoteSubIter = remoteSubsIter->second.begin(); remoteSubIter != remoteSubsIter->second.end(); remoteSubIter++) {
 
 			// make sure the subscriber is connected to an actual local publisher
-			assert(_localPubs.find(remoteSubIter->first) != _localPubs.end());
+//			assert(_localPubs.find(remoteSubIter->first) != _localPubs.end());
 
 			// we should have deleted such a thing
 			assert(remoteSubIter->second > 0);

@@ -20,7 +20,7 @@ typedef std::vector vector;
 
 %{
 #include "../../../../core/src/umundo/common/EndPoint.h"
-#include "../../../../core/src/umundo/common/Node.h"
+#include "../../../../core/src/umundo/connection/Node.h"
 #include "../../../../core/src/umundo/common/Message.h"
 #include "../../../../core/src/umundo/thread/Thread.h"
 #include "../../../../core/src/umundo/connection/Publisher.h"
@@ -123,5 +123,5 @@ import java.util.HashMap;
 %include "../../../../core/src/umundo/common/EndPoint.h"
 %include "../../../../core/src/umundo/connection/Publisher.h"
 %include "../../../../core/src/umundo/connection/Subscriber.h"
-%include "../../../../core/src/umundo/common/Node.h"
+%include "../../../../core/src/umundo/connection/Node.h"
 

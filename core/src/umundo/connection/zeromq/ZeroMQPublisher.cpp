@@ -30,7 +30,7 @@ void ZeroMQPublisher::destroy() {
 
 void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 
-	_uuid = UUID::getUUID();
+	_uuid = (_uuid.length() > 0 ? _uuid : UUID::getUUID());
 	_config = boost::static_pointer_cast<PublisherConfig>(config);
 	_transport = "tcp";
 	_pubCount = 0;
@@ -70,6 +70,20 @@ ZeroMQPublisher::~ZeroMQPublisher() {
 	//zmq_term(_zeroMQCtx) && LOG_WARN("zmq_term: %s",zmq_strerror(errno));
 }
 
+void ZeroMQPublisher::suspend() {
+ 	if (_isSuspended)
+		return;
+	_isSuspended = true;
+	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
+}
+
+void ZeroMQPublisher::resume() {
+ 	if (!_isSuspended)
+		return;
+	_isSuspended = false;
+	init(_config);
+}
+
 /**
  * Block until we have a given number of subscribers.
  */
@@ -94,7 +108,11 @@ void ZeroMQPublisher::removedSubscriber() {
 
 void ZeroMQPublisher::send(Message* msg) {
 	//LOG_DEBUG("ZeroMQPublisher sending msg on %s", _channelName.c_str());
-
+  if (_isSuspended) {
+    LOG_WARN("Not sending message on suspended publisher");
+    return;
+  }
+  
 	// topic name is first message in envelope
 	zmq_msg_t channelEnvlp;
 	ZMQ_PREPARE_STRING(channelEnvlp, _channelName.c_str(), _channelName.size());

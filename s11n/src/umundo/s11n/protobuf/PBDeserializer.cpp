@@ -20,7 +20,7 @@ shared_ptr<Implementation> PBDeserializer::create() {
 
 void* PBDeserializer::deserialize(const string& type, const string& data) {
   if (_deserializers.find(type) == _deserializers.end()) {
-    LOG_ERR("received type %s, but no deserializer is known");
+    LOG_ERR("received type %s, but no deserializer is known", type.c_str());
     return NULL;
   }
 	MessageLite* pbObj = _deserializers[type]->New();

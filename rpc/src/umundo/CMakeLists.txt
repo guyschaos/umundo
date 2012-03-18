@@ -11,7 +11,7 @@
 file(GLOB RPC_FILES rpc/*.cpp)
 list(APPEND UMUNDORPC_FILES  ${RPC_FILES})
 
-if (RPC_PROTOBUF)
+if (RPC_PROTOBUF AND NOT CMAKE_CROSSCOMPILING)
 	file(GLOB_RECURSE RPC_PROTOBUF_FILES protoc-rpc/*.cpp)
 
 	add_executable(protoc-umundo-rpc ${RPC_PROTOBUF_FILES})

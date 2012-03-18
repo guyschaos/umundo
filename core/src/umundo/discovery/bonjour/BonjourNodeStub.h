@@ -3,7 +3,7 @@
 
 #include "dns_sd.h"
 
-#include "umundo/common/Node.h"
+#include "umundo/connection/Node.h"
 #include "umundo/thread/Thread.h"
 
 namespace umundo {

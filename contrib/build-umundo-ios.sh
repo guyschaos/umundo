@@ -16,9 +16,13 @@ BUILD_DIR="/tmp/build-umundo-ios"
 mkdir -p ${BUILD_DIR} &> /dev/null
 
 if [[ -z $1 || $1 = "Debug" ]] ; then
-cd ${BUILD_DIR}
-rm -rf * && cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS-Sim.cmake -DCMAKE_BUILD_TYPE=Debug && make VERBOSE=1 -j2
-rm -rf * && cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS.cmake -DCMAKE_BUILD_TYPE=Debug && make VERBOSE=1 -j2
+mkdir -p ${BUILD_DIR}/iossim-debug &> /dev/null
+cd ${BUILD_DIR}/iossim-debug
+cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS-Sim.cmake -DCMAKE_BUILD_TYPE=Debug && make -j2
+
+mkdir -p ${BUILD_DIR}/ios-debug &> /dev/null
+cd ${BUILD_DIR}/ios-debug
+cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS.cmake -DCMAKE_BUILD_TYPE=Debug && make -j2
 
 # build universal libraries for debug
 cd ${DIR}
@@ -34,9 +38,13 @@ fi
 
 if [[ -z $1 || $1 = "Release" ]] ; then
 
-cd ${BUILD_DIR}
-rm -rf * && cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS-Sim.cmake -DCMAKE_BUILD_TYPE=Release && make -j2
-rm -rf * && cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS.cmake -DCMAKE_BUILD_TYPE=Release && make -j2
+mkdir -p ${BUILD_DIR}/iossim-release &> /dev/null
+cd ${BUILD_DIR}/iossim-release
+cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS-Sim.cmake -DCMAKE_BUILD_TYPE=Release && make -j2
+
+mkdir -p ${BUILD_DIR}/ios-release &> /dev/null
+cd ${BUILD_DIR}/ios-release
+cmake ${DIR}/../ -DCMAKE_TOOLCHAIN_FILE=${DIR}/cmake/CrossCompile-iOS.cmake -DCMAKE_BUILD_TYPE=Release && make -j2
 
 # build universal libraries for release
 cd ${DIR}

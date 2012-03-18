@@ -20,6 +20,8 @@ public:
 	void destroy();
 	void init(shared_ptr<Configuration>);
 	virtual ~ZeroMQSubscriber();
+	void suspend();
+	void resume();
 
 	void added(shared_ptr<PublisherStub>);
 	void removed(shared_ptr<PublisherStub>);
@@ -27,6 +29,7 @@ public:
 
 	// Thread
 	void run();
+	void join();
 
 protected:
 	ZeroMQSubscriber();

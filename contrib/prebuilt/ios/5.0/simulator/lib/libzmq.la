@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/sradomski/Documents/TK/Code/umundo/core/contrib/archives/zeromq-3.1.0/../../prebuilt/zeromq/ios/5.0/ios-sim/lib'
+libdir='/tmp/zeromq/ios-sim/lib'

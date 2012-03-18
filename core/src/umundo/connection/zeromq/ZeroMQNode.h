@@ -7,7 +7,7 @@
 #include "umundo/common/Common.h"
 #include "umundo/thread/Thread.h"
 #include "umundo/common/ResultSet.h"
-#include "umundo/common/Node.h"
+#include "umundo/connection/Node.h"
 
 /// Initialize a zeromq message with a given size
 #define ZMQ_PREPARE(msg, size) \
@@ -45,6 +45,8 @@ public:
 	shared_ptr<Implementation> create();
 	void destroy();
 	void init(shared_ptr<Configuration>);
+	void suspend();
+	void resume();
 	//@}
 
 	/** @name Publish / Subscriber Maintenance */
@@ -68,6 +70,7 @@ protected:
 	ZeroMQNode();
 
 	void run(); ///< see Thread
+	void join();
 
 	/** @name Control message handling */
 	//@{
@@ -114,6 +117,7 @@ private:
 	map<string, map<uint16_t, int > > _remoteSubs;                                ///< UUIDs to ports to number of remote subscribers.
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; ///< received publishers of yet undiscovered nodes.
 	map<uint16_t, shared_ptr<ZeroMQPublisher> > _localPubs;                       ///< Local ports to local publishers.
+	map<uint16_t, shared_ptr<ZeroMQPublisher> > _suspendedLocalPubs;              ///< suspended publishers.
 	set<shared_ptr<ZeroMQSubscriber> > _localSubs;                                ///< Local subscribers.
 	shared_ptr<NodeConfig> _config;
 

@@ -2,6 +2,7 @@
 #define FACTORY_H_BRZEE6H
 
 #include "umundo/common/Common.h"
+#include "umundo/thread/Thread.h"
 
 namespace umundo {
 
@@ -21,6 +22,10 @@ public:
 	static Factory* getInstance();
 	static shared_ptr<Implementation> create(string);
 	static shared_ptr<Configuration> config(string);
+
+	static void suspendInstances();
+	static void resumeInstances();
+
 	static void registerPrototype(string, Implementation*, Configuration*);
 
 protected:
@@ -29,6 +34,8 @@ protected:
 private:
 	map<string, Implementation*> _prototypes;
 	map<string, Configuration*> _configures;
+	set<weak_ptr<Implementation> > _implementations;
+	Mutex _mutex;
 	static Factory* _instance;
 
 };

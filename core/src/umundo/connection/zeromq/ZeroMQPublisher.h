@@ -19,6 +19,8 @@ public:
 	shared_ptr<Implementation> create();
 	void init(shared_ptr<Configuration>);
 	void destroy();
+	void suspend();
+	void resume();
 
 	void send(Message* msg);
 	int waitForSubscribers(int count);

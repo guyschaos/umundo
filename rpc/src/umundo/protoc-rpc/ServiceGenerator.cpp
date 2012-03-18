@@ -159,10 +159,10 @@ void ServiceGenerator::writeServiceHeader(io::Printer &printer, const ServiceDes
 }
 
 const Descriptor* ServiceGenerator::container(const Descriptor* desc) {
-	fprintf(stderr, "checking %s\n", desc->name().c_str());
+//	fprintf(stderr, "checking %s\n", desc->name().c_str());
 	while(desc->containing_type() != NULL) {
 		desc = desc->containing_type();
-		fprintf(stderr, "\t-> %s\n", desc->name().c_str());
+//		fprintf(stderr, "\t-> %s\n", desc->name().c_str());
 	}
 	return desc;
 }

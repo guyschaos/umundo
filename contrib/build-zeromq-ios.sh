@@ -9,7 +9,8 @@ set -e
 
 ME=`basename $0`
 SDK_VER="5.0"
-DEST_DIR="${PWD}/../../prebuilt/zeromq/ios/${SDK_VER}"
+DEST_DIR="${PWD}/../../prebuilt/ios/${SDK_VER}"
+BUILD_DIR="/tmp/zeromq"
 
 if [ ! -f src/zmq.cpp ]; then
 	echo
@@ -20,6 +21,8 @@ if [ ! -f src/zmq.cpp ]; then
 	exit
 fi
 mkdir -p ${DEST_DIR} &> /dev/null
+mkdir -p ${DEST_DIR}/device/lib &> /dev/null
+mkdir -p ${DEST_DIR}/simulator/lib &> /dev/null
 
 #
 # Build for Device
@@ -38,7 +41,7 @@ if [ -f Makefile ]; then
 	make clean
 fi
 
-mkdir -p ${DEST_DIR}/ios &> /dev/null
+mkdir -p ${BUILD_DIR}/ios &> /dev/null
 
 ./configure \
 CPP="cpp" \
@@ -56,7 +59,7 @@ AS=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/as \
 LIBTOOL=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/libtool \
 STRIP=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/strip \
 RANLIB=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ranlib \
---prefix=${DEST_DIR}/ios
+--prefix=${BUILD_DIR}/ios
 
 make -j2 install
 
@@ -71,7 +74,7 @@ if [ -f Makefile ]; then
 	make clean
 fi
 
-mkdir -p ${DEST_DIR}/ios-sim &> /dev/null
+mkdir -p ${BUILD_DIR}/ios-sim &> /dev/null
 
 make clean
 ./configure \
@@ -87,29 +90,19 @@ AS=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/as \
 LIBTOOL=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/libtool \
 STRIP=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/strip \
 RANLIB=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ranlib \
---prefix=${DEST_DIR}/ios-sim
+--prefix=${BUILD_DIR}/ios-sim
 
 make -j2 install
 
 # tidy up
-rm -rf ${DEST_DIR}/ios/include
-rm -rf ${DEST_DIR}/ios/share
-rm -rf ${DEST_DIR}/ios/lib/pkgconfig
-mv ${DEST_DIR}/ios/lib/* ${DEST_DIR}/ios
-rm -rf ${DEST_DIR}/ios/lib
-
-rm -rf ${DEST_DIR}/ios-sim/include
-rm -rf ${DEST_DIR}/ios-sim/share
-rm -rf ${DEST_DIR}/ios-sim/lib/pkgconfig
-mv ${DEST_DIR}/ios-sim/lib/* ${DEST_DIR}/ios-sim
-rm -rf ${DEST_DIR}/ios-sim/lib
-
+mv ${BUILD_DIR}/ios/lib/lib* ${DEST_DIR}/device/lib
+mv ${BUILD_DIR}/ios-sim/lib/lib* ${DEST_DIR}/simulator/lib
 
 #
 # create universal library
 #
-lipo -info ${DEST_DIR}/ios-sim/libzmq.a
-lipo -info ${DEST_DIR}/ios/libzmq.a
-lipo -create ${DEST_DIR}/ios-sim/libzmq.a ${DEST_DIR}/ios/libzmq.a -output ${DEST_DIR}/libzmq.a
-echo "Built universal library in: ${DEST_DIR}/libzmq.a"
-lipo -info ${DEST_DIR}/libzmq.a
+lipo -info ${DEST_DIR}/device/lib/libzmq.a
+lipo -info ${DEST_DIR}/simulator/lib/libzmq.a
+lipo -create ${DEST_DIR}/device/lib/libzmq.a ${DEST_DIR}/simulator/lib/libzmq.a -output ${DEST_DIR}/lib/libzmq.a
+echo "Built universal library in: ${DEST_DIR}/lib/libzmq.a"
+lipo -info ${DEST_DIR}/lib/libzmq.a

@@ -1,7 +1,7 @@
 #include "umundo/discovery/Discovery.h"
 
 #include "umundo/common/Factory.h"
-#include "umundo/common/Node.h"
+#include "umundo/connection/Node.h"
 
 namespace umundo {
 

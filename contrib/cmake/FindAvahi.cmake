@@ -19,7 +19,6 @@ FIND_LIBRARY(Avahi_Client_LIBRARY
   PATHS
   /usr/local
   /usr
-	/usr/lib64
   /sw
   /opt/local
   /opt/csw
@@ -34,7 +33,6 @@ FIND_LIBRARY(Avahi_Common_LIBRARY
   PATHS
   /usr/local
   /usr
-	/usr/lib64
   /sw
   /opt/local
   /opt/csw

@@ -113,5 +113,17 @@ especially with the embedded mDNS server on Android. Furthermore sleeping / awak
 	getting an <tt>Assertion failed: s != retired_fd (tcp_connecter.cpp:278)</tt> within ZeroMQ. I guess this is due to the 
 	rather low ulimit for open file-handles on MacOSX (<tt>ulimit -n</tt> gives 256).</dd>
 
+<dt><b>Does uMundo support IPv6?</b></dt>
+<dd>No, mostly because I couldn't get ZeroMQ to compile with IPv6 on Android devices. Both ZeroConf implementations (Avahi and
+	Bonjour) support IPv6 and we already gather these addresses (BonjourNodeStub and AvahiNodeStub). All that is needed is for
+	both of these stubs to return an IPv6 address in <tt>getIP()</tt> and for ZeroMQ to be compiled with IPv6. The plan is to wait
+	for another release of ZeroMQ 3.x and have another look.</dd>
+
+<dt><b>Does uMundo build for 64Bit architectures?</b></dt>
+<dd>No, mostly because I can't get around to maintain 64Bit precompiled libraries. If you have all the dependent libraries in
+	64Bit, just edit the topmost CMakeLists.txt and remove the part where we try hard to get a 32Bit build (around line 55). You
+	might have to adapt the various <tt>Find*.cmake</tt> CMake modules and add <tt>/usr/lib64</tt> or wherever your 64Bit libraries
+	are to the search paths.</dd>
+
 <dt><b>Are these actually questions that are asked frequently?</b><dt>
 <dd>No, it's more like a set of questions I can imagine other people might have. It will eventually grow into a real FAQ.</dd>

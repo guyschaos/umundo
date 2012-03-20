@@ -48,6 +48,9 @@ public:
 	virtual void setData(const string& data)                            {
 		_data = data;
 	}
+	virtual void setData(const char* data, size_t length)               {
+		_data = string(data, length);
+	}
 	virtual const void setMeta(const string& key, const string& value)  {
 		_meta[key] = value;
 	}

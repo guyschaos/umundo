@@ -10,6 +10,7 @@
 typedef std::string string;
 typedef std::vector vector;
 
+// used to get all the keys in message meta information
 %template(StringVector) std::vector<std::string>;
 
 %javaconst(1);
@@ -29,13 +30,14 @@ typedef std::vector vector;
 #if 0
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	using umundo::Debug;
-	LOG_ERR("asdfasdf");
+	LOG_ERR("This is mundo.core speaking!");
 	return JNI_VERSION_1_2;
 }
 #endif
 
 #ifdef ANDROID
 // google forgot imaxdiv in the android ndk r7 libc?!
+#ifndef imaxdiv
 imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom) {
 	imaxdiv_t res;
 	res.quot=0; res.rem=0;
@@ -46,7 +48,7 @@ imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom) {
 	res.rem = numer;
 	return res;
 }
-
+#endif
 #endif
 
 using std::string;
@@ -56,24 +58,33 @@ using boost::shared_ptr;
 using namespace umundo;
 %}
 
+//*************************************************/
+
+
 // allow Java receivers to act as callbacks from C++
 %feature("director") umundo::Receiver;
 
 // enable conversion from char*, int to jbytearray
-%apply (char *STRING, size_t LENGTH) { (char* buffer, size_t length) }; 
+%apply (char *STRING, size_t LENGTH) { (const char* data, size_t length) }; 
 
+// ignore these functions in every class
+%ignore setChannelName(string);
+%ignore setUUID(string);
+%ignore setPort(uint16_t);
+%ignore setIP(string);
+%ignore setTransport(string);
+%ignore setRemote(bool);
+%ignore setHost(string);
+%ignore setDomain(string);
 
-// rename / ignore overloaded operators
-%rename(equals) operator==(NodeStub* n) const;
+// ignore class specific functions
 %ignore operator!=(NodeStub* n) const;
 %ignore operator<<(std::ostream&, const NodeStub*);
 
+// rename functions
+%rename(equals) operator==(NodeStub* n) const;
 %rename(waitSignal) wait;
 
-%ignore umundo::Publisher::getNode() const;
-%ignore umundo::Publisher::setNode(shared_ptr<NodeStub> node);
-%ignore umundo::PublisherStub::getNode() const;
-%ignore umundo::PublisherStub::setNode(shared_ptr<NodeStub> node);
 
 //******************************
 // Beautify Message interface
@@ -81,6 +92,8 @@ using namespace umundo;
 
 // ignore ugly std::map return
 %ignore umundo::Message::getMeta();
+%ignore umundo::Message::setData(string const &);
+%ignore umundo::Message::Message(string);
 
 // import java.util.HashMap
 %typemap(javaimports) umundo::Message %{ 
@@ -111,6 +124,9 @@ import java.util.HashMap;
 %ignore PublisherImpl;
 %ignore SubscriberImpl;
 %ignore Mutex;
+%ignore Thread;
+%ignore Monitor;
+%ignore MemoryBuffer;
 
 
 //***********************************************

@@ -5,19 +5,20 @@
 
 #include <stdarg.h> ///< variadic functions
 
-#ifdef BUILD_DEBUG
 /// Log a message with error priority
 #define LOG_ERR(fmt, ...) Debug::logMsg(0, fmt, __FILE__, __LINE__,  ##__VA_ARGS__);
 #define LOG_WARN(fmt, ...) Debug::logMsg(1, fmt, __FILE__, __LINE__,  ##__VA_ARGS__);
 #define LOG_INFO(fmt, ...) Debug::logMsg(2, fmt, __FILE__, __LINE__,  ##__VA_ARGS__);
 #define LOG_DEBUG(fmt, ...) Debug::logMsg(3, fmt, __FILE__, __LINE__,  ##__VA_ARGS__);
-#endif
 
+// never strip logging
+#if 0
 #ifndef BUILD_DEBUG
 #define LOG_ERR(fmt, ...) 1
 #define LOG_WARN(fmt, ...) 1
 #define LOG_INFO(fmt, ...) 1
 #define LOG_DEBUG(fmt, ...) 1
+#endif
 #endif
 
 namespace umundo {

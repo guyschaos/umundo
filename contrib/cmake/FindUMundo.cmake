@@ -1,53 +1,73 @@
-# 
+# - Find UMundo
+# This module checks if UMundo is installed and determines where the
+# include files and libraries are. This code sets the following
+# variables:
 #
-#
+# UMUNDO_INCLUDE_DIR             = The full path to the umundo headers
+# UMUNDO_LIBRARIES               = All umundo libraries for release build
+# UMUNDO_LIBRARIES_DEBUG         = All umundo libraries for debug build
+# UMUNDO_CORE_LIBRARY            = The umundo.core library for release builds
+# UMUNDO_CORE_LIBRARY_DEBUG      = The umundo.core library for debug builds
+# UMUNDO_S11N_LIBRARY            = The umundo.s11n library for release builds
+# UMUNDO_S11N_LIBRARY_DEBUG      = The umundo.s11n library for debug builds
+# UMUNDO_RPC_LIBRARY             = The umundo.rpc library for release builds
+# UMUNDO_RPC_LIBRARY_DEBUG       = The umundo.rpc library for debug builds
 #
 
 FIND_PATH(UMUNDO_INCLUDE_DIR umundo/core.h
-  HINTS $ENV{UMUNDO_INCLUDE_DIR}
-  PATH_SUFFIXES include
-  PATHS
-  /usr/local
+  PATH_SUFFIXES include PATHS 
+		/usr/local 
+		/opt/local
+		C:\\Program\ Files\ \(x86\)\\uMundo
+	ENV UMUNDO_INCLUDE_DIR
 )
 
 FIND_LIBRARY(UMUNDO_CORE_LIBRARY 
-  NAMES umundocore HINTS $ENV{UMUNDO_LIB_DIR}
-  PATHS
-  /usr/local
+  NAMES umundocore PATHS 
+		/usr/local 
+		/opt/local
+		C:\\Program\ Files\ \(x86\)\\uMundo
+	ENV UMUNDO_LIB_DIR
 )
 
 FIND_LIBRARY(UMUNDO_CORE_LIBRARY_DEBUG
-  NAMES umundocore_d HINTS $ENV{UMUNDO_LIB_DIR}
-  PATHS
-  /usr/local
+  NAMES umundocore_d PATHS 
+		/usr/local 
+		/opt/local
+		C:\\Program\ Files\ \(x86\)\\uMundo
+	ENV UMUNDO_LIB_DIR
 )
 
 FIND_LIBRARY(UMUNDO_S11N_LIBRARY 
-  NAMES umundoserial HINTS $ENV{UMUNDO_LIB_DIR}
-  PATHS
-  /usr/local
+  NAMES umundoserial PATHS
+		/usr/local 
+		/opt/local
+		C:\\Program\ Files\ \(x86\)\\uMundo
+	ENV UMUNDO_LIB_DIR
 )
 
 FIND_LIBRARY(UMUNDO_S11N_LIBRARY_DEBUG
-  NAMES umundoserial_d HINTS $ENV{UMUNDO_LIB_DIR}
-  PATHS
-  /usr/local
+  NAMES umundoserial_d PATHS
+		/usr/local 
+		/opt/local
+		C:\\Program\ Files\ \(x86\)\\uMundo
+	ENV UMUNDO_LIB_DIR
 )
 
 FIND_LIBRARY(UMUNDO_RPC_LIBRARY 
-  NAMES umundorpc HINTS $ENV{UMUNDO_LIB_DIR}
-  PATHS
-  /usr/local
+  NAMES umundorpc PATHS
+		/usr/local 
+		/opt/local
+		C:\\Program\ Files\ \(x86\)\\uMundo
+	ENV UMUNDO_LIB_DIR
 )
 
 FIND_LIBRARY(UMUNDO_RPC_LIBRARY_DEBUG
-  NAMES umundorpc_d HINTS $ENV{UMUNDO_LIB_DIR}
-  PATHS
-  /usr/local
-)
-
-find_program(UMUNDO_PROTOBUF_RPC_EXECUTABLE 
-	NAMES protoc-umundo-rpc protoc-umundo-rpc.exe
+  NAMES umundorpc_d PATHS
+		/usr/local 
+		/opt/local
+		C:\\Program\ Files\ \(x86\)\\uMundo
+	ENV UMUNDO_LIB_DIR
 )
 
 SET(UMUNDO_LIBRARIES optimized ${UMUNDO_CORE_LIBRARY})

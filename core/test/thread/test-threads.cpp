@@ -5,12 +5,12 @@ using namespace umundo;
 
 bool testRecursiveMutex() {
 	Mutex mutex;
-	mutex.lock();
+	UMUNDO_LOCK(mutex);
 	if(!mutex.tryLock()) {
 		LOG_ERR("tryLock should be possible from within the same thread");
 		assert(false);
 	}
-	mutex.lock();
+	UMUNDO_LOCK(mutex);
 	return true;
 }
 
@@ -22,25 +22,25 @@ bool testThreads() {
 				LOG_ERR("tryLock should return false with a mutex locked in another thread");
 				assert(false);
 			}
-			testMutex.lock(); // blocks
+			UMUNDO_LOCK(testMutex); // blocks
 			Thread::sleepMs(50);
-			testMutex.unlock();
+			UMUNDO_UNLOCK(testMutex);
 			Thread::sleepMs(100);
 		}
 	};
-	
-	testMutex.lock();
+
+	UMUNDO_LOCK(testMutex);
 	Thread1 thread1;
 	thread1.start();
-  Thread::sleepMs(50); // thread1 will trylock and block on lock
-	testMutex.unlock();  // unlock
-  Thread::sleepMs(20); // yield cpu and sleep
+	Thread::sleepMs(50); // thread1 will trylock and block on lock
+	UMUNDO_UNLOCK(testMutex);  // unlock
+	Thread::sleepMs(20); // yield cpu and sleep
 	// thread1 sleeps with lock on mutex
 	if(testMutex.tryLock()) {
 		LOG_ERR("tryLock should return false with a mutex locked in another thread");
 		assert(false);
 	}
-	testMutex.lock();    // thread1 will unlock and sleep
+	UMUNDO_LOCK(testMutex);    // thread1 will unlock and sleep
 	thread1.join();      // join with thread1
 	if(thread1.isStarted()) {
 		LOG_ERR("thread still running after join");
@@ -55,40 +55,40 @@ static int passedMonitor = 0;
 bool testMonitors() {
 	class Thread1 : public Thread {
 		void run() {
-      testMonitor.wait();
-      Thread::sleepMs(10); // avoid clash with other threads
-      passedMonitor++;
+			UMUNDO_WAIT(testMonitor);
+			Thread::sleepMs(10); // avoid clash with other threads
+			passedMonitor++;
 		}
 	};
 	class Thread2 : public Thread {
 		void run() {
-      testMonitor.wait();
-      Thread::sleepMs(5);
-      passedMonitor++;
+			UMUNDO_WAIT(testMonitor);
+			Thread::sleepMs(5);
+			passedMonitor++;
 		}
 	};
 	class Thread3 : public Thread {
 		void run() {
-      testMonitor.wait();
-      passedMonitor++;
+			UMUNDO_WAIT(testMonitor);
+			passedMonitor++;
 		}
 	};
-  
-  Thread1 thread1;
-  Thread2 thread2;
-  Thread3 thread3;
-  // all will block on monitor
-  thread1.start();
-  thread2.start();
-  thread3.start();
-  Thread::sleepMs(20); // give threads a chance to run into wait
-  if(passedMonitor != 0) {
+
+	Thread1 thread1;
+	Thread2 thread2;
+	Thread3 thread3;
+	// all will block on monitor
+	thread1.start();
+	thread2.start();
+	thread3.start();
+	Thread::sleepMs(20); // give threads a chance to run into wait
+	if(passedMonitor != 0) {
 		LOG_ERR("%d threads already passed the monitor", passedMonitor);
 		assert(false);
 	}
-  testMonitor.signal();
-  Thread::sleepMs(20); // threads will increase passedMonitor
-  if(passedMonitor != 3) {
+	UMUNDO_SIGNAL(testMonitor);
+	Thread::sleepMs(20); // threads will increase passedMonitor
+	if(passedMonitor != 3) {
 		LOG_ERR("Expected 3 threads to pass the monitor, but %d did", passedMonitor);
 		assert(false);
 	}
@@ -98,24 +98,24 @@ bool testMonitors() {
 	}
 	// redo to check win32 monitor resetting
 	thread1.start();
-  thread2.start();
-  thread3.start();
-  Thread::sleepMs(20);
-  if(passedMonitor != 3) {
+	thread2.start();
+	thread3.start();
+	Thread::sleepMs(20);
+	if(passedMonitor != 3) {
 		LOG_ERR("%d threads already passed the monitor", passedMonitor);
 		assert(false);
 	}
-  testMonitor.signal();
-  Thread::sleepMs(20); // threads will increase passedMonitor
-  if(passedMonitor != 6) {
+	UMUNDO_SIGNAL(testMonitor);
+	Thread::sleepMs(20); // threads will increase passedMonitor
+	if(passedMonitor != 6) {
 		LOG_ERR("Expected 6 threads to pass the monitor, but %d did", passedMonitor);
 		assert(false);
 	}
 
-  return true;
+	return true;
 }
 
-int main(int argc, char** argv) {	
+int main(int argc, char** argv) {
 	if(!testRecursiveMutex())
 		return EXIT_FAILURE;
 	if(!testThreads())

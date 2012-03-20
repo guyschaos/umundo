@@ -1,4 +1,5 @@
 #include "umundo/common/Debug.h"
+#include "umundo/thread/Thread.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -95,7 +96,7 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 				if ((term != NULL) && (strncmp(term, "xterm", 5) == 0 || strcmp(term, "xterm") == 0)) {
 					useColors = 1;
 				}
-        char* unbuffIO = getenv("NSUnbufferedIO");
+				char* unbuffIO = getenv("NSUnbufferedIO");
 				if ((unbuffIO != NULL) && (strncmp(unbuffIO, "YES", 3) == 0)) {
 					useColors = 0;
 				}
@@ -121,13 +122,15 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 			if (lvl > logLevelS11n)
 				return false;
 			logDomain = "s11n";
-		} else if (strncmp(pathSepPos + 1, "thread", 6) == 0) {
-			// tread threads as common domain
-			if (lvl > logLevelCommon)
-				return false;
-			logDomain = "common";
 		}
 		filename = pathSepPos + 1;
+	}
+
+	// tread unknown domains as common
+	if (logDomain == NULL) {
+		if (lvl > logLevelCommon)
+			return false;
+		logDomain = "common";
 	}
 
 	// only color first line of a new log domain
@@ -159,24 +162,27 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 	vasprintf(&message, fmt, args);
 	va_end(args);
 
-  // timestamp
+	// get current thread id
+	int threadId = Thread::getThreadId();
+
+	// timestamp
 	time_t current_time;
 	struct tm * time_info;
 	char timeStr[9] = "        ";  // space for "HH:MM:SS\0"
 	time(&current_time);
-  if (lastTime != current_time) {
-    time_info = localtime(&current_time);
-    strftime(timeStr, sizeof(timeStr), "%H:%M:%S", time_info);
-    lastTime = current_time;
-  }
-    
+	if (lastTime != current_time) {
+		time_info = localtime(&current_time);
+		strftime(timeStr, sizeof(timeStr), "%H:%M:%S", time_info);
+		lastTime = current_time;
+	}
+
 #ifdef ANDROID
-	__android_log_print(ANDROID_LOG_VERBOSE, logDomain, "%s:%d: %s %s\n", filename, line, severity, message);
+	__android_log_print(ANDROID_LOG_VERBOSE, logDomain, "%02d|%s:%d: %s %s\n", threadId, filename, line, severity, message);
 #else
 	if (useColors) {
 #ifdef WIN32
 		// @todo implement color output on windows
-		printf("%s|%s:%d:%s %s %s\n", timeStr, filename, line, padding, severity, message);
+		printf("%s %02d|%s:%d:%s %s %s\n", timeStr, threadId, filename, line, padding, severity, message);
 #else
 
 		int effect = 0;
@@ -200,10 +206,10 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 			foreground = WHITE;
 		}
 
-		printf("\e[%d;%d;%dm%s|%s:%d:%s %s %s\e[0m\n", effect, foreground + 30, background + 40, timeStr, filename, line, padding, severity, message );
+		printf("\e[%d;%d;%dm%s %02d|%s:%d:%s %s %s\e[0m\n", effect, foreground + 30, background + 40, timeStr, threadId, filename, line, padding, severity, message );
 #endif
 	} else {
-		printf("%s|%s:%d:%s %s %s\n", timeStr, filename, line, padding, severity, message);
+		printf("%s %02d|%s:%d:%s %s %s\n", timeStr, threadId, filename, line, padding, severity, message);
 	}
 	fflush(stdout);
 #endif

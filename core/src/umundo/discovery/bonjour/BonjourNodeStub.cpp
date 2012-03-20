@@ -22,13 +22,11 @@
 namespace umundo {
 
 BonjourNodeStub::BonjourNodeStub() {
-	DEBUG_CTOR("BonjourNodeStub");
 	_isRemote = false;
 	_isAdded = false;
 };
 
 BonjourNodeStub::~BonjourNodeStub() {
-	DEBUG_DTOR("BonjourNodeStub");
 }
 
 const string& BonjourNodeStub::getIP() const {
@@ -36,7 +34,7 @@ const string& BonjourNodeStub::getIP() const {
 	assert(_interfacesIPv4.size() > 0);
 	return (_interfacesIPv4.begin())->second;
 }
-  
+
 std::ostream& operator<<(std::ostream &out, const BonjourNodeStub* n) {
 	out << n->_uuid << " (";
 	std::set<std::string>::iterator domIter;

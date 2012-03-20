@@ -12,32 +12,32 @@ NodeQuery::~NodeQuery() {
 }
 
 void NodeQuery::found(shared_ptr<NodeStub> node) {
-	_mutex.lock();
+	UMUNDO_LOCK(_mutex);
 	if (_notifyImmediately) {
 		if (_nodes.find(node->getUUID()) != _nodes.end()) {
 //      LOG_DEBUG("Changed node %s", SHORT_UUID(node->getUUID()).c_str());
 			_listener->changed(node);
 		} else {
-      LOG_DEBUG("Added node %s", SHORT_UUID(node->getUUID()).c_str());
+			LOG_DEBUG("Added node %s", SHORT_UUID(node->getUUID()).c_str());
 			_listener->added(node);
-      _nodes[node->getUUID()] = node;
+			_nodes[node->getUUID()] = node;
 		}
 	} else {
 		_pendingFinds.insert(node);
 	}
-	_mutex.unlock();
+	UMUNDO_UNLOCK(_mutex);
 }
 
 void NodeQuery::removed(shared_ptr<NodeStub> node) {
-	_mutex.lock();
+	UMUNDO_LOCK(_mutex);
 	if (_notifyImmediately) {
-    LOG_DEBUG("Removed node %s", SHORT_UUID(node->getUUID()).c_str());
+		LOG_DEBUG("Removed node %s", SHORT_UUID(node->getUUID()).c_str());
 		_listener->removed(node);
-    _nodes.erase(node->getUUID());
+		_nodes.erase(node->getUUID());
 	} else {
 		_pendingRemovals.insert(node);
 	}
-	_mutex.unlock();
+	UMUNDO_UNLOCK(_mutex);
 }
 
 void NodeQuery::notifyImmediately(bool notifyImmediately) {
@@ -45,11 +45,11 @@ void NodeQuery::notifyImmediately(bool notifyImmediately) {
 }
 
 void NodeQuery::notifyResultSet() {
-	_mutex.lock();
+	UMUNDO_LOCK(_mutex);
 	set<shared_ptr<NodeStub> >::const_iterator nodeIter;
 
 	for (nodeIter = _pendingRemovals.begin(); nodeIter != _pendingRemovals.end(); nodeIter++) {
-    LOG_DEBUG("Removed node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
+		LOG_DEBUG("Removed node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
 		_listener->removed(*nodeIter);
 		_nodes.erase((*nodeIter)->getUUID());
 	}
@@ -57,9 +57,9 @@ void NodeQuery::notifyResultSet() {
 	for (nodeIter = _pendingFinds.begin(); nodeIter != _pendingFinds.end(); nodeIter++) {
 		if (_nodes.find((*nodeIter)->getUUID()) != _nodes.end()) {
 //      LOG_DEBUG("Changed node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
-			_listener->changed(*nodeIter);			
+			_listener->changed(*nodeIter);
 		} else {
-      LOG_DEBUG("Added node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
+			LOG_DEBUG("Added node %s", SHORT_UUID((*nodeIter)->getUUID()).c_str());
 			_listener->added(*nodeIter);
 			_nodes[(*nodeIter)->getUUID()] = *nodeIter;
 		}
@@ -67,7 +67,7 @@ void NodeQuery::notifyResultSet() {
 
 	_pendingRemovals.clear();
 	_pendingFinds.clear();
-	_mutex.unlock();
+	UMUNDO_UNLOCK(_mutex);
 }
 
 const string& NodeQuery::getDomain() {

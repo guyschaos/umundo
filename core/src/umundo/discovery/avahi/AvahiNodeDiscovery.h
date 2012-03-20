@@ -25,6 +25,8 @@ public:
 	shared_ptr<Implementation> create();
 	void destroy();
 	void init(shared_ptr<Configuration>);
+	void suspend();
+	void resume();
 
 	void add(shared_ptr<NodeImpl> node);
 	void remove(shared_ptr<NodeImpl> node);
@@ -74,11 +76,12 @@ private:
 	    void* userdata
 	);
 
-	map<intptr_t, shared_ptr<NodeQuery> > _browsers;              ///< memory addresses of queries for static callbacks
-	map<intptr_t, shared_ptr<NodeImpl> > _nodes;	             ///< memory addresses of local nodes for static callbacks
+	map<intptr_t, shared_ptr<NodeQuery> > _browsers;       ///< memory addresses of queries for static callbacks
+	map<intptr_t, shared_ptr<NodeImpl> > _nodes;	         ///< memory addresses of local nodes for static callbacks
+	map<intptr_t, shared_ptr<NodeImpl> > _suspendedNodes;	 ///< memory addresses of suspended local nodes
 	map<intptr_t, AvahiClient* > _avahiClients;            ///< memory addresses of local nodes to avahi clients
 	map<intptr_t, AvahiEntryGroup* > _avahiGroups;         ///< memory addresses of local nodes to avahi groups
-	map<intptr_t, AvahiServiceBrowser* > _avahiBrowsers;        ///< memory addresses of local nodes to avahi service browsers
+	map<intptr_t, AvahiServiceBrowser* > _avahiBrowsers;   ///< memory addresses of local nodes to avahi service browsers
 
 	map<shared_ptr<NodeQuery>, map<string, shared_ptr<AvahiNodeStub> > > _queryNodes;
 

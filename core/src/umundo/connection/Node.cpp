@@ -23,7 +23,7 @@ Node::Node() {
 	_impl->init(config);
 	// add our node query
 	Discovery::add(this);
-  instances++;
+	instances++;
 }
 
 Node::Node(string domain) {
@@ -32,14 +32,14 @@ Node::Node(string domain) {
 	_impl->setDomain(domain);
 	_impl->init(config);
 	Discovery::add(this);
-  instances++;
+	instances++;
 }
 
 Node::~Node() {
-  Discovery::remove(this);
-  instances--;
+	Discovery::remove(this);
+	instances--;
 }
-  
+
 void Node::addSubscriber(Subscriber* sub) {
 	_impl->addSubscriber(sub->_impl);
 }

@@ -71,14 +71,14 @@ ZeroMQPublisher::~ZeroMQPublisher() {
 }
 
 void ZeroMQPublisher::suspend() {
- 	if (_isSuspended)
+	if (_isSuspended)
 		return;
 	_isSuspended = true;
 	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 }
 
 void ZeroMQPublisher::resume() {
- 	if (!_isSuspended)
+	if (!_isSuspended)
 		return;
 	_isSuspended = false;
 	init(_config);
@@ -89,7 +89,7 @@ void ZeroMQPublisher::resume() {
  */
 int ZeroMQPublisher::waitForSubscribers(int count) {
 	while (_pubCount < count) {
-		_pubLock.wait();
+		UMUNDO_WAIT(_pubLock);
 		// give the connection a moment to establish
 		Thread::sleepMs(100);
 	}
@@ -98,21 +98,21 @@ int ZeroMQPublisher::waitForSubscribers(int count) {
 
 void ZeroMQPublisher::addedSubscriber() {
 	_pubCount++;
-	_pubLock.signal();
+	UMUNDO_SIGNAL(_pubLock);
 }
 
 void ZeroMQPublisher::removedSubscriber() {
 	_pubCount--;
-	_pubLock.signal();
+	UMUNDO_SIGNAL(_pubLock);
 }
 
 void ZeroMQPublisher::send(Message* msg) {
 	//LOG_DEBUG("ZeroMQPublisher sending msg on %s", _channelName.c_str());
-  if (_isSuspended) {
-    LOG_WARN("Not sending message on suspended publisher");
-    return;
-  }
-  
+	if (_isSuspended) {
+		LOG_WARN("Not sending message on suspended publisher");
+		return;
+	}
+
 	// topic name is first message in envelope
 	zmq_msg_t channelEnvlp;
 	ZMQ_PREPARE_STRING(channelEnvlp, _channelName.c_str(), _channelName.size());

@@ -9,27 +9,34 @@
 #import <umundo-objc/s11n.h>
 
 @protocol UMTypedSubscriberReceiver
-- (void)received:(void*)obj andMeta:(NSDictionary*)meta;
+- (void)received:
+(void*)obj andMeta:
+(NSDictionary*)meta;
 @end
 
 class umundoTypedReceiverWrapper : public umundo::Receiver {
 public:
-  umundoTypedReceiverWrapper(id<UMTypedSubscriberReceiver> receiver) : _objcTypedReceiver(receiver) {}
+	umundoTypedReceiverWrapper(id<UMTypedSubscriberReceiver> receiver) : _objcTypedReceiver(receiver) {}
 
-  virtual void receive(umundo::Message* msg);
+	virtual void receive(umundo::Message* msg);
 
-  std::map<std::string, google::protobuf::MessageLite*> _deserializers;
-  id<UMTypedSubscriberReceiver> _objcTypedReceiver;
-  
+	std::map<std::string, google::protobuf::MessageLite*> _deserializers;
+	id<UMTypedSubscriberReceiver> _objcTypedReceiver;
+
 };
 
-@interface UMTypedSubscriber : UMSubscriber {
-@public
-  id<UMTypedSubscriberReceiver> _typedReceiver;
-  umundoTypedReceiverWrapper* _cListener;
+@interface UMTypedSubscriber :
+UMSubscriber {
+	@public
+	id<UMTypedSubscriberReceiver> _typedReceiver;
+	umundoTypedReceiverWrapper* _cListener;
 }
-- (id) initWithChannel:(NSString*)name andReceiver:(id<UMTypedSubscriberReceiver>)receiver;
-- (void) registerType:(NSString*)type withDeserializer:(google::protobuf::MessageLite*)deserializer;
+- (id) initWithChannel:
+(NSString*)name andReceiver:
+(id<UMTypedSubscriberReceiver>)receiver;
+- (void) registerType:
+(NSString*)type withDeserializer:
+(google::protobuf::MessageLite*)deserializer;
 @end
 
 #endif /* end of include guard: UMTYPEDSUBSCRIBER_H_BJ2RZ8K5 */

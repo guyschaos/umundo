@@ -14,6 +14,8 @@ using ::wcslen;
 #ifdef _WIN32
 #include <stdarg.h>
 
+#define setenv(key, value, override) _putenv_s(key, value)
+
 #ifndef snprintf
 #define snprintf _snprintf
 #endif
@@ -32,6 +34,7 @@ using ::wcslen;
 
 int vasprintf(char **ret, const char *format, va_list args);
 int asprintf(char **ret, const char *format, ...);
+char* strndup (const char *s, size_t n);
 
 #endif
 

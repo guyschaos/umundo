@@ -12,14 +12,18 @@
 #import <Foundation/Foundation.h>
 #import <umundo/core.h>
 
-@interface UMPublisher : NSObject {
-  @public
-  boost::shared_ptr<umundo::Publisher> _cppPub;
+@interface UMPublisher :
+NSObject {
+	@public
+	boost::shared_ptr<umundo::Publisher> _cppPub;
 }
 
-- (id) initWithChannel:(NSString*) channelName;
-- (void)send:(NSData*)data;
-- (void)sendMsg:(umundo::Message*)msg;
+- (id) initWithChannel:
+(NSString*) channelName;
+- (void)send:
+(NSData*)data;
+- (void)sendMsg:
+(umundo::Message*)msg;
 
 @end
 

@@ -70,7 +70,7 @@ protected:
 	ZeroMQNode();
 
 	void run(); ///< see Thread
-	void join();
+	void join(); ///< Overridden to unblock zmq_recv_msg in run()
 
 	/** @name Control message handling */
 	//@{
@@ -112,12 +112,12 @@ private:
 	shared_ptr<NodeQuery> _nodeQuery; ///< the NodeQuery which we registered at the Discovery sub-system.
 
 	map<string, shared_ptr<NodeStub> > _nodes;                                    ///< UUIDs to NodeStub%s.
-	map<string, void*> _sockets;                                                  ///< UUIDs to ZeroMQ Sockets.
+	map<string, void*> _sockets;                                                  ///< UUIDs to ZeroMQ Node Sockets.
 	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          ///< UUIDs to ports to remote publishers.
-	map<string, map<uint16_t, int > > _remoteSubs;                                ///< UUIDs to ports to number of remote subscribers.
-	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; ///< received publishers of yet undiscovered nodes.
+	map<string, map<uint16_t, int > > _remoteSubs;                                ///< UUIDs to local publisher ports to number of subscribers.
+	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; ///< publishers of yet undiscovered nodes.
 	map<uint16_t, shared_ptr<ZeroMQPublisher> > _localPubs;                       ///< Local ports to local publishers.
-	map<uint16_t, shared_ptr<ZeroMQPublisher> > _suspendedLocalPubs;              ///< suspended publishers.
+	map<uint16_t, shared_ptr<ZeroMQPublisher> > _suspendedLocalPubs;              ///< suspended publishers to be resumed.
 	set<shared_ptr<ZeroMQSubscriber> > _localSubs;                                ///< Local subscribers.
 	shared_ptr<NodeConfig> _config;
 

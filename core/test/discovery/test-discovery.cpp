@@ -15,13 +15,13 @@ public:
 		printf("node added!\n");
 		assert(node->getIP().size() >= 7);
 		receives++;
-		monitor.signal();
+		UMUNDO_SIGNAL(monitor);
 	}
 	void removed(shared_ptr<NodeStub> node) {
-		
+
 	}
 	void changed(shared_ptr<NodeStub> node) {
-		
+
 	}
 };
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv, char** envp) {
 	shared_ptr<NodeQuery> query = shared_ptr<NodeQuery>(new NodeQuery("fooDomain", testDiscoverer));
 	Discovery::browse(query);
 	TestDiscoverable* testDiscoverable = new TestDiscoverable("fooDomain");
-  Discovery::add(testDiscoverable);
+	Discovery::add(testDiscoverable);
 	while(receives < 1)
-		monitor.wait();
+		UMUNDO_WAIT(monitor);
 }

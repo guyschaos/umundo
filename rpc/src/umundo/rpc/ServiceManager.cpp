@@ -19,11 +19,11 @@ const string ServiceManager::find(const string& serviceName) {
 	findMsg->setMeta("type", "serviceDisc");
 	findMsg->setMeta("serviceName", serviceName);
 	findMsg->setMeta("reqId", reqId.c_str());
-  _svcPub->waitForSubscribers(1);
+	_svcPub->waitForSubscribers(1);
 	_svcPub->send(findMsg);
-	
+
 	_findRequests[reqId] = Monitor();
-	_findRequests[reqId].wait();
+	UMUNDO_WAIT(_findRequests[reqId]);
 	delete findMsg;
 	if (_findResponses.find(reqId) != _findResponses.end()) {
 		string channelName = _findResponses[reqId];
@@ -39,14 +39,14 @@ void ServiceManager::receive(Message* msg) {
 		string respId = msg->getMeta("respId");
 		if (_findRequests.find(respId) != _findRequests.end()) {
 			_findResponses[respId] = msg->getMeta("channelName");
-			_findRequests[respId].signal();
+			UMUNDO_SIGNAL(_findRequests[respId]);
 			_findRequests.erase(respId);
 		}
 	}
 
 	// is someone asking for a service?
-	if (msg->getMeta().find("type") != msg->getMeta().end() && 
-			msg->getMeta("type").compare("serviceDisc") == 0) {
+	if (msg->getMeta().find("type") != msg->getMeta().end() &&
+	        msg->getMeta("type").compare("serviceDisc") == 0) {
 		string serviceName = msg->getMeta("serviceName");
 		if (_services.find(serviceName) != _services.end()) {
 			// we do have such a service

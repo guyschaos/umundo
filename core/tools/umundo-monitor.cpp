@@ -55,16 +55,16 @@ void printUsageAndExit() {
 	printf("\t-c <channel>       : use channel\n");
 	printf("\t-d <domain>        : join domain\n");
 	printf("\t-f <file>          : publish contents of file\n");
-	printf("\t-w <number>        : wait for given number of subscribers before publishing\n");	
-	printf("\t-i                 : interactive mode (simple chat)\n");	
-	printf("\t-v                 : be more verbose\n");	
+	printf("\t-w <number>        : wait for given number of subscribers before publishing\n");
+	printf("\t-i                 : interactive mode (simple chat)\n");
+	printf("\t-v                 : be more verbose\n");
 	exit(1);
 }
 
 class PlainDumpingReceiver : public Receiver {
-  void receive(Message* msg) {
-    std::cout << msg->getData() << std::flush;
-  }
+	void receive(Message* msg) {
+		std::cout << msg->getData() << std::flush;
+	}
 };
 
 int main(int argc, char** argv) {
@@ -76,52 +76,52 @@ int main(int argc, char** argv) {
 	int option;
 	while ((option = getopt(argc, argv, "ivd:f:c:w:")) != -1) {
 		switch(option) {
-			case 'c':
-				channel = optarg;
-				break;
-			case 'd':
-				domain = optarg;
-				break;
-			case 'f':
-				file = optarg;
-				break;
-			case 'w':
-				minSubs = atoi((const char*)optarg);
-				break;
-			case 'i':
-				interactive = true;
-				break;
-			case 'v':
-				interactive = true;
-				break;
-			default:
-				printUsageAndExit();
-				break;
+		case 'c':
+			channel = optarg;
+			break;
+		case 'd':
+			domain = optarg;
+			break;
+		case 'f':
+			file = optarg;
+			break;
+		case 'w':
+			minSubs = atoi((const char*)optarg);
+			break;
+		case 'i':
+			interactive = true;
+			break;
+		case 'v':
+			interactive = true;
+			break;
+		default:
+			printUsageAndExit();
+			break;
 		}
 	}
-	
+
 	if (!channel)
 		printUsageAndExit();
-	
+
 	Node* node = NULL;
 	Publisher* pub = NULL;
 	Subscriber* sub = NULL;
-  
+
 	if (domain) {
 		node = new Node(domain);
 	} else {
 		node = new Node();
 	}
-	
+
 	/**
 	 * Send file content
 	 */
 	if (file) {
-    if (pub == NULL) {
-      pub = new Publisher(channel);
-      node->addPublisher(pub);
-      pub->waitForSubscribers(minSubs);
-    }
+		if (pub == NULL) {
+			pub = new Publisher(channel);
+			node->addPublisher(pub);
+			pub->waitForSubscribers(minSubs);
+		}
 
 		FILE *fp;
 		fp = fopen(file, "r");
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
 			printf("Failed to open file %s: %s\n", file, strerror(errno));
 			return EXIT_FAILURE;
 		}
-		
+
 		int read = 0;
 		int lastread = 0;
 		char* readBuffer = (char*) malloc(1000);
@@ -143,46 +143,46 @@ int main(int argc, char** argv) {
 
 			if (lastread <= 0)
 				break;
-			
+
 			pub->send(readBuffer, lastread);
 			read += lastread;
-      
-      if (feof(fp))
-        break;
+
+			if (feof(fp))
+				break;
 		}
 		fclose(fp);
 		printf("Send %d bytes on channel \"%s\"\n", read, channel);
-    if (!interactive)
-      exit(0);
+		if (!interactive)
+			exit(0);
 	}
 
-  if (sub == NULL) {
-    sub = new Subscriber(channel, new PlainDumpingReceiver());
-    node->addSubscriber(sub);
-  }
+	if (sub == NULL) {
+		sub = new Subscriber(channel, new PlainDumpingReceiver());
+		node->addSubscriber(sub);
+	}
 
-  if (interactive) {
-    /**
-     * Enter interactive mode
-     */
-    if (pub == NULL) {
-      pub = new Publisher(channel);
-      node->addPublisher(pub);
-    }
-    pub->waitForSubscribers(minSubs);
-    string line;
-    while(std::cin) {
-      getline(std::cin, line);
-      line.append("\n");
-      pub->send(line.c_str(), line.length());
-    };
-  } else {
-    /**
-     * Non-interactive, just let the subscriber print channel messages
-     */
-    while (true)
-      Thread::sleepMs(500);
-  }
-  
+	if (interactive) {
+		/**
+		 * Enter interactive mode
+		 */
+		if (pub == NULL) {
+			pub = new Publisher(channel);
+			node->addPublisher(pub);
+		}
+		pub->waitForSubscribers(minSubs);
+		string line;
+		while(std::cin) {
+			getline(std::cin, line);
+			line.append("\n");
+			pub->send(line.c_str(), line.length());
+		};
+	} else {
+		/**
+		 * Non-interactive, just let the subscriber print channel messages
+		 */
+		while (true)
+			Thread::sleepMs(500);
+	}
+
 }
 

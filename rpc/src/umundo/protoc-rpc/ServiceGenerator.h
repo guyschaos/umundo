@@ -13,7 +13,7 @@ using namespace google::protobuf::compiler;
 class ServiceGenerator : public compiler::CodeGenerator {
 public:
 	ServiceGenerator() {};
-  ~ServiceGenerator() {};
+	~ServiceGenerator() {};
 	bool Generate(const FileDescriptor* file, const string& parameter, GeneratorContext* generator_context, string* error) const;
 
 	void writeServiceHeader(io::Printer& printer, const ServiceDescriptor* svcDesc) const;

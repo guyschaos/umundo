@@ -9,12 +9,10 @@
 namespace umundo {
 
 Thread::Thread() {
-	DEBUG_CTOR("Thread");
 	_isStarted = false;
 }
 
 Thread::~Thread() {
-	DEBUG_DTOR("Thread");
 	if (_isStarted) {
 		stop();
 		join();
@@ -57,6 +55,22 @@ void Thread::join() {
 
 }
 
+int Thread::getThreadId() {
+	static int nextindex = 1;
+#ifdef THREAD_PTHREAD
+	static std::map<pthread_t, int> ids;
+	pthread_t pt = pthread_self();
+#endif
+#ifdef THREAD_WIN32
+	static std::map<DWORD, int> ids;
+	DWORD pt = GetCurrentThreadId();
+#endif
+	if (ids.find(pt) == ids.end()) {
+		ids[pt] = nextindex++;
+	}
+	return ids[pt];
+}
+
 void Thread::start() {
 	if (_isStarted)
 		return;
@@ -96,11 +110,11 @@ void Thread::stop() {
 void Thread::yield() {
 #ifdef THREAD_PTHREAD
 	int err = sched_yield();
- 	(void)err;
- 	assert(!err);
+	(void)err;
+	assert(!err);
 #endif
 #ifdef THREAD_WIN32
- 	SwitchToThread();
+	SwitchToThread();
 #endif
 }
 
@@ -114,7 +128,6 @@ void Thread::sleepMs(uint32_t ms) {
 }
 
 Mutex::Mutex() {
-	DEBUG_CTOR("Mutex");
 #ifdef THREAD_PTHREAD
 	pthread_mutexattr_t attrib;
 	int ret = pthread_mutexattr_init(&attrib);
@@ -131,7 +144,6 @@ Mutex::Mutex() {
 }
 
 Mutex::~Mutex() {
-	DEBUG_DTOR("Mutex");
 #ifdef THREAD_PTHREAD
 	pthread_mutex_destroy(&_mutex);
 #endif
@@ -196,7 +208,7 @@ Monitor::~Monitor() {
 			LOG_WARN("Trying to destroy locked monitor - retrying");
 			break;
 		default:
-			LOG_WARN("pthread_mutex_destroy returned %d");
+			LOG_ERR("pthread_mutex_destroy returned %d");
 			goto failed_cond_destroy;
 		}
 		Thread::sleepMs(50);
@@ -208,7 +220,7 @@ failed_cond_destroy:
 			LOG_WARN("Trying to destroy locked monitor - retrying");
 			break;
 		default:
-			LOG_WARN("pthread_mutex_destroy returned %d");
+			LOG_ERR("pthread_mutex_destroy returned %d");
 			goto failed_mutex_destroy;
 		}
 		Thread::sleepMs(50);

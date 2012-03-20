@@ -8,13 +8,19 @@
 #import <umundo-objc/core.h>
 #import <umundo-objc/s11n.h>
 
-@interface UMTypedPublisher : UMPublisher {
-@public
+@interface UMTypedPublisher :
+UMPublisher {
+	@public
 }
 
-- (id) initWithChannel:(NSString*) channelName;
-- (void)sendObj:(google::protobuf::MessageLite*)data asType:(NSString*)type;
-- (void)registerType:(NSString*)type withSerializer:(google::protobuf::MessageLite*)serializer;
+- (id) initWithChannel:
+(NSString*) channelName;
+- (void)sendObj:
+(google::protobuf::MessageLite*)data asType:
+(NSString*)type;
+- (void)registerType:
+(NSString*)type withSerializer:
+(google::protobuf::MessageLite*)serializer;
 
 @end
 

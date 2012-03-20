@@ -76,7 +76,7 @@ public:
 	virtual void addPublisher(shared_ptr<PublisherImpl>) = 0;
 	virtual void removePublisher(shared_ptr<PublisherImpl>) = 0;
 	//@}
-	
+
 };
 
 /**
@@ -150,7 +150,7 @@ public:
 	}
 	//@{
 
-  static int instances;
+	static int instances;
 
 protected:
 	shared_ptr<NodeImpl> _impl;

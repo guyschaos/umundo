@@ -48,7 +48,7 @@ void TypedPublisher::sendObj(const string& type, void* obj) {
 // }
 
 void TypedPublisher::registerType(const string& type, void* serializer) {
-	_impl->registerType(type, serializer);	
+	_impl->registerType(type, serializer);
 }
 
 }

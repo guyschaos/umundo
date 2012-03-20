@@ -13,7 +13,6 @@ ELSE()
 ENDIF()
 
 project(umundo)
-#message("CMAKE_GENERATOR ${CMAKE_GENERATOR}")
 
 # lower case version of system name and compiler for library paths
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)
@@ -55,7 +54,7 @@ else ()
 	LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
 endif()
 
-message(STATUS "CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH}")
+#message(STATUS "CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH}")
 
 ############################################################
 # Macros we need later on for installation
@@ -80,6 +79,7 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST COMPONENT)
 		if (NOT DIR)
 			message(STATUS "Refusing to add header file ${REL_HEADER} for include in uppermost directory")
 		else()
+#			message("ADDING ${HEADER} in include/${DIR} for ${COMPONENT}")
 			INSTALL(FILES ${HEADER} DESTINATION include/${DIR} COMPONENT ${COMPONENT})
 		endif()
 	ENDFOREACH()
@@ -101,11 +101,16 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	add_definitions(-Wall)
 	# swig will throw a warning with optimization otherwise
 	add_definitions(-fno-strict-aliasing)
+	add_definitions("-Wno-unused-value")
 elseif (MSVC)
 	add_definitions("-DZMQ_STATIC")	
 	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
 endif()
+
+# build type as macro to strip logging in release builds
+string(TOUPPER BUILD_${CMAKE_BUILD_TYPE} BUILD_TYPE)
+add_definitions("-D${BUILD_TYPE}")
 
 OPTION(BUILD_UMUNDO_CORE "Build umundo core" ON) 
 if (CMAKE_CROSSCOMPILING AND ANDROID)
@@ -121,6 +126,10 @@ if (CMAKE_CROSSCOMPILING)
 	OPTION(BUILD_PREFER_STATIC_LIBRARIES "Prefer static libraries when resolving dependencies" ON)
 else()
 	OPTION(BUILD_PREFER_STATIC_LIBRARIES "Prefer static libraries when resolving dependencies" OFF)
+endif()
+OPTION(DEBUG_THREADS "Print log messages on mutex and monitor access" OFF) 
+if (DEBUG_THREADS)
+	add_definitions("-DDEBUG_THREADS")
 endif()
 
 # Enable verbose Makefiles to debug the build process itself
@@ -284,35 +293,37 @@ endif()
 # Some concluding remarks
 ############################################################
 
-message(STATUS "umundo.core files: ")
-foreach(file ${UMUNDOCORE_FILES})
-	message(STATUS "  ${file}")
-endforeach()
+if (OFF)
+	message(STATUS "umundo.core files: ")
+	foreach(file ${UMUNDOCORE_FILES})
+		message(STATUS "  ${file}")
+	endforeach()
 
-message(STATUS "umundo.core libraries:")
-foreach(file ${UMUNDOCORE_LIBRARIES})
-	message(STATUS "  ${file}")
-endforeach()
+	message(STATUS "umundo.core libraries:")
+	foreach(file ${UMUNDOCORE_LIBRARIES})
+		message(STATUS "  ${file}")
+	endforeach()
 
-message(STATUS "umundo.s11n files: ")
-foreach(file ${UMUNDOS11N_FILES})
-	message(STATUS "  ${file}")
-endforeach()
+	message(STATUS "umundo.s11n files: ")
+	foreach(file ${UMUNDOS11N_FILES})
+		message(STATUS "  ${file}")
+	endforeach()
 
-message(STATUS "umundo.s11n libraries: ")
-foreach(file ${UMUNDOS11N_LIBRARIES})
-	message(STATUS "  ${file}")
-endforeach()
+	message(STATUS "umundo.s11n libraries: ")
+	foreach(file ${UMUNDOS11N_LIBRARIES})
+		message(STATUS "  ${file}")
+	endforeach()
 
-message(STATUS "umundo.rpc files: ")
-foreach(file ${UMUNDORPC_FILES})
-	message(STATUS "  ${file}")
-endforeach()
+	message(STATUS "umundo.rpc files: ")
+	foreach(file ${UMUNDORPC_FILES})
+		message(STATUS "  ${file}")
+	endforeach()
 
-message(STATUS "umundo.rpc libraries:")
-foreach(file ${UMUNDORPC_LIBRARIES})
-	message(STATUS "  ${file}")
-endforeach()
+	message(STATUS "umundo.rpc libraries:")
+	foreach(file ${UMUNDORPC_LIBRARIES})
+		message(STATUS "  ${file}")
+	endforeach()
+endif()
 
 message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
 

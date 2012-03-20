@@ -10,7 +10,7 @@ class ServiceManager;
 
 class ServiceStub : public TypedReceiver {
 public:
-  ServiceStub(ServiceManager* svcMgr, const string& channel);
+	ServiceStub(ServiceManager* svcMgr, const string& channel);
 	virtual ~ServiceStub();
 	virtual const string& getName();
 	virtual const string& getChannelName();
@@ -19,22 +19,22 @@ public:
 
 protected:
 	ServiceStub() {};
-	
+
 	void addToNode(Node*);
 	void removeFromNode(Node*);
-	
+
 	void callStubMethod(const string&, void*, const string&, void*&, const string&);
 
 	string _channelName;
-	string _serviceName;	
+	string _serviceName;
 	TypedPublisher* _rpcPub;
 	TypedSubscriber* _rpcSub;
-	
+
 	map<string, Monitor> _requests;
 	map<string, void*> _responses;
-	
+
 	Mutex _mutex;
-	
+
 	friend class ServiceManager;
 };
 
@@ -45,7 +45,7 @@ public:
 
 	virtual void receive(void* object, Message* msg);
 
-protected:	
+protected:
 	virtual void callMethod(string&, void*, const string&, void*&, const string&) = 0;
 
 };

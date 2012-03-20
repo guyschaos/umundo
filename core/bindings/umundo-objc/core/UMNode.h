@@ -18,13 +18,17 @@
 #include <umundo-objc/core/UMPublisher.h>
 #include <umundo-objc/core/UMSubscriber.h>
 
-@interface UMNode : NSObject {
-  boost::shared_ptr<umundo::Node> _cppNode;
+@interface UMNode :
+NSObject {
+	boost::shared_ptr<umundo::Node> _cppNode;
 }
 
-- (id) initWithDomain:(NSString*) domain;
-- (void)addPublisher:(UMPublisher*)pub;
-- (void)addSubscriber:(UMSubscriber*)sub;
+- (id) initWithDomain:
+(NSString*) domain;
+- (void)addPublisher:
+(UMPublisher*)pub;
+- (void)addSubscriber:
+(UMSubscriber*)sub;
 
 @end
 

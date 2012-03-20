@@ -3,7 +3,7 @@
 
 #include "umundo/common/Common.h"
 
-//this is a hack until we get a compiler firewall per Pimpl
+// this is a hack until we get a compiler firewall per Pimpl
 #ifdef _WIN32
 # if !(defined THREAD_PTHREAD || defined THREAD_WIN32)
 #   define THREAD_WIN32 1
@@ -28,10 +28,42 @@
 #undef WIN32_LEAN_AND_MEAN
 #endif
 
+#ifdef DEBUG_THREADS
+#define UMUNDO_LOCK(mutex) \
+LOG_DEBUG("Locking mutex %p", &mutex); \
+mutex.lock(); \
+LOG_DEBUG("Locked mutex %p", &mutex);
+
+#define UMUNDO_TRYLOCK(mutex) \
+LOG_DEBUG("Tying to lock mutex %p", &mutex); \
+mutex.trylock();
+
+#define UMUNDO_UNLOCK(mutex) \
+LOG_DEBUG("Unlocking mutex %p", &mutex); \
+mutex.unlock();
+
+#define UMUNDO_WAIT(monitor) \
+LOG_DEBUG("Waiting at monitor %p", &monitor); \
+monitor.wait(); \
+LOG_DEBUG("Signaled at monitor %p", &monitor);
+
+#define UMUNDO_SIGNAL(monitor) \
+LOG_DEBUG("Signaling monitor %p", &monitor); \
+monitor.signal();
+#endif
+
+#ifndef DEBUG_THREADS
+#define UMUNDO_LOCK(mutex) mutex.lock();
+#define UMUNDO_TRYLOCK(mutex) mutex.tryLock();
+#define UMUNDO_UNLOCK(mutex) mutex.unlock();
+#define UMUNDO_WAIT(monitor) monitor.wait();
+#define UMUNDO_SIGNAL(monitor) monitor.signal();
+#endif
+
 namespace umundo {
 
 /**
- * Platform independant parallel control-flows.
+ * Platform independent parallel control-flows.
  */
 class Thread {
 public:
@@ -47,6 +79,7 @@ public:
 
 	static void yield();
 	static void sleepMs(uint32_t ms);
+	static int getThreadId(); ///< integer unique to the current thread
 
 private:
 	bool _isStarted;

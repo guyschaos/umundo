@@ -28,7 +28,7 @@ TypedSubscriber::~TypedSubscriber() {
 }
 
 void TypedSubscriber::registerType(const string& type, void* deserializer) {
-	_impl->registerType(type, deserializer);	
+	_impl->registerType(type, deserializer);
 }
 
 void TypedSubscriber::receive(Message* msg) {

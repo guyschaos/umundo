@@ -5,7 +5,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 
 namespace umundo {
-	
+
 class UUID {
 public:
 	static const string getUUID();

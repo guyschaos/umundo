@@ -21,7 +21,7 @@
 
 #ifdef DISC_BONJOUR_EMBED
 extern "C" {
-  /// See mDNSEmbedded.c
+	/// See mDNSEmbedded.c
 	int embedded_mDNSInit();
 	void embedded_mDNSExit();
 	int embedded_mDNSmainLoop(timeval);
@@ -31,7 +31,6 @@ extern "C" {
 namespace umundo {
 
 BonjourNodeDiscovery::BonjourNodeDiscovery() {
-	DEBUG_CTOR("BonjourNodeDiscovery");
 }
 
 shared_ptr<Implementation> BonjourNodeDiscovery::create() {
@@ -60,24 +59,26 @@ shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::getInstance() {
 shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::_instance;
 
 BonjourNodeDiscovery::~BonjourNodeDiscovery() {
-	DEBUG_DTOR("BonjourNodeDiscovery");
 #ifdef DISC_BONJOUR_EMBED
-  // notify every other host that we are about to vanish
+	// notify every other host that we are about to vanish
 	embedded_mDNSExit();
 #endif
 }
 
 /**
  * Unregister all nodes when suspending.
+ *
+ * When we are suspended, we unadvertise all registered nodes and save them as
+ * _suspendedNodes to add them when resuming.
  */
 void BonjourNodeDiscovery::suspend() {
-	_mutex.lock();
+	UMUNDO_LOCK(_mutex);
 	if (_isSuspended) {
-		_mutex.unlock();
+		UMUNDO_UNLOCK(_mutex);
 		return;
 	}
 	_isSuspended = true;
-	
+
 	// remove all nodes from discovery
 	_suspendedNodes = _localNodes;
 	map<intptr_t, shared_ptr<NodeImpl> >::iterator nodeIter = _localNodes.begin();
@@ -86,29 +87,34 @@ void BonjourNodeDiscovery::suspend() {
 		nodeIter++;
 		remove(node);
 	}
-	_mutex.unlock();
+	UMUNDO_UNLOCK(_mutex);
 }
 
 /**
  * Re-register nodes previously suspended.
+ *
+ * We remembered all our nodes in _suspendedNodes when this object was suspended.
+ * By explicitly calling resume on the nodes we add again, we make sure they are
+ * reinitialized before advertising them.
  */
 void BonjourNodeDiscovery::resume() {
-	_mutex.lock();
-  if (!_isSuspended) {
-		_mutex.unlock();
+	UMUNDO_LOCK(_mutex);
+	if (!_isSuspended) {
+		UMUNDO_UNLOCK(_mutex);
 		return;
 	}
 	_isSuspended = false;
-	
+
 	map<intptr_t, shared_ptr<NodeImpl> >::iterator nodeIter = _suspendedNodes.begin();
 	while(nodeIter != _suspendedNodes.end()) {
 		shared_ptr<NodeImpl> node = nodeIter->second;
 		nodeIter++;
+		// make sure advertised nodes are initialized
 		node->resume();
 		add(node);
 	}
 	_suspendedNodes.clear();
-	_mutex.unlock();
+	UMUNDO_UNLOCK(_mutex);
 }
 
 void BonjourNodeDiscovery::run() {
@@ -116,11 +122,11 @@ void BonjourNodeDiscovery::run() {
 
 #ifdef DISC_BONJOUR_EMBED
 	while(isStarted()) {
-		_mutex.lock();
+		UMUNDO_LOCK(_mutex);
 		tv.tv_sec  = BONJOUR_REPOLL_SEC;
 		tv.tv_usec = BONJOUR_REPOLL_USEC;
 		embedded_mDNSmainLoop(tv);
-		_mutex.unlock();
+		UMUNDO_UNLOCK(_mutex);
 	}
 #else
 
@@ -135,8 +141,8 @@ void BonjourNodeDiscovery::run() {
 		tv.tv_sec  = BONJOUR_REPOLL_SEC;
 		tv.tv_usec = BONJOUR_REPOLL_USEC;
 
-    _mutex.lock();
-    // initialize file desriptor set for select
+		UMUNDO_LOCK(_mutex);
+		// initialize file desriptor set for select
 		std::map<int, DNSServiceRef>::const_iterator cIt;
 		for (cIt = _activeFDs.begin(); cIt != _activeFDs.end(); cIt++) {
 			if (cIt->first > nfds)
@@ -149,25 +155,25 @@ void BonjourNodeDiscovery::run() {
 
 		// dispatch over result, make sure to unlock mutex everywhere
 		if (result > 0) {
-      std::map<int, DNSServiceRef>::iterator it;
+			std::map<int, DNSServiceRef>::iterator it;
 
-      it = _activeFDs.begin();
-      while(it != _activeFDs.end()) {
-        DNSServiceRef sdref = it->second;
-        int sockFD = it->first;
-        it++;
-        if (FD_ISSET(sockFD, &readfds)) {
+			it = _activeFDs.begin();
+			while(it != _activeFDs.end()) {
+				DNSServiceRef sdref = it->second;
+				int sockFD = it->first;
+				it++;
+				if (FD_ISSET(sockFD, &readfds)) {
 					FD_CLR(sockFD, &readfds);
 					DNSServiceProcessResult(sdref);
 					it = _activeFDs.begin();
 				}
-      }
-			_mutex.unlock();
+			}
+			UMUNDO_UNLOCK(_mutex);
 		} else if (result == 0) {
-      // timeout as no socket is selectable, just retry
-			_mutex.unlock();
+			// timeout as no socket is selectable, just retry
+			UMUNDO_UNLOCK(_mutex);
 		} else {
-			_mutex.unlock();
+			UMUNDO_UNLOCK(_mutex);
 			if (errno != 0)
 				LOG_WARN("select failed %s", strerror(errno));
 			Thread::sleepMs(300);
@@ -180,26 +186,26 @@ void BonjourNodeDiscovery::run() {
  * Add a node to be discoverable by other nodes.
  */
 void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
-  LOG_INFO("Adding node %s", SHORT_UUID(node->getUUID()).c_str());
+	LOG_INFO("Adding node %s", SHORT_UUID(node->getUUID()).c_str());
 	assert(node->getUUID().length() > 0);
 
-	_mutex.lock();
+	UMUNDO_LOCK(_mutex);
 
 	DNSServiceErrorType err;
-  DNSServiceRef registerClient;
+	DNSServiceRef registerClient;
 	intptr_t address = (intptr_t)(node.get());
-  
+
 	if (_localNodes.find(address) != _localNodes.end()) {
-    // there has to be a register client if we know the node
-    assert(_registerClients.find(address) != _registerClients.end());
+		// there has to be a register client if we know the node
+		assert(_registerClients.find(address) != _registerClients.end());
 		LOG_WARN("Ignoring addition of node already added to discovery");
-		_mutex.unlock();
-    assert(validateState());
+		UMUNDO_UNLOCK(_mutex);
+		assert(validateState());
 		return;
 	}
-  
-  // keep in mind: we prevent the registration of the node with several BonjourNodeDiscoveries
-  assert(_registerClients.find(address) == _registerClients.end());
+
+	// keep in mind: we prevent the registration of the node with several BonjourNodeDiscoveries
+	assert(_registerClients.find(address) == _registerClients.end());
 
 	const char* name = (node->getUUID().length() ? node->getUUID().c_str() : NULL);
 	const char* transport = (node->getTransport().length() ? node->getTransport().c_str() : "tcp");
@@ -213,8 +219,8 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 
 	char* domain;
 	if (strstr(node->getDomain().c_str(), ".") != NULL) {
-		asprintf(&domain, "%s", node->getDomain().c_str());    
-  } else if (node->getDomain().length() > 0) {
+		asprintf(&domain, "%s", node->getDomain().c_str());
+	} else if (node->getDomain().length() > 0) {
 		asprintf(&domain, "%s.local.", node->getDomain().c_str());
 	} else {
 		asprintf(&domain, "local.");
@@ -225,26 +231,32 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	          (domain == NULL ? "null" : domain),
 	          regtype);
 
+#ifdef DISC_BONJOUR_EMBED
+	LOG_DEBUG("Calling DNSServiceRegister");
+#endif
 	err = DNSServiceRegister(
-    &registerClient,         // uninitialized DNSServiceRef
-    0,                               // renaming behavior on name conflict (kDNSServiceFlagsNoAutoRename)
-    kDNSServiceInterfaceIndexAny,    // If non-zero, specifies the interface, defaults to all interfaces
-    name,                            // If non-NULL, specifies the service name, defaults to computer name
-    regtype,                         // service type followed by the protocol
-    domain,                          // If non-NULL, specifies the domain, defaults to default domain
-    host,                            // If non-NULL, specifies the SRV target host name
-    port,                            // port number, defaults to name-reserving/non-discoverable
-    txtLength,                       // length of the txtRecord, in bytes
-    txtRecord,                       // TXT record rdata: <length byte> <data> <length byte> <data> ...
-    registerReply,                   // called when the registration completes
-    (void*)address                   // context pointer which is passed to the callback
-  );
+	          &registerClient,         // uninitialized DNSServiceRef
+	          0,                               // renaming behavior on name conflict (kDNSServiceFlagsNoAutoRename)
+	          kDNSServiceInterfaceIndexAny,    // If non-zero, specifies the interface, defaults to all interfaces
+	          name,                            // If non-NULL, specifies the service name, defaults to computer name
+	          regtype,                         // service type followed by the protocol
+	          domain,                          // If non-NULL, specifies the domain, defaults to default domain
+	          host,                            // If non-NULL, specifies the SRV target host name
+	          port,                            // port number, defaults to name-reserving/non-discoverable
+	          txtLength,                       // length of the txtRecord, in bytes
+	          txtRecord,                       // TXT record rdata: <length byte> <data> <length byte> <data> ...
+	          registerReply,                   // called when the registration completes
+	          (void*)address                   // context pointer which is passed to the callback
+	      );
+#ifdef DISC_BONJOUR_EMBED
+	LOG_DEBUG("DNSServiceRegister returned");
+#endif
 
 	free(regtype);
 	free(domain);
 
 	if(registerClient && err == 0) {
-    // everything is fine, add FD to query set, remember query and node
+		// everything is fine, add FD to query set, remember query and node
 		int sockFD = DNSServiceRefSockFD(registerClient); // this is a noop in embedded
 #ifndef DISC_BONJOUR_EMBED
 		assert(getInstance()->_activeFDs.find(sockFD) == getInstance()->_activeFDs.end());
@@ -257,39 +269,39 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	} else {
 		LOG_ERR("DNSServiceRegister returned error %d", err);
 	}
-  assert(validateState());
-	_mutex.unlock();
+	assert(validateState());
+	UMUNDO_UNLOCK(_mutex);
 }
 
-  
-void BonjourNodeDiscovery::remove(shared_ptr<NodeImpl> node) {
-  LOG_INFO("Removing node %s", SHORT_UUID(node->getUUID()).c_str());
 
-  _mutex.lock();
+void BonjourNodeDiscovery::remove(shared_ptr<NodeImpl> node) {
+	LOG_INFO("Removing node %s", SHORT_UUID(node->getUUID()).c_str());
+
+	UMUNDO_LOCK(_mutex);
 
 	intptr_t address = (intptr_t)(node.get());
 	if (_localNodes.find(address) == _localNodes.end()) {
 		LOG_WARN("Ignoring removal of unregistered node from discovery");
-    _mutex.unlock();
-    assert(validateState());
+		UMUNDO_UNLOCK(_mutex);
+		assert(validateState());
 		return;
 	}
 
-  assert(_registerClients.find(address) != _registerClients.end());
+	assert(_registerClients.find(address) != _registerClients.end());
 #ifndef DISC_BONJOUR_EMBED
-  assert(_activeFDs.find(DNSServiceRefSockFD(_registerClients[address])) != _activeFDs.end());
-  assert(_activeFDs[DNSServiceRefSockFD(_registerClients[address])] == _registerClients[address]);
-  _activeFDs.erase(DNSServiceRefSockFD(_registerClients[address])); // noop in embedded
+	assert(_activeFDs.find(DNSServiceRefSockFD(_registerClients[address])) != _activeFDs.end());
+	assert(_activeFDs[DNSServiceRefSockFD(_registerClients[address])] == _registerClients[address]);
+	_activeFDs.erase(DNSServiceRefSockFD(_registerClients[address])); // noop in embedded
 #endif
-  DNSServiceRefDeallocate(_registerClients[address]);
-  _registerClients.erase(address);
+	DNSServiceRefDeallocate(_registerClients[address]);
+	_registerClients.erase(address);
 	_localNodes.erase(address);
-  
-  assert(validateState());
-	_mutex.unlock();
+
+	assert(validateState());
+	UMUNDO_UNLOCK(_mutex);
 }
 
-  
+
 /**
  * Start to browse for other nodes.
  *
@@ -297,34 +309,37 @@ void BonjourNodeDiscovery::remove(shared_ptr<NodeImpl> node) {
  * we will resolve its ip address.
  */
 void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
-  LOG_INFO("Adding query %p for nodes in %s", query.get(), query->getDomain().c_str());
+	LOG_INFO("Adding query %p for nodes in %s", query.get(), query->getDomain().c_str());
 	DNSServiceErrorType err;
 	DNSServiceRef queryClient = NULL;
 
-	_mutex.lock();
+	UMUNDO_LOCK(_mutex);
 	intptr_t address = (intptr_t)(query.get());
 
-	if (getInstance()->_queries.find(address) != getInstance()->_queries.end()) {
+	if (_queries.find(address) != _queries.end()) {
 		LOG_WARN("Already browsing for given query");
-		_mutex.unlock();
-    assert(validateState());
+		UMUNDO_UNLOCK(_mutex);
+		assert(validateState());
 		return;
 	}
-  assert(getInstance()->_queryClients.find(address) == getInstance()->_queryClients.end());
-  
+	assert(_queryClients.find(address) == _queryClients.end());
+
 	char* regtype;
 	const char* transport = (query->getTransport().length() ? query->getTransport().c_str() : "tcp");
 	asprintf(&regtype, "_mundo._%s", transport);
 
 	char* domain;
-  if (strstr(query->getDomain().c_str(), ".") != NULL) {
-    asprintf(&domain, "%s", query->getDomain().c_str());
+	if (strstr(query->getDomain().c_str(), ".") != NULL) {
+		asprintf(&domain, "%s", query->getDomain().c_str());
 	} else if (query->getDomain().length() > 0) {
 		asprintf(&domain, "%s.local.", query->getDomain().c_str());
 	} else {
 		asprintf(&domain, "local.");
 	}
 
+#ifdef DISC_BONJOUR_EMBED
+	LOG_DEBUG("Calling DNSServiceBrowse");
+#endif
 	err = DNSServiceBrowse(
 	          &queryClient,                  // uninitialized DNSServiceRef
 	          0,                             // Currently ignored, reserved for future use
@@ -335,106 +350,110 @@ void BonjourNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	          (void*)address
 	      );
 
+#ifdef DISC_BONJOUR_EMBED
+	LOG_DEBUG("DNSServiceBrowse returned");
+#endif
+
 	if(queryClient && err == 0) {
-    // query started succesfully, remember
+		// query started succesfully, remember
 #ifndef DISC_BONJOUR_EMBED
 		int sockFD = DNSServiceRefSockFD(queryClient);
-		assert(getInstance()->_activeFDs.find(sockFD) == getInstance()->_activeFDs.end());
-		getInstance()->_activeFDs[sockFD] = queryClient;
+		assert(_activeFDs.find(sockFD) == _activeFDs.end());
+		_activeFDs[sockFD] = queryClient;
 #endif
-		assert(getInstance()->_queryClients.find(address) == getInstance()->_queryClients.end());
-		assert(getInstance()->_queries.find(address) == getInstance()->_queries.end());
-		getInstance()->_queryClients[address] = queryClient;
-    getInstance()->_queries[address] = query;
+		assert(_queryClients.find(address) == _queryClients.end());
+		assert(_queries.find(address) == _queries.end());
+		_queryClients[address] = queryClient;
+		_queries[address] = query;
 	} else {
 		LOG_WARN("DNSServiceBrowse returned error %d", err);
 	}
 
 	free(regtype);
 	free(domain);
-  assert(validateState());
+	assert(validateState());
 
-	_mutex.unlock();
+	UMUNDO_UNLOCK(_mutex);
 }
 
 void BonjourNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
-  LOG_INFO("Removing query %p for nodes in %s", query.get(), query->getDomain().c_str());
+	LOG_INFO("Removing query %p for nodes in %s", query.get(), query->getDomain().c_str());
 
-	_mutex.lock();
+	UMUNDO_LOCK(_mutex);
 	intptr_t address = (intptr_t)(query.get());
 
 	if (_queries.find(address) == _queries.end()) {
 		LOG_WARN("Unbrowsing query that was never added");
-		_mutex.unlock();
-    assert(validateState());
+		UMUNDO_UNLOCK(_mutex);
+		assert(validateState());
 		return;
 	}
 
-  assert(_queryClients.find(address) != _queryClients.end());
+	assert(_queryClients.find(address) != _queryClients.end());
 #ifndef DISC_BONJOUR_EMBED
-  assert(_activeFDs.find(DNSServiceRefSockFD(_queryClients[address])) != _activeFDs.end());
+	assert(_activeFDs.find(DNSServiceRefSockFD(_queryClients[address])) != _activeFDs.end());
 	assert(_activeFDs[DNSServiceRefSockFD(_queryClients[address])] == _queryClients[address]);
 	_activeFDs.erase(DNSServiceRefSockFD(_queryClients[address])); // remove fd from active set
 #endif
 
-  /** 
-   * Remove all nodes we found for the query
-   */
+	/**
+	 * Remove all nodes we found for the query
+	 */
 	map<intptr_t, shared_ptr<NodeQuery> >::iterator nodeToQueryIter;
-  for (nodeToQueryIter = _nodeToQuery.begin(); nodeToQueryIter != _nodeToQuery.end(); nodeToQueryIter++) {
-    if (nodeToQueryIter->second == query)
-      _nodeToQuery.erase(nodeToQueryIter);      
-  }
-  map<string, shared_ptr<BonjourNodeStub> >::iterator queryNodeIter;
-  for (queryNodeIter = _queryToNodes[query].begin(); queryNodeIter != _queryToNodes[query].end(); queryNodeIter++) {
-    // for every node found for the query, remove all bonjour queries
-    shared_ptr<BonjourNodeStub> node = queryNodeIter->second;
-    getInstance()->forgetRemoteNodesFDs(node);
+	for (nodeToQueryIter = _nodeToQuery.begin(); nodeToQueryIter != _nodeToQuery.end(); nodeToQueryIter++) {
+		if (nodeToQueryIter->second == query)
+			_nodeToQuery.erase(nodeToQueryIter);
+	}
+	map<string, shared_ptr<BonjourNodeStub> >::iterator queryNodeIter;
+	for (queryNodeIter = _queryToNodes[query].begin(); queryNodeIter != _queryToNodes[query].end(); queryNodeIter++) {
+		// for every node found for the query, remove all bonjour queries
+		shared_ptr<BonjourNodeStub> node = queryNodeIter->second;
+		getInstance()->forgetRemoteNodesFDs(node);
 
-  }
-  
-  _queryToNodes.erase(query);
+	}
+
+	_queryToNodes.erase(query);
 	_queries.erase(address);
-  
+
 	DNSServiceRefDeallocate(_queryClients[address]);
 	_queryClients.erase(address);
 
-  assert(validateState());
-	_mutex.unlock();
+	assert(validateState());
+	UMUNDO_UNLOCK(_mutex);
 }
 
 void BonjourNodeDiscovery::forgetRemoteNodesFDs(shared_ptr<BonjourNodeStub> node) {
-  _mutex.lock();
-  
-  map<string, DNSServiceRef>::iterator serviceResolveIter;
-  for (serviceResolveIter = node->_serviceResolveClients.begin(); serviceResolveIter != node->_serviceResolveClients.end(); serviceResolveIter++) {
+	UMUNDO_LOCK(_mutex);
+
+	map<string, DNSServiceRef>::iterator serviceResolveIter;
+	for (serviceResolveIter = node->_serviceResolveClients.begin(); serviceResolveIter != node->_serviceResolveClients.end(); serviceResolveIter++) {
 #ifndef DISC_BONJOUR_EMBED
-    int sockFD = DNSServiceRefSockFD(serviceResolveIter->second);
-    assert(_activeFDs.find(sockFD) != _activeFDs.end());
-    _activeFDs.erase(sockFD);
+		int sockFD = DNSServiceRefSockFD(serviceResolveIter->second);
+		assert(_activeFDs.find(sockFD) != _activeFDs.end());
+		_activeFDs.erase(sockFD);
 #endif
-    DNSServiceRefDeallocate(serviceResolveIter->second);
+		DNSServiceRefDeallocate(serviceResolveIter->second);
 		string domain = serviceResolveIter->first;
 		serviceResolveIter++;
-    node->_serviceResolveClients.erase(domain);
-  }
-  
-  map<int, DNSServiceRef>::iterator addrInfoIter = node->_addrInfoClients.begin();
-  while(addrInfoIter != node->_addrInfoClients.end()) {
-#ifndef DISC_BONJOUR_EMBED
-    int sockFD = DNSServiceRefSockFD(addrInfoIter->second);
-    assert(_activeFDs.find(sockFD) != _activeFDs.end());
-    _activeFDs.erase(sockFD);
-#endif
-    DNSServiceRefDeallocate(addrInfoIter->second);
-    int ifIndex = addrInfoIter->first;
-    addrInfoIter++;
-    node->_addrInfoClients.erase(ifIndex);
-  }
+		node->_serviceResolveClients.erase(domain);
+	}
 
-  _mutex.unlock();
+	map<int, DNSServiceRef>::iterator addrInfoIter = node->_addrInfoClients.begin();
+	while(addrInfoIter != node->_addrInfoClients.end()) {
+#ifndef DISC_BONJOUR_EMBED
+		int sockFD = DNSServiceRefSockFD(addrInfoIter->second);
+		assert(_activeFDs.find(sockFD) != _activeFDs.end());
+		_activeFDs.erase(sockFD);
+#endif
+		DNSServiceRefDeallocate(addrInfoIter->second);
+		int ifIndex = addrInfoIter->first;
+		addrInfoIter++;
+		node->_addrInfoClients.erase(ifIndex);
+	}
+
+	UMUNDO_UNLOCK(_mutex);
 }
-  
+
 /**
  * There has been an answer to one of our queries.
  *
@@ -451,26 +470,26 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
     void *queryAddr) {
 
 	shared_ptr<BonjourNodeDiscovery> myself = getInstance();
-	myself->_mutex.lock();
+	UMUNDO_LOCK(myself->_mutex);
 
 	LOG_DEBUG("browseReply: %p received info on %s/%s as %s at if %d",
 	          queryAddr, strndup(replyName, 8), replyDomain, replyType, ifIndex);
 
-  assert(myself->_queries.find((intptr_t)queryAddr) != myself->_queries.end());
+	assert(myself->_queries.find((intptr_t)queryAddr) != myself->_queries.end());
 	shared_ptr<NodeQuery> query = myself->_queries[(intptr_t)queryAddr];
 
 	// do we already know this node?
 	shared_ptr<BonjourNodeStub> node;
-  if (getInstance()->_queryToNodes[query].find(replyName) != getInstance()->_queryToNodes[query].end())
-    node = boost::static_pointer_cast<BonjourNodeStub>(getInstance()->_queryToNodes[query][replyName]);
+	if (getInstance()->_queryToNodes[query].find(replyName) != getInstance()->_queryToNodes[query].end())
+		node = boost::static_pointer_cast<BonjourNodeStub>(getInstance()->_queryToNodes[query][replyName]);
 
 	if (flags & kDNSServiceFlagsAdd) {
 		// we have a node to add
 		if (node.get() == NULL) {
 			node = shared_ptr<BonjourNodeStub>(new BonjourNodeStub());
-      // remember which query found us
+			// remember which query found us
 			assert(getInstance()->_nodeToQuery.find((intptr_t)node.get()) == getInstance()->_nodeToQuery.end());
-      getInstance()->_nodeToQuery[(intptr_t)node.get()] = query;
+			getInstance()->_nodeToQuery[(intptr_t)node.get()] = query;
 			if (strncmp(replyType + strlen(replyType) - 4, "tcp", 3) == 0) {
 				node->setTransport("tcp");
 			} else if (strncmp(replyType + strlen(replyType) - 4, "udp", 3) == 0) {
@@ -485,10 +504,10 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 
 			// remember node
 			assert(getInstance()->_queryToNodes[query].find(replyName) == getInstance()->_queryToNodes[query].end());
-      getInstance()->_queryToNodes[query][replyName] = node;
+			getInstance()->_queryToNodes[query][replyName] = node;
 			LOG_INFO("Query %p discovered new node %s", queryAddr, SHORT_UUID(node->getUUID()).c_str());
 		}
-    // even if we found the node before, add the new information
+		// even if we found the node before, add the new information
 		node->_domains.insert(replyDomain);
 		node->_interfaceIndices.insert(ifIndex);
 	} else {
@@ -501,21 +520,21 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 			// last interface was removed, node vanished
 			LOG_INFO("Query %p vanished node %s", queryAddr, SHORT_UUID(node->getUUID()).c_str());
 			query->removed(boost::static_pointer_cast<NodeStub>(node));
-      getInstance()->forgetRemoteNodesFDs(node);
+			getInstance()->forgetRemoteNodesFDs(node);
 			assert(getInstance()->_nodeToQuery.find((intptr_t)node.get()) != getInstance()->_nodeToQuery.end());
 			getInstance()->_nodeToQuery.erase((intptr_t)node.get());
 			getInstance()->_queryToNodes[query].erase(node->getUUID());
 		}
 	}
-	
+
 	if (!(flags & kDNSServiceFlagsMoreComing)) {
 		/**
-     * There are no more bonjour notifications waiting, start resolving all new nodes
-     * For each node, make sure there is a resolve client for every domain.
-     */
-    map<string, shared_ptr<BonjourNodeStub> >::iterator nodeIter;
-		for (nodeIter = getInstance()->_queryToNodes[query].begin(); nodeIter != getInstance()->getInstance()->_queryToNodes[query].end(); nodeIter++) {        
-      string uuid = nodeIter->first;
+		* There are no more bonjour notifications waiting, start resolving all new nodes
+		* For each node, make sure there is a resolve client for every domain.
+		*/
+		map<string, shared_ptr<BonjourNodeStub> >::iterator nodeIter;
+		for (nodeIter = getInstance()->_queryToNodes[query].begin(); nodeIter != getInstance()->getInstance()->_queryToNodes[query].end(); nodeIter++) {
+			string uuid = nodeIter->first;
 			shared_ptr<BonjourNodeStub> node = nodeIter->second;
 
 			intptr_t address = (intptr_t)(node.get());
@@ -523,44 +542,44 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 			assert(node->getTransport().length() > 0);
 			asprintf(&regtype, "_mundo._%s", node->getTransport().c_str());
 			const char* name = (node->getUUID().length() ? node->getUUID().c_str() : NULL);
-      
-      std::set<string>::iterator domainIter;
-      for (domainIter = node->_domains.begin(); domainIter != node->_domains.end(); domainIter++) {
-        if (node->_serviceResolveClients.find(*domainIter) != node->_serviceResolveClients.end())
-          // we already have a service resolve client for that domain
-          continue;
 
-        DNSServiceRef serviceResolveClient;
-        /// Resolve service domain name, target hostname, port number and txt record
-        int err = DNSServiceResolve(
-          &serviceResolveClient,
-          0,
-          kDNSServiceInterfaceIndexAny,
-          name,
-          regtype,
-          domainIter->c_str(),
-          serviceResolveReply,
-          (void*)address // address of node
-        );
+			std::set<string>::iterator domainIter;
+			for (domainIter = node->_domains.begin(); domainIter != node->_domains.end(); domainIter++) {
+				if (node->_serviceResolveClients.find(*domainIter) != node->_serviceResolveClients.end())
+					// we already have a service resolve client for that domain
+					continue;
 
-        if(serviceResolveClient && err == kDNSServiceErr_NoError) {
+				DNSServiceRef serviceResolveClient;
+				/// Resolve service domain name, target hostname, port number and txt record
+				int err = DNSServiceResolve(
+				              &serviceResolveClient,
+				              0,
+				              kDNSServiceInterfaceIndexAny,
+				              name,
+				              regtype,
+				              domainIter->c_str(),
+				              serviceResolveReply,
+				              (void*)address // address of node
+				          );
+
+				if(serviceResolveClient && err == kDNSServiceErr_NoError) {
 #ifndef DISC_BONJOUR_EMBED
-          int sockFD = DNSServiceRefSockFD(serviceResolveClient);
+					int sockFD = DNSServiceRefSockFD(serviceResolveClient);
 					assert(getInstance()->_activeFDs.find(sockFD) == getInstance()->_activeFDs.end());
-          getInstance()->_activeFDs[sockFD] = serviceResolveClient;
+					getInstance()->_activeFDs[sockFD] = serviceResolveClient;
 #endif
 					assert(node->_serviceResolveClients.find(*domainIter) == node->_serviceResolveClients.end());
-          node->_serviceResolveClients[*domainIter] = serviceResolveClient;
-        } else {
-          LOG_WARN("DNSServiceResolve returned error %d", err);
-        }
-      }
-      
-      free(regtype);
+					node->_serviceResolveClients[*domainIter] = serviceResolveClient;
+				} else {
+					LOG_WARN("DNSServiceResolve returned error %d", err);
+				}
+			}
+
+			free(regtype);
 		}
 	}
-  assert(myself->validateState());
-	myself->_mutex.unlock();
+	assert(myself->validateState());
+	UMUNDO_UNLOCK(myself->_mutex);
 }
 
 /**
@@ -580,37 +599,37 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
     void *context           // address of node
 ) {
 
-	getInstance()->_mutex.lock();
+	UMUNDO_LOCK(getInstance()->_mutex);
 	LOG_DEBUG("serviceResolveReply: info on node %s on %s:%d at if %d",
 	          strndup(fullname, 8),
 	          hosttarget,
 	          ntohs(opaqueport),
 	          interfaceIndex);
-  assert(getInstance()->validateState());
+	assert(getInstance()->validateState());
 
 	if(errorCode == kDNSServiceErr_NoError) {
-    shared_ptr<NodeQuery> query = getInstance()->_nodeToQuery[(intptr_t)context];
-    shared_ptr<BonjourNodeStub> node = getInstance()->_queryToNodes[query][((BonjourNodeStub*)context)->getUUID()];
+		shared_ptr<NodeQuery> query = getInstance()->_nodeToQuery[(intptr_t)context];
+		shared_ptr<BonjourNodeStub> node = getInstance()->_queryToNodes[query][((BonjourNodeStub*)context)->getUUID()];
 
 		node->_fullname = fullname;
 		node->_host = hosttarget;
 		node->_port = ntohs(opaqueport);
-    
+
 		const char* domainStart = strstr(fullname, node->_regType.c_str());
-    domainStart += node->_regType.size();
+		domainStart += node->_regType.size();
 		assert(node->_domain.compare(domainStart) == 0);
-        
+
 		// Now that we know the service, resolve its IP
-    DNSServiceRef addrInfoClient;
+		DNSServiceRef addrInfoClient;
 		int err = DNSServiceGetAddrInfo(
-			&addrInfoClient,
-			kDNSServiceFlagsReturnIntermediates,     // kDNSServiceFlagsForceMulticast, kDNSServiceFlagsLongLivedQuery
-			interfaceIndex,
-			0,                                       // kDNSServiceProtocol_IPv4, kDNSServiceProtocol_IPv6, 0
-			node->_host.c_str(),
-			addrInfoReply,
-			(void*)context                           // address of node
-		);
+		              &addrInfoClient,
+		              kDNSServiceFlagsReturnIntermediates,     // kDNSServiceFlagsForceMulticast, kDNSServiceFlagsLongLivedQuery
+		              interfaceIndex,
+		              0,                                       // kDNSServiceProtocol_IPv4, kDNSServiceProtocol_IPv6, 0
+		              node->_host.c_str(),
+		              addrInfoReply,
+		              (void*)context                           // address of node
+		          );
 
 		if (err == kDNSServiceErr_NoError && addrInfoClient) {
 			if (node->_addrInfoClients.find(interfaceIndex) != node->_addrInfoClients.end()) {
@@ -624,7 +643,7 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 				node->_addrInfoClients.erase(interfaceIndex);
 			}
 			assert(node->_addrInfoClients.find(interfaceIndex) == node->_addrInfoClients.end());
-      node->_addrInfoClients[interfaceIndex] = addrInfoClient;
+			node->_addrInfoClients[interfaceIndex] = addrInfoClient;
 #ifndef DISC_BONJOUR_EMBED
 			int sockFD = DNSServiceRefSockFD(addrInfoClient);
 			assert(getInstance()->_activeFDs.find(sockFD) == getInstance()->_activeFDs.end());
@@ -649,12 +668,12 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 	} else {
 		LOG_WARN("serviceResolveReply called with error: %d", errorCode);
 	}
-  assert(getInstance()->validateState());
-	getInstance()->_mutex.unlock();
+	assert(getInstance()->validateState());
+	UMUNDO_UNLOCK(getInstance()->_mutex);
 }
 
 /**
- * We resolved the IP address for one of the nodes received in serviceResolveReply. 
+ * We resolved the IP address for one of the nodes received in serviceResolveReply.
  */
 void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
     DNSServiceRef sdRef,
@@ -667,31 +686,31 @@ void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
     void *context  // address of node
 ) {
 
-	getInstance()->_mutex.lock();
-  if (getInstance()->_nodeToQuery.find((intptr_t)context) == getInstance()->_nodeToQuery.end()) {
-    LOG_WARN("Ignoring address information for unknown node %p", context);
-    getInstance()->_mutex.unlock();
-    return;
-  }
-  
-  shared_ptr<NodeQuery> query = getInstance()->_nodeToQuery[(intptr_t)context];
-  shared_ptr<BonjourNodeStub> node = getInstance()->_queryToNodes[query][((BonjourNodeStub*)context)->getUUID()];
-  
+	UMUNDO_LOCK(getInstance()->_mutex);
+	if (getInstance()->_nodeToQuery.find((intptr_t)context) == getInstance()->_nodeToQuery.end()) {
+		LOG_WARN("Ignoring address information for unknown node %p", context);
+		UMUNDO_UNLOCK(getInstance()->_mutex);
+		return;
+	}
+
+	shared_ptr<NodeQuery> query = getInstance()->_nodeToQuery[(intptr_t)context];
+	shared_ptr<BonjourNodeStub> node = getInstance()->_queryToNodes[query][((BonjourNodeStub*)context)->getUUID()];
+
 //  LOG_DEBUG("addrInfoReply: Got info on %s at if %d", hostname, interfaceIndex);
 
-  if (node->_interfaceIndices.find(interfaceIndex) == node->_interfaceIndices.end()) {
-    LOG_WARN("Got information on unknown interface index %d", interfaceIndex);
-    assert(getInstance()->validateState());
-    getInstance()->_mutex.unlock();
-    return;
-  }
-  
-  if (!address || (address->sa_family != AF_INET && address->sa_family != AF_INET6)) {
-    LOG_ERR("Address family not valid or no address given");
-    assert(getInstance()->validateState());
-    getInstance()->_mutex.unlock();
-    return;
-  }
+	if (node->_interfaceIndices.find(interfaceIndex) == node->_interfaceIndices.end()) {
+		LOG_WARN("Got information on unknown interface index %d", interfaceIndex);
+		assert(getInstance()->validateState());
+		UMUNDO_UNLOCK(getInstance()->_mutex);
+		return;
+	}
+
+	if (!address || (address->sa_family != AF_INET && address->sa_family != AF_INET6)) {
+		LOG_ERR("Address family not valid or no address given");
+		assert(getInstance()->validateState());
+		UMUNDO_UNLOCK(getInstance()->_mutex);
+		return;
+	}
 
 	switch(errorCode) {
 	case kDNSServiceErr_NoError: {
@@ -701,9 +720,9 @@ void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
 			const unsigned char *b = (const unsigned char *) &((struct sockaddr_in *)address)->sin_addr;
 			asprintf(&addr, "%d.%d.%d.%d", b[0], b[1], b[2], b[3]);
 			node->_interfacesIPv4[interfaceIndex] = addr;
-      LOG_DEBUG("addrInfoReply: %p found %s as %s at if %d IPV4", context, hostname, addr, interfaceIndex);
+			LOG_DEBUG("addrInfoReply: %p found %s as %s at if %d IPV4", context, hostname, addr, interfaceIndex);
 
-      free(addr);
+			free(addr);
 		}	else if (address && address->sa_family == AF_INET6) {
 			const struct sockaddr_in6 *s6 = (const struct sockaddr_in6 *)address;
 			const unsigned char *b = (const unsigned char*)&s6->sin6_addr;
@@ -712,48 +731,48 @@ void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
 			         b[0x0], b[0x1], b[0x2], b[0x3], b[0x4], b[0x5], b[0x6], b[0x7],
 			         b[0x8], b[0x9], b[0xA], b[0xB], b[0xC], b[0xD], b[0xE], b[0xF]);
 			node->_interfacesIPv6[interfaceIndex] = addr;
-      LOG_DEBUG("addrInfoReply: %p found %s as %s at if %d IPV6", context, hostname, addr, interfaceIndex);
+			LOG_DEBUG("addrInfoReply: %p found %s as %s at if %d IPV6", context, hostname, addr, interfaceIndex);
 
-      free(addr);
+			free(addr);
 		}
 		break;
 	}
 	case kDNSServiceErr_NoSuchRecord:
-    if (address && address->sa_family == AF_INET) {
-      LOG_INFO("addrInfoReply: %p found kDNSServiceErr_NoSuchRecord for IPv4 %s at if %d", context, hostname, interfaceIndex);
-      node->_interfacesIPv4[interfaceIndex] = "";
-    } else if (address->sa_family == AF_INET6) {
-      LOG_DEBUG("addrInfoReply: %p found kDNSServiceErr_NoSuchRecord for IPv6 %s at if %d", context, hostname, interfaceIndex);
-      node->_interfacesIPv6[interfaceIndex] = "";      
-    }
+		if (address && address->sa_family == AF_INET) {
+			LOG_INFO("addrInfoReply: %p found kDNSServiceErr_NoSuchRecord for IPv4 %s at if %d", context, hostname, interfaceIndex);
+			node->_interfacesIPv4[interfaceIndex] = "";
+		} else if (address->sa_family == AF_INET6) {
+			LOG_DEBUG("addrInfoReply: %p found kDNSServiceErr_NoSuchRecord for IPv6 %s at if %d", context, hostname, interfaceIndex);
+			node->_interfacesIPv6[interfaceIndex] = "";
+		}
 		break;
 	default:
-      LOG_WARN("addrInfoReply error %d for %s at interface %d", errorCode, hostname, interfaceIndex);
+		LOG_WARN("addrInfoReply error %d for %s at interface %d", errorCode, hostname, interfaceIndex);
 		break;
 	}
-  if (node->_interfacesIPv6.find(interfaceIndex) != node->_interfacesIPv6.end() && 
-      node->_interfacesIPv4.find(interfaceIndex) != node->_interfacesIPv4.end()) {
-    // we resolved this iface ipv4 and ipv6 addresses - remove the address resolver for this interface
-    assert(node->_addrInfoClients.find(interfaceIndex) != node->_addrInfoClients.end());
-    assert(node->_addrInfoClients[interfaceIndex] == sdRef);
+	if (node->_interfacesIPv6.find(interfaceIndex) != node->_interfacesIPv6.end() &&
+	        node->_interfacesIPv4.find(interfaceIndex) != node->_interfacesIPv4.end()) {
+		// we resolved this iface ipv4 and ipv6 addresses - remove the address resolver for this interface
+		assert(node->_addrInfoClients.find(interfaceIndex) != node->_addrInfoClients.end());
+		assert(node->_addrInfoClients[interfaceIndex] == sdRef);
 #ifndef DISC_BONJOUR_EMBED
-    int sockFD = DNSServiceRefSockFD(node->_addrInfoClients[interfaceIndex]);
-    assert(getInstance()->_activeFDs.find(sockFD) != getInstance()->_activeFDs.end());
-    getInstance()->_activeFDs.erase(sockFD);
+		int sockFD = DNSServiceRefSockFD(node->_addrInfoClients[interfaceIndex]);
+		assert(getInstance()->_activeFDs.find(sockFD) != getInstance()->_activeFDs.end());
+		getInstance()->_activeFDs.erase(sockFD);
 #endif
-    DNSServiceRefDeallocate(node->_addrInfoClients[interfaceIndex]);
-    node->_addrInfoClients.erase(interfaceIndex);
-  }
-  // is this node sufficiently resolved?
-  if (node->_interfacesIPv4.begin() != node->_interfacesIPv4.end()) {
+		DNSServiceRefDeallocate(node->_addrInfoClients[interfaceIndex]);
+		node->_addrInfoClients.erase(interfaceIndex);
+	}
+	// is this node sufficiently resolved?
+	if (node->_interfacesIPv4.begin() != node->_interfacesIPv4.end()) {
 //      node->_interfaceIndices.size() == node->_interfacesIPv6.size()) {
-    // we resolved all interfaces
-    //LOG_DEBUG("%p sufficiently resolved node %s", query.get(), SHORT_UUID(node->getUUID()).c_str());
-    query->found(boost::static_pointer_cast<NodeStub>(node));
-  }
+		// we resolved all interfaces
+		//LOG_DEBUG("%p sufficiently resolved node %s", query.get(), SHORT_UUID(node->getUUID()).c_str());
+		query->found(boost::static_pointer_cast<NodeStub>(node));
+	}
 
-  assert(getInstance()->validateState());
-	getInstance()->_mutex.unlock();
+	assert(getInstance()->validateState());
+	UMUNDO_UNLOCK(getInstance()->_mutex);
 }
 
 /**
@@ -776,28 +795,28 @@ void DNSSD_API BonjourNodeDiscovery::registerReply(
     void                     *context // address of node
 ) {
 
-  LOG_DEBUG("registerReply: %s %s/%s as %s", (flags & kDNSServiceFlagsAdd ? "Registered" : "Unregistered"), strndup(name, 8), domain, regtype);
-  if (errorCode == kDNSServiceErr_NameConflict)
-    LOG_WARN("Name conflict with UUIDs?!");
+	LOG_DEBUG("registerReply: %s %s/%s as %s", (flags & kDNSServiceFlagsAdd ? "Registered" : "Unregistered"), strndup(name, 8), domain, regtype);
+	if (errorCode == kDNSServiceErr_NameConflict)
+		LOG_WARN("Name conflict with UUIDs?!");
 
-  switch (errorCode) {
-  case kDNSServiceErr_NoError: {
-      // update local node with information from registration
-      shared_ptr<NodeImpl> node = getInstance()->_localNodes[(intptr_t)context];
-      assert(node != NULL);
-      assert(name != NULL);
-      assert(domain != NULL);
-      assert(node->getUUID().compare(name) == 0);
-      node->setDomain(domain);
-		}
-    break;
-  case kDNSServiceErr_NameConflict:
-    break;
-  default:
-    break;
-  }
-  assert(getInstance()->validateState());
-  return;
+	switch (errorCode) {
+	case kDNSServiceErr_NoError: {
+		// update local node with information from registration
+		shared_ptr<NodeImpl> node = getInstance()->_localNodes[(intptr_t)context];
+		assert(node != NULL);
+		assert(name != NULL);
+		assert(domain != NULL);
+		assert(node->getUUID().compare(name) == 0);
+		node->setDomain(domain);
+	}
+	break;
+	case kDNSServiceErr_NameConflict:
+		break;
+	default:
+		break;
+	}
+	assert(getInstance()->validateState());
+	return;
 }
 
 /**
@@ -805,86 +824,86 @@ void DNSSD_API BonjourNodeDiscovery::registerReply(
  */
 bool BonjourNodeDiscovery::validateState() {
 
-  _mutex.lock();
-  map<int, DNSServiceRef>::iterator activeFDIter;
-  map<intptr_t, shared_ptr<NodeImpl> >::iterator localNodeIter;
-  map<intptr_t, DNSServiceRef>::iterator registerClientIter;
-  map<intptr_t, shared_ptr<NodeQuery> >::iterator queryIter;
-  map<intptr_t, DNSServiceRef>::iterator queryClientIter;
-  map<intptr_t, shared_ptr<NodeQuery> >::iterator nodeToQueryIter;
-  map<shared_ptr<NodeQuery>, map<string, shared_ptr<BonjourNodeStub> > >::iterator queryToNodeIter;
-  
-  map<string, DNSServiceRef>::iterator serviceResolveClientIter;
-  map<int, DNSServiceRef>::iterator addrInfoClientIter;
-  
-  // make sure socket file descriptors are consistent - noop in embedded
+	UMUNDO_LOCK(_mutex);
+	map<int, DNSServiceRef>::iterator activeFDIter;
+	map<intptr_t, shared_ptr<NodeImpl> >::iterator localNodeIter;
+	map<intptr_t, DNSServiceRef>::iterator registerClientIter;
+	map<intptr_t, shared_ptr<NodeQuery> >::iterator queryIter;
+	map<intptr_t, DNSServiceRef>::iterator queryClientIter;
+	map<intptr_t, shared_ptr<NodeQuery> >::iterator nodeToQueryIter;
+	map<shared_ptr<NodeQuery>, map<string, shared_ptr<BonjourNodeStub> > >::iterator queryToNodeIter;
+
+	map<string, DNSServiceRef>::iterator serviceResolveClientIter;
+	map<int, DNSServiceRef>::iterator addrInfoClientIter;
+
+	// make sure socket file descriptors are consistent - noop in embedded
 #ifndef DISC_BONJOUR_EMBED
-  set<int> socketFDs;
-  for (activeFDIter = _activeFDs.begin(); activeFDIter != _activeFDs.end(); activeFDIter++) {
-    // key is file descriptor of bonjour handle
-    assert(activeFDIter->first == DNSServiceRefSockFD(activeFDIter->second));
-    // gather all socket fds to eliminate them in subsequent tests
-    socketFDs.insert(activeFDIter->first);
-  }
+	set<int> socketFDs;
+	for (activeFDIter = _activeFDs.begin(); activeFDIter != _activeFDs.end(); activeFDIter++) {
+		// key is file descriptor of bonjour handle
+		assert(activeFDIter->first == DNSServiceRefSockFD(activeFDIter->second));
+		// gather all socket fds to eliminate them in subsequent tests
+		socketFDs.insert(activeFDIter->first);
+	}
 #endif
 
-  for (localNodeIter = _localNodes.begin(); localNodeIter != _localNodes.end(); localNodeIter++) {
-    // assume that we have a dns register client
-    assert(_registerClients.find(localNodeIter->first) != _registerClients.end());
-  }  
-  assert(_registerClients.size() == _localNodes.size());
+	for (localNodeIter = _localNodes.begin(); localNodeIter != _localNodes.end(); localNodeIter++) {
+		// assume that we have a dns register client
+		assert(_registerClients.find(localNodeIter->first) != _registerClients.end());
+	}
+	assert(_registerClients.size() == _localNodes.size());
 
-  // test register clients
-  for (registerClientIter = _registerClients.begin(); registerClientIter != _registerClients.end(); registerClientIter++) {
+	// test register clients
+	for (registerClientIter = _registerClients.begin(); registerClientIter != _registerClients.end(); registerClientIter++) {
 #ifndef DISC_BONJOUR_EMBED
-    assert(socketFDs.find(DNSServiceRefSockFD(registerClientIter->second)) != socketFDs.end()); // client is in active set
-    socketFDs.erase(DNSServiceRefSockFD(registerClientIter->second));
+		assert(socketFDs.find(DNSServiceRefSockFD(registerClientIter->second)) != socketFDs.end()); // client is in active set
+		socketFDs.erase(DNSServiceRefSockFD(registerClientIter->second));
 #endif
-    // there is a node to the register query
-    assert(_localNodes.find(registerClientIter->first) != _localNodes.end());
-  }
+		// there is a node to the register query
+		assert(_localNodes.find(registerClientIter->first) != _localNodes.end());
+	}
 
-  for (queryIter = _queries.begin(); queryIter != _queries.end(); queryIter++) {
-    // we have a bonjour query running for this query
-    assert(_queryClients.find(queryIter->first) != _queryClients.end());
-    // we have this queries socket in all sockets
+	for (queryIter = _queries.begin(); queryIter != _queries.end(); queryIter++) {
+		// we have a bonjour query running for this query
+		assert(_queryClients.find(queryIter->first) != _queryClients.end());
+		// we have this queries socket in all sockets
 #ifndef DISC_BONJOUR_EMBED
-    assert(socketFDs.find(DNSServiceRefSockFD(_queryClients[queryIter->first])) != socketFDs.end());
-    socketFDs.erase(DNSServiceRefSockFD(_queryClients[queryIter->first]));
+		assert(socketFDs.find(DNSServiceRefSockFD(_queryClients[queryIter->first])) != socketFDs.end());
+		socketFDs.erase(DNSServiceRefSockFD(_queryClients[queryIter->first]));
 #endif
-  }
-  // there are as many queries as there are query clients in bonjour
-  assert(_queryClients.size() == _queries.size());
+	}
+	// there are as many queries as there are query clients in bonjour
+	assert(_queryClients.size() == _queries.size());
 
-  
-  for (queryToNodeIter = _queryToNodes.begin(); queryToNodeIter != _queryToNodes.end(); queryToNodeIter++) {
-    shared_ptr<NodeQuery> query = queryToNodeIter->first;
-    map<string, shared_ptr<BonjourNodeStub> > remoteNodes = queryToNodeIter->second;
-    assert(_queries.find((intptr_t)query.get()) != _queries.end());
-    map<string, shared_ptr<BonjourNodeStub> >::iterator remoteNodeIter;
-    for (remoteNodeIter = remoteNodes.begin(); remoteNodeIter != remoteNodes.end(); remoteNodeIter++) {
-      shared_ptr<BonjourNodeStub> remoteNode = remoteNodeIter->second;
-      assert(remoteNode->getDomain().find(query->getDomain()) >= 0);
-      map<string, DNSServiceRef>::iterator serviceResolverIter;
-      for (serviceResolverIter = remoteNode->_serviceResolveClients.begin(); serviceResolverIter != remoteNode->_serviceResolveClients.end(); serviceResolverIter++) {
-        // every service resolver is in the active FDs
+
+	for (queryToNodeIter = _queryToNodes.begin(); queryToNodeIter != _queryToNodes.end(); queryToNodeIter++) {
+		shared_ptr<NodeQuery> query = queryToNodeIter->first;
+		map<string, shared_ptr<BonjourNodeStub> > remoteNodes = queryToNodeIter->second;
+		assert(_queries.find((intptr_t)query.get()) != _queries.end());
+		map<string, shared_ptr<BonjourNodeStub> >::iterator remoteNodeIter;
+		for (remoteNodeIter = remoteNodes.begin(); remoteNodeIter != remoteNodes.end(); remoteNodeIter++) {
+			shared_ptr<BonjourNodeStub> remoteNode = remoteNodeIter->second;
+			assert(remoteNode->getDomain().find(query->getDomain()) >= 0);
+			map<string, DNSServiceRef>::iterator serviceResolverIter;
+			for (serviceResolverIter = remoteNode->_serviceResolveClients.begin(); serviceResolverIter != remoteNode->_serviceResolveClients.end(); serviceResolverIter++) {
+				// every service resolver is in the active FDs
 #ifndef DISC_BONJOUR_EMBED
-        assert(socketFDs.find(DNSServiceRefSockFD(serviceResolverIter->second)) != socketFDs.end());
-        socketFDs.erase(DNSServiceRefSockFD(serviceResolverIter->second));
+				assert(socketFDs.find(DNSServiceRefSockFD(serviceResolverIter->second)) != socketFDs.end());
+				socketFDs.erase(DNSServiceRefSockFD(serviceResolverIter->second));
 #endif
-      }
-      
-      map<int, DNSServiceRef>::iterator adressResolverIter;
-      for (adressResolverIter = remoteNodeIter->second->_addrInfoClients.begin(); adressResolverIter != remoteNodeIter->second->_addrInfoClients.end(); adressResolverIter++) {
-        // every service resolver is in the active FDs
+			}
+
+			map<int, DNSServiceRef>::iterator adressResolverIter;
+			for (adressResolverIter = remoteNodeIter->second->_addrInfoClients.begin(); adressResolverIter != remoteNodeIter->second->_addrInfoClients.end(); adressResolverIter++) {
+				// every service resolver is in the active FDs
 #ifndef DISC_BONJOUR_EMBED
-        assert(socketFDs.find(DNSServiceRefSockFD(adressResolverIter->second)) != socketFDs.end());
-        socketFDs.erase(DNSServiceRefSockFD(adressResolverIter->second));
+				assert(socketFDs.find(DNSServiceRefSockFD(adressResolverIter->second)) != socketFDs.end());
+				socketFDs.erase(DNSServiceRefSockFD(adressResolverIter->second));
 #endif
-      }
-    }
-  }
-  
+			}
+		}
+	}
+
 #ifndef DISC_BONJOUR_EMBED
 	if (socketFDs.size() > 0) {
 		set<int>::iterator socketFDIter;
@@ -892,12 +911,12 @@ bool BonjourNodeDiscovery::validateState() {
 			LOG_ERR("Pending filehandle %d", (*socketFDIter));
 		}
 	}
-  assert(socketFDs.size() == 0);
+	assert(socketFDs.size() == 0);
 #endif
 
 //  LOG_DEBUG("Validated state: %d remote nodes, %d local nodes, %d queries", _nodeToQuery.size(), _localNodes.size(), _activeFDs.size());
-  _mutex.unlock();
-  return true;
+	UMUNDO_UNLOCK(_mutex);
+	return true;
 }
 
 }

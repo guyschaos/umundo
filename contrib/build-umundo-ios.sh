@@ -34,6 +34,10 @@ lipo -create -output ../lib/ios-${SDK_VER}/libumundoserial_d.ios.a \
 ../lib/ios-${SDK_VER}/arm/gnu/Debug/libumundoserial_d.a \
 ../lib/ios-${SDK_VER}/i386/gnu/Debug/libumundoserial_d.a
 
+lipo -create -output ../lib/ios-${SDK_VER}/libumundorpc_d.ios.a \
+../lib/ios-${SDK_VER}/arm/gnu/Debug/libumundorpc_d.a \
+../lib/ios-${SDK_VER}/i386/gnu/Debug/libumundorpc_d.a
+
 fi
 
 if [[ -z $1 || $1 = "Release" ]] ; then
@@ -55,6 +59,11 @@ lipo -create -output ../lib/ios-${SDK_VER}/libumundocore.ios.a \
 lipo -create -output ../lib/ios-${SDK_VER}/libumundoserial.ios.a \
 ../lib/ios-${SDK_VER}/arm/gnu/Release/libumundoserial.a \
 ../lib/ios-${SDK_VER}/i386/gnu/Release/libumundoserial.a
+
+lipo -create -output ../lib/ios-${SDK_VER}/libumundorpc.ios.a \
+../lib/ios-${SDK_VER}/arm/gnu/Release/libumundorpc.a \
+../lib/ios-${SDK_VER}/i386/gnu/Release/libumundorpc.a
+
 fi
 
 

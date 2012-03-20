@@ -21,10 +21,10 @@ public:
 	virtual void suspend() {}; ///< Optional hook to suspend implementations
 	virtual void resume() {}; ///< Optional hook to resume implementations
 	//@}
-	
+
 protected:
 	bool _isSuspended;
-	
+
 private:
 	virtual shared_ptr<Implementation> create() = 0; ///< Factory method called by the Factory class
 	friend class Factory; ///< In C++ friends can see your privates!

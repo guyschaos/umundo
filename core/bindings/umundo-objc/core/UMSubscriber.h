@@ -13,15 +13,20 @@
 #import <umundo/core.h>
 
 @protocol UMSubscriberReceiver
-- (void)received:(NSData*)data withMeta:(NSDictionary*)meta;
+- (void)received:
+(NSData*)data withMeta:
+(NSDictionary*)meta;
 @end
 
-@interface UMSubscriber : NSObject {
-  @public
-  boost::shared_ptr<umundo::Subscriber> _cppSub;
-  id<UMSubscriberReceiver> _receiver;
+@interface UMSubscriber :
+NSObject {
+	@public
+	boost::shared_ptr<umundo::Subscriber> _cppSub;
+	id<UMSubscriberReceiver> _receiver;
 }
-- (id) initWithChannel:(NSString*)name andReceiver:(id<UMSubscriberReceiver>)receiver;
+- (id) initWithChannel:
+(NSString*)name andReceiver:
+(id<UMSubscriberReceiver>)receiver;
 @end
 
 #endif /* end of include guard: UMSUBSCRIBER_H_L4CPAZMF */

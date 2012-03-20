@@ -26,7 +26,7 @@ public:
 
 	virtual void found(shared_ptr<NodeStub>);
 	virtual void removed(shared_ptr<NodeStub>);
-	
+
 	virtual const string& getDomain();
 	virtual void setTransport(string);
 	virtual const string& getTransport();

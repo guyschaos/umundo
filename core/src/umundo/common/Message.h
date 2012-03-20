@@ -9,8 +9,8 @@ class Type;
 
 class MemoryBuffer {
 public:
-  char* data;
-  size_t size;
+	char* data;
+	size_t size;
 };
 
 /**

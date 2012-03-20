@@ -23,8 +23,8 @@ public:
 	static shared_ptr<Implementation> create(string);
 	static shared_ptr<Configuration> config(string);
 
-	static void suspendInstances();
-	static void resumeInstances();
+	static void suspendInstances(); ///< Suspend all instances for device sleep
+	static void resumeInstances(); ///< Resume all instances from device sleep
 
 	static void registerPrototype(string, Implementation*, Configuration*);
 
@@ -34,7 +34,7 @@ protected:
 private:
 	map<string, Implementation*> _prototypes;
 	map<string, Configuration*> _configures;
-	set<weak_ptr<Implementation> > _implementations;
+	vector<weak_ptr<Implementation> > _implementations;
 	Mutex _mutex;
 	static Factory* _instance;
 

@@ -2,17 +2,17 @@
 #include "umundo/rpc/ServiceManager.h"
 
 namespace umundo {
-	
+
 ServiceStub::ServiceStub(ServiceManager* svcMgr, const string& serviceName) {
-  _channelName = svcMgr->find(serviceName);
+	_channelName = svcMgr->find(serviceName);
 	_rpcPub = new TypedPublisher(_channelName);
 	_rpcSub = new TypedSubscriber(_channelName, this);
-  addToNode(svcMgr->getNode());
-  _rpcPub->waitForSubscribers(1);
+	addToNode(svcMgr->getNode());
+	_rpcPub->waitForSubscribers(1);
 }
 
 ServiceStub::~ServiceStub() {
-	
+
 }
 
 const string& ServiceStub::getChannelName() {
@@ -42,20 +42,20 @@ void ServiceStub::callStubMethod(const string& name, void* in, const string& inT
 	assert(_requests.find(reqId) == _requests.end());
 	_requests[reqId] = Monitor();
 	_rpcPub->send(rpcReqMsg);
-	_requests[reqId].wait();
+	UMUNDO_WAIT(_requests[reqId]);
 	_requests.erase(reqId);
-  out = _responses[reqId];
-  _responses.erase(reqId);
+	out = _responses[reqId];
+	_responses.erase(reqId);
 	delete rpcReqMsg;
 }
 
 
 void ServiceStub::receive(void* obj, Message* msg) {
-  if (msg->getMeta().find("respId") != msg->getMeta().end()) {
+	if (msg->getMeta().find("respId") != msg->getMeta().end()) {
 		string respId = msg->getMeta("respId");
 		if (_requests.find(respId) != _requests.end()) {
-      _responses[respId] = obj;
-      _requests[respId].signal();
+			_responses[respId] = obj;
+			UMUNDO_SIGNAL(_requests[respId]);
 		}
 	}
 }
@@ -63,12 +63,12 @@ void ServiceStub::receive(void* obj, Message* msg) {
 
 Service::Service() {
 	_channelName = UUID::getUUID();
-  _rpcPub = new TypedPublisher(_channelName);
+	_rpcPub = new TypedPublisher(_channelName);
 	_rpcSub = new TypedSubscriber(_channelName, this);
 }
 
 Service::~Service() {
-	
+
 }
 
 void Service::receive(void* obj, Message* msg) {
@@ -80,7 +80,7 @@ void Service::receive(void* obj, Message* msg) {
 		void* out = NULL;
 		callMethod(methodName, obj, inType, out, outType);
 		Message* rpcReplMsg = _rpcPub->prepareMsg(outType, out);
-    rpcReplMsg->setMeta("respId", msg->getMeta("reqId"));
+		rpcReplMsg->setMeta("respId", msg->getMeta("reqId"));
 		_rpcPub->send(rpcReplMsg);
 		delete rpcReplMsg;
 	}

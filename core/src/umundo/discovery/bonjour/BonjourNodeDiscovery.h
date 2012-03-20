@@ -52,7 +52,7 @@ public:
 protected:
 	BonjourNodeDiscovery();
 
-  bool validateState();
+	bool validateState();
 	void forgetRemoteNodesFDs(shared_ptr<BonjourNodeStub>); ///< Remove a remote node with all its queries
 
 	/** @name Bonjour callbacks */
@@ -77,7 +77,7 @@ protected:
 	    const char* domain,
 	    void* context
 	);
-	
+
 	static void DNSSD_API serviceResolveReply(
 	    DNSServiceRef sdref,
 	    const DNSServiceFlags flags,
@@ -104,7 +104,7 @@ protected:
 	//@}
 
 	map<int, DNSServiceRef> _activeFDs;                       ///< Socket file descriptors to bonjour handle.
-  
+
 	map<intptr_t, shared_ptr<NodeImpl> > _localNodes;         ///< Local node addresses to nodes.
 	map<intptr_t, shared_ptr<NodeImpl> > _suspendedNodes;     ///< Save local nodes when suspending.
 	map<intptr_t, DNSServiceRef> _registerClients;            ///< local node address to bonjour handles for registration.

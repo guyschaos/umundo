@@ -12,6 +12,17 @@ CWD=`pwd`
 astyle  \
 	--style=java \
 	--indent=tab \
-	--recursive ${DIR}/../core/src/*.cpp ${DIR}/../core/src/*.h
-	
-find ${DIR}/../core/src/ -iname '*.orig' -exec rm {} \;
+	--recursive ${DIR}/../core/*.cpp ${DIR}/../core/*.h
+find ${DIR}/../core/ -iname '*.orig' -exec rm {} \;
+
+astyle  \
+	--style=java \
+	--indent=tab \
+	--recursive ${DIR}/../s11n/*.cpp ${DIR}/../s11n/*.h
+find ${DIR}/../s11n/ -iname '*.orig' -exec rm {} \;
+
+astyle  \
+	--style=java \
+	--indent=tab \
+	--recursive ${DIR}/../rpc/*.cpp ${DIR}/../rpc/*.h
+find ${DIR}/../rpc/ -iname '*.orig' -exec rm {} \;

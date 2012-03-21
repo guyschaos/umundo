@@ -43,7 +43,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/lib64")
 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/lib64")
 	if(CMAKE_COMPILER_IS_GNUCXX)
-		add_definitions("-fPIC")
+		add_definitions("-fPIC") # only required with 64Bit builds?
 	endif()
 endif()
 

@@ -1,6 +1,5 @@
 # uMundo ReadMe
 
-
 uMundo is a lightweight refactoring of the Mundo publish/subscribe middleware to deliver byte
 arrays and objects on channels from publishers to subscribers. With lightweight, we do not necessarily 
 refer to runtime behavior or memory footprint (though we work hard to keep it sane) but to the amount 
@@ -30,7 +29,8 @@ uMundo is divided into three components with different responsibilities in vario
 	part of the distribution as of now. <a href="/tklab-tud/umundo/tree/master/s11n">[more]</a></dd>
 
 <dt><b>umundo.rpc</b></dt>
-<dd>This component ought to provide a service concept for remote procedure calls on top of umundo.s11n but is not yet implemented.
+<dd>This component provides a service concept for remote procedure calls on top of umundo.s11n. The current implementation only 
+	features synchronous calls with no possibility to specify the node where the service runs (first one found is used).
 	<a href="/tklab-tud/umundo/tree/master/rpc">[more]</a></dd>
 ## Contributors
 
@@ -95,7 +95,7 @@ especially with the embedded mDNS server on Android. Furthermore sleeping / awak
 	docs            # General documentation, API docs are in respective components docs/ directory.
 	installer       # Installers of uMundo for the supported platforms.
 	lib             # Prebuilt libraries of uMundo itself for all supported platforms.
-	rpc             # This is where umundo.rpc will eventually end up.
+	rpc             # umundo.rpc implementation.
 	s11n            # umundo.s11n implementation, see README.md within.
 
 ## FAQ
@@ -114,16 +114,16 @@ especially with the embedded mDNS server on Android. Furthermore sleeping / awak
 	rather low ulimit for open file-handles on MacOSX (<tt>ulimit -n</tt> gives 256).</dd>
 
 <dt><b>Does uMundo support IPv6?</b></dt>
-<dd>No, mostly because I couldn't get ZeroMQ to compile with IPv6 on Android devices. Both ZeroConf implementations (Avahi and
+<dd>No, but only because I couldn't get ZeroMQ to compile with IPv6 on Android devices. Both ZeroConf implementations (Avahi and
 	Bonjour) support IPv6 and we already gather these addresses (BonjourNodeStub and AvahiNodeStub). All that is needed is for
 	both of these stubs to return an IPv6 address in <tt>getIP()</tt> and for ZeroMQ to be compiled with IPv6. The plan is to wait
 	for another release of ZeroMQ 3.x and have another look.</dd>
 
-<dt><b>Does uMundo build for 64Bit architectures?</b></dt>
-<dd>No, mostly because I can't get around to maintain 64Bit precompiled libraries. If you have all the dependent libraries in
-	64Bit, just edit the topmost CMakeLists.txt and remove the part where we try hard to get a 32Bit build (around line 55). You
-	might have to adapt the various <tt>Find*.cmake</tt> CMake modules and add <tt>/usr/lib64</tt> or wherever your 64Bit libraries
-	are to the search paths.</dd>
+<dt><b>Does uMundo build for 64bit architectures?</b></dt>
+<dd>Yes. Though, I only tested with on a CentOS x86_64 linux distribution and we do not include 64bit prebuilt libraries. It 
+	is your responsibility to provide all the libraries we depend upon in 64bit. Have a look at the top-level CMakeLists.txt at the
+	64bit section. If you have some unorthodox paths to your 64bit libraries, consider using the environment variables for the 
+	various <tt>Find*.cmake</tt> modules or edit these files themselves.</dd>
 
 <dt><b>Are these actually questions that are asked frequently?</b><dt>
 <dd>No, it's more like a set of questions I can imagine other people might have. It will eventually grow into a real FAQ.</dd>

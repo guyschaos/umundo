@@ -115,7 +115,7 @@ void testDomainReception() {
 int main(int argc, char** argv, char** envp) {
 	setenv("UMUNDO_LOGLEVEL_DISC", "4", 1);
 	setenv("UMUNDO_LOGLEVEL_NET", "2", 1);
-	int i = 5;
+	int i = 1;
 	while(i-- > 0) {
 		printf("##### testDifferentDomain #####################################\n");
 		testDifferentDomain();

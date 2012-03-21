@@ -4,7 +4,8 @@
 set -e
 
 ME=`basename $0`
-DEST_DIR="${PWD}/../../prebuilt/linux-i686/gnu/lib"
+ARCH=`uname -m`
+DEST_DIR="${PWD}/../../prebuilt/linux-${ARCH}/gnu/lib"
 
 if [ ! -d mDNSPosix ]; then
 	echo

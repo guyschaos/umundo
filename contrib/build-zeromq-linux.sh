@@ -8,7 +8,7 @@
 set -e
 
 ME=`basename $0`
-DEST_DIR="${PWD}/../../prebuilt/zeromq/linux-i686/gnu"
+DEST_DIR="${PWD}/../../prebuilt/linux-i686/gnu/lib"
 
 if [ ! -f src/zmq.cpp ]; then
 	echo
@@ -37,5 +37,5 @@ rm -rf ${DEST_DIR}/lib/pkgconfig
 mv ${DEST_DIR}/lib/* ${DEST_DIR}
 rm -rf ${DEST_DIR}/lib
 mkdir -p ${DEST_DIR}/../../../include/zeromq
-mv ${DEST_DIR}/include/* ${DEST_DIR}/../../../include/zeromq
+#mv ${DEST_DIR}/include/* ${DEST_DIR}/../../../include/zeromq
 rm -rf ${DEST_DIR}/include

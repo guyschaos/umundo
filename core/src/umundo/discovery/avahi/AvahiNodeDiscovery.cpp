@@ -214,34 +214,44 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	UMUNDO_UNLOCK(_mutex);
 }
 
-void AvahiNodeDiscovery::browseClientCallback(AvahiClient *c, AvahiClientState state, void * userdata) {
+/**
+ * Called whenever we register a new query with Avahi.
+ */
+void AvahiNodeDiscovery::browseClientCallback(AvahiClient* c, AvahiClientState state, void* queryAddr) {
 	UMUNDO_LOCK(getInstance()->_mutex);
 	assert(c);
+	// there is not yet a query there
+//	assert(getInstance()->_browsers.find((intptr_t)queryAddr) != getInstance()->_browsers.end());
 
 	switch(state) {
 	case AVAHI_CLIENT_CONNECTING:
-		LOG_WARN("browseClientCallback: Query %p - client still connecting %s", userdata, avahi_strerror(avahi_client_errno(c)));
+		LOG_WARN("browseClientCallback: Query %p - client still connecting %s", queryAddr, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_FAILURE:
-		LOG_WARN("browseClientCallback: Query %p - server connection failure %s", userdata, avahi_strerror(avahi_client_errno(c)));
+		LOG_WARN("browseClientCallback: Query %p - server connection failure %s", queryAddr, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_RUNNING:
-		LOG_INFO("browseClientCallback: Query %p - server state: RUNNING %s", userdata, avahi_strerror(avahi_client_errno(c)));
+		LOG_INFO("browseClientCallback: Query %p - server state: RUNNING %s", queryAddr, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_REGISTERING:
-		LOG_WARN("browseClientCallback: Query %p - server state: REGISTERING %s", userdata, avahi_strerror(avahi_client_errno(c)));
+		LOG_WARN("browseClientCallback: Query %p - server state: REGISTERING %s", queryAddr, avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_COLLISION:
-		LOG_WARN("browseClientCallback: Query %p - server state: COLLISION %s", userdata, avahi_strerror(avahi_client_errno(c)));
+		LOG_WARN("browseClientCallback: Query %p - server state: COLLISION %s", queryAddr, avahi_strerror(avahi_client_errno(c)));
 		break;
 	default:
 		LOG_WARN("Unknown state");
 		break;
 	}
-	assert(getInstance()->validateState());
+//	assert(getInstance()->validateState());
 	UMUNDO_UNLOCK(getInstance()->_mutex);
 }
 
+/**
+ * Called whenever something is happening for one of our registered queries.
+ *
+ * Triggers resolving new nodes with their reported interfaces and protocol.
+ */
 void AvahiNodeDiscovery::browseCallback(
     AvahiServiceBrowser *b,
     AvahiIfIndex interface,
@@ -369,6 +379,7 @@ void AvahiNodeDiscovery::resolveCallback(
 	(client != NULL) || LOG_ERR("no client known for userdata");
 	(node.get() != NULL) || LOG_ERR("no node named %s known for query", strndup(name, 8));
 
+	// do no ignore ipv6 anymore
 	if (protocol == AVAHI_PROTO_INET6 && false) {
 		LOG_INFO("Ignoring %s IPv6", host_name);
 		node->_interfacesIPv6[interface] = "-1";
@@ -391,8 +402,19 @@ void AvahiNodeDiscovery::resolveCallback(
 		t = avahi_string_list_to_string(txt);
 		avahi_address_snprint(addr, sizeof(addr), address);
 		if (protocol == AVAHI_PROTO_INET) {
-			node->_interfacesIPv4[interface] = addr;
+			LOG_DEBUG("resolveCallback ipv4 for iface %d: %s", interface, addr);
+			// Sometimes avahi reports an ipv6 address as a ipv4 address
+			char* start = addr; int dots = 0;
+			while ((start = strchr(++start, '.')) != NULL) {
+				dots++;
+			}
+			if (dots != 3) {
+				LOG_ERR("Avahi bug: %s is not an ipv4 address!", addr);
+			} else {
+				node->_interfacesIPv4[interface] = addr;
+			}
 		} else if (protocol == AVAHI_PROTO_INET6) {
+			LOG_DEBUG("resolveCallback ipv6 for iface %d: %s", interface, addr);
 			node->_interfacesIPv6[interface] = addr;
 		} else {
 			LOG_WARN("protocol is neither ipv4 nor ipv6");
@@ -419,6 +441,9 @@ void AvahiNodeDiscovery::resolveCallback(
 	UMUNDO_UNLOCK(getInstance()->_mutex);
 }
 
+/**
+ * Called from Avahi whenever we add a node to discovery.
+ */
 void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupState state, void* userdata) {
 	UMUNDO_LOCK(getInstance()->_mutex);
 
@@ -429,76 +454,74 @@ void AvahiNodeDiscovery::entryGroupCallback(AvahiEntryGroup *g, AvahiEntryGroupS
 	if (myself->_avahiGroups.find((intptr_t)userdata) != myself->_avahiGroups.end())
 		group = myself->_avahiGroups[(intptr_t)userdata];
 
-	LOG_DEBUG("entryGroupCallback: state %d", state);
-
 	assert(g == group || group == NULL);
 	myself->_avahiGroups[(intptr_t)userdata] = g;
 
 	/* Called whenever the entry group state changes */
 	switch (state) {
 	case AVAHI_ENTRY_GROUP_ESTABLISHED :
+		LOG_DEBUG("entryGroupCallback: state AVAHI_ENTRY_GROUP_ESTABLISHED");
 		/* The entry group has been established successfully */
 		//std::cout << "Service successfully established: " << node->getUUID() << std::endl;
 		break;
 
 	case AVAHI_ENTRY_GROUP_COLLISION :
-		LOG_WARN("AVAHI_ENTRY_GROUP_COLLISION", 0);
-		assert(false);
+		LOG_WARN("entryGroupCallback state AVAHI_ENTRY_GROUP_COLLISION: %s", avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE :
-		LOG_WARN("AVAHI_ENTRY_GROUP_FAILURE: %s", avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
-
+		LOG_WARN("entryGroupCallback state AVAHI_ENTRY_GROUP_FAILURE: %s", avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
 		/* Some kind of failure happened while we were registering our services */
-		avahi_simple_poll_quit(myself->_simplePoll);
 		break;
 
 	case AVAHI_ENTRY_GROUP_UNCOMMITED:
-		//LOG_WARN("AVAHI_ENTRY_GROUP_UNCOMMITED", 0);
+		LOG_INFO("entryGroupCallback state AVAHI_ENTRY_GROUP_UNCOMMITED: %s", avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
 		break;
+
 	case AVAHI_ENTRY_GROUP_REGISTERING:
-		//LOG_WARN("AVAHI_ENTRY_GROUP_REGISTERING", 0);
+		LOG_INFO("entryGroupCallback state AVAHI_ENTRY_GROUP_REGISTERING: %s", avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
 		break;
 	default:
-		LOG_WARN("entryGroupCallback default switch", 0);
+		LOG_WARN("entryGroupCallback default switch should not happen!", 0);
 	}
-	// we are being called from avahi_client_new in add(Node), state is not valid as such
-	//	assert(getInstance()->validateState());
+	// we are being called from avahi_client_new in add(Node), state is not yet valid
 	UMUNDO_UNLOCK(getInstance()->_mutex);
 }
 
-void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, void* userdata) {
-	UMUNDO_LOCK(getInstance()->_mutex);
 
-	LOG_DEBUG("entryGroupCallback: state %d", state);
+void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, void* nodeAddr) {
+	UMUNDO_LOCK(getInstance()->_mutex);
 
 	assert(c);
 	int err;
 	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
 
 	shared_ptr<NodeImpl> node;
-	if (myself->_nodes.find((intptr_t)userdata) != myself->_nodes.end())
-		node = myself->_nodes[(intptr_t)userdata];
+	if (myself->_nodes.find((intptr_t)nodeAddr) != myself->_nodes.end())
+		node = myself->_nodes[(intptr_t)nodeAddr];
 
 	assert(node.get() != NULL);
 	AvahiEntryGroup* group = NULL;
-	if (myself->_avahiGroups.find((intptr_t)userdata) != myself->_avahiGroups.end()) {
-		group = myself->_avahiGroups[(intptr_t)userdata];
+	if (myself->_avahiGroups.find((intptr_t)nodeAddr) != myself->_avahiGroups.end()) {
+		group = myself->_avahiGroups[(intptr_t)nodeAddr];
 	}
 
 	switch (state) {
 	case AVAHI_CLIENT_S_RUNNING:
+		LOG_DEBUG("clientCallback: state AVAHI_CLIENT_S_RUNNING %s", avahi_strerror(avahi_client_errno(c)));
 		/* The server has startup successfully and registered its host
 		 * name on the network, so it's time to create our services */
 		if (!group) {
-			if (!(group = avahi_entry_group_new(c, entryGroupCallback, userdata))) {
+			LOG_DEBUG("clientCallback: establishing new group");
+			if (!(group = avahi_entry_group_new(c, entryGroupCallback, nodeAddr))) {
 				LOG_WARN("avahi_entry_group_new failed: %s", avahi_strerror(avahi_client_errno(c)));
-				avahi_simple_poll_quit(myself->_simplePoll);
 			} else {
-				myself->_avahiGroups[(intptr_t)userdata] = group;
+				myself->_avahiGroups[(intptr_t)nodeAddr] = group;
 			}
 		}
 		if (avahi_entry_group_is_empty(group)) {
+			LOG_DEBUG("clientCallback: avahi_entry_group_is_empty");
+
 			char* domain;
 			if (strstr(node->getDomain().c_str(), ".") != NULL) {
 				asprintf(&domain, "%s", node->getDomain().c_str());
@@ -508,42 +531,38 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 				asprintf(&domain, "local.");
 			}
 
+			LOG_DEBUG("clientCallback: avahi_entry_group_add_service in domain %s", domain);
 			if ((err = avahi_entry_group_add_service(group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, (AvahiPublishFlags)0, node->getUUID().c_str(), "_mundo._tcp", domain, NULL, node->getPort(), NULL)) < 0) {
-				if (err == AVAHI_ERR_COLLISION) {
-					assert(0); // we register uuids, there shouldn't be collisions
-				}
-				LOG_WARN("avahi_entry_group_add_service failed ", err);
-				avahi_simple_poll_quit(myself->_simplePoll);
+				LOG_WARN("clientCallback: avahi_entry_group_add_service failed: %s", avahi_strerror(err));
 			}
 			free(domain);
 			/* Tell the server to register the service */
 			if ((err = avahi_entry_group_commit(group)) < 0) {
-				LOG_WARN("avahi_entry_group_commit failed ", err);
-				avahi_simple_poll_quit(myself->_simplePoll);
+				LOG_WARN("clientCallback: avahi_entry_group_commit failed: %s", avahi_strerror(err));
 			}
 		}
 		break;
 
 	case AVAHI_CLIENT_FAILURE:
-		LOG_WARN("Client failure: %s", avahi_strerror(avahi_client_errno(c)));
+		LOG_WARN("clientCallback AVAHI_CLIENT_FAILURE: %s", avahi_strerror(avahi_client_errno(c)));
 		avahi_simple_poll_quit(myself->_simplePoll);
 		break;
 
 	case AVAHI_CLIENT_S_COLLISION:
-		LOG_WARN("AVAHI_CLIENT_S_COLLISION: %s", avahi_strerror(avahi_client_errno(c)));
+		LOG_WARN("clientCallback AVAHI_CLIENT_S_COLLISION: %s", avahi_strerror(avahi_client_errno(c)));
 		break;
 	case AVAHI_CLIENT_S_REGISTERING:
 		/* The server records are now being established. This
 		 * might be caused by a host name change. We need to wait
 		 * for our own records to register until the host name is
 		 * properly esatblished. */
-		LOG_WARN("AVAHI_CLIENT_S_REGISTERING: %s", avahi_strerror(avahi_client_errno(c)));
+		LOG_INFO("clientCallback AVAHI_CLIENT_S_REGISTERING: %s", avahi_strerror(avahi_client_errno(c)));
 		if (group)
 			avahi_entry_group_reset(group);
 		break;
 
 	case AVAHI_CLIENT_CONNECTING:
-		LOG_WARN("AVAHI_CLIENT_CONNECTING: %s", avahi_strerror(avahi_client_errno(c)));
+		LOG_INFO("clientCallback AVAHI_CLIENT_CONNECTING: %s", avahi_strerror(avahi_client_errno(c)));
 		break;
 	}
 	// we are being called from avahi_client_new in add(Node), state is not valid as such

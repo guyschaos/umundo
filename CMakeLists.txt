@@ -146,8 +146,10 @@ endif()
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # enable testing and actual output with tests
-enable_testing()
-SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
+if (NOT CMAKE_CROSSCOMPILING)
+	enable_testing()
+	SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
+endif()
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
 	SET(LOGLEVEL_S11N "1" CACHE STRING "Log-level for serialization - higher is more verbose" FORCE)

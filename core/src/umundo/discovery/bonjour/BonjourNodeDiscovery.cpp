@@ -427,8 +427,8 @@ void BonjourNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
 void BonjourNodeDiscovery::forgetRemoteNodesFDs(shared_ptr<BonjourNodeStub> node) {
 	UMUNDO_LOCK(_mutex);
 
-	map<string, DNSServiceRef>::iterator serviceResolveIter;
-	for (serviceResolveIter = node->_serviceResolveClients.begin(); serviceResolveIter != node->_serviceResolveClients.end(); serviceResolveIter++) {
+	map<string, DNSServiceRef>::iterator serviceResolveIter = node->_serviceResolveClients.begin();
+	while (serviceResolveIter != node->_serviceResolveClients.end()) {
 #ifndef DISC_BONJOUR_EMBED
 		int sockFD = DNSServiceRefSockFD(serviceResolveIter->second);
 		assert(_activeFDs.find(sockFD) != _activeFDs.end());

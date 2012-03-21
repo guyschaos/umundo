@@ -299,6 +299,10 @@ if (BUILD_UMUNDO_RPC)
 	add_subdirectory(rpc)
 endif()
 
+if (NOT CMAKE_CROSSCOMPILING)
+	add_subdirectory(docs)
+endif()
+
 ############################################################
 # Some concluding remarks
 ############################################################

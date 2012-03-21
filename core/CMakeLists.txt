@@ -116,7 +116,6 @@ endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
 	add_subdirectory(test)          # build tests
-	add_subdirectory(docs)          # build documentation
 	add_subdirectory(tools)         # command-line tools
 endif()
 

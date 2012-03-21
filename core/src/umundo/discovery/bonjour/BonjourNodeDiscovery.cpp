@@ -59,6 +59,8 @@ shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::getInstance() {
 shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::_instance;
 
 BonjourNodeDiscovery::~BonjourNodeDiscovery() {
+	stop();
+	join();
 #ifdef DISC_BONJOUR_EMBED
 	// notify every other host that we are about to vanish
 	embedded_mDNSExit();

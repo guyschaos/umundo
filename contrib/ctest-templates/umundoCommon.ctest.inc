@@ -1,12 +1,7 @@
 set(CTEST_SOURCE_DIRECTORY "/var/builds/umundo/umundo")
 set(CTEST_BINARY_DIRECTORY "/var/builds/umundo/build")
 
-set(CTEST_SITE "umundo.tk.informatik.tu-darmstadt.de")
-#set(CTEST_BUILD_NAME "linux-gcc-default")
-
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-#set(CTEST_BUILD_CONFIGURATION "Profiling")
-#set(CTEST_BUILD_OPTIONS "-DWITH_SSH1=ON -WITH_SFTP=ON -DWITH_SERVER=ON -DWITH_ZLIB=ON -DWITH_PCAP=ON -DWITH_GCRYPT=OFF")
 
 #set(WITH_MEMCHECK TRUE)
 #set(WITH_COVERAGE TRUE)

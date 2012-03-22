@@ -59,9 +59,10 @@ shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::getInstance() {
 shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::_instance;
 
 BonjourNodeDiscovery::~BonjourNodeDiscovery() {
+#if 0
+	// is being called by thread we want to join? ignore for now as this is a singleton anyway.
 	stop();
-#ifndef DISC_BONJOUR_EMBED
-	join(); // we have deadlock in embedded?
+	join();
 #endif
 #ifdef DISC_BONJOUR_EMBED
 	// notify every other host that we are about to vanish

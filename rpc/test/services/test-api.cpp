@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 	delete pingRep;
 
 	// test rpc throughput with the echo service
-	int iterations = 10;
+	int iterations = 3;
 	int sends = 0;
 	EchoServiceStub* echoSvc = new EchoServiceStub(svcMgr2);
 	EchoRequest* echoReq = new EchoRequest();

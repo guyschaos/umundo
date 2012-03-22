@@ -11,6 +11,10 @@ iOS devices and Android.
 <dd>- <a href="https://github.com/tklab-tud/umundo/tree/master/docs/BUILDING.md">Building from source</a></dd>
 <dd>- <a href="https://github.com/tklab-tud/umundo/tree/master/core">Detailed documentation on umundo.core</a></dd>
 
+<dt><b>External Resources</b></dt>
+<dd>- <a href="http://umundo.tk.informatik.tu-darmstadt.de/cdash/index.php?project=umundo">Build Reports</a></dd>
+<dd>- <a href="http://umundo.tk.informatik.tu-darmstadt.de/docs">Doxygen Documentation</a></dd>
+
 ## Components
 
 uMundo is divided into three components with different responsibilities in various stages of maturity:

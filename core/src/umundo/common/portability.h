@@ -3,6 +3,10 @@
 
 #include "umundo/common/Common.h"
 
+#ifdef NO_STRNDUP
+char* strndup (const char *s, size_t n);
+#endif
+
 #ifdef ANDROID
 #include <wchar.h>
 namespace std {
@@ -34,7 +38,6 @@ using ::wcslen;
 
 int vasprintf(char **ret, const char *format, va_list args);
 int asprintf(char **ret, const char *format, ...);
-char* strndup (const char *s, size_t n);
 
 #endif
 

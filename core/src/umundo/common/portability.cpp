@@ -1,6 +1,23 @@
 #include "umundo/common/portability.h"
 #include "umundo/config.h"
 
+#ifndef HAVE_STRNDUP
+char* strndup (const char *s, size_t n) {
+  char *result;
+  size_t len = strlen (s);
+
+  if (n < len)
+    len = n;
+
+  result = (char *) malloc (len + 1);
+  if (!result)
+    return 0;
+
+  result[len] = '\0';
+  return (char *) memcpy (result, s, len);
+}
+#endif
+
 #ifdef ANDROID
 // size_t std::wcslen(const wchar_t *) {
 // 	return 1;
@@ -37,22 +54,6 @@ int asprintf(char **ret, const char *format, ...) {
 	int count = vasprintf(ret, format, args);
 	va_end(args);
 	return(count);
-}
-
-
-char* strndup (const char *s, size_t n) {
-  char *result;
-  size_t len = strlen (s);
-
-  if (n < len)
-    len = n;
-
-  result = (char *) malloc (len + 1);
-  if (!result)
-    return 0;
-
-  result[len] = '\0';
-  return (char *) memcpy (result, s, len);
 }
 
 #endif

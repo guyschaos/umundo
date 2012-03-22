@@ -102,6 +102,8 @@ ENDMACRO()
 # where to find the cmake modules we distribute
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
 
+include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
+
 # some compiler flags
 if(CMAKE_COMPILER_IS_GNUCXX)
 	# best practices from scott meyers

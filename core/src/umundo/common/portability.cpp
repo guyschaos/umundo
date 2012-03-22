@@ -1,7 +1,7 @@
 #include "umundo/common/portability.h"
 #include "umundo/config.h"
 
-#ifndef HAVE_STRNDUP
+#ifdef NO_STRNDUP
 char* strndup (const char *s, size_t n) {
   char *result;
   size_t len = strlen (s);

@@ -43,32 +43,32 @@ uMundo is divided into three components with different responsibilities in vario
 
 ## Status
 
-Overall, uMundo is not yet suited for serious deployments, there are still various memory leaks. It even crashes occasionally, but
-I have yet to see a crash that is not due to an unfulfilled explicit <tt>assert()</tt>. Discovery is still somewhat flakey, 
-especially with the embedded mDNS server on Android. Furthermore sleeping / awaking of devices is not yet handled gracefully.
+The authority on the state of uMundo is <a href="/tklab-tud/umundo/tree/master/rpc">our build-server</a>. The tests, while not 
+numerous, are rather strict as there are plenty of <tt>asserts</tt> in the source code.
+
+But overall, uMundo is not yet suited for serious deployments, there are still some memory leaks and discovery is still somewhat 
+flakey, especially with the embedded mDNS server on Android.
 
 <table>
     </tr>
     <tr><th>Platform</th><th>Issues</th></tr>
 	<tr><td>Mac OSX 10.7</td><td>
 		<ul>
-			<li>Everything builds and runs just fine.
 			<li>umundo.s11n employs the C++ generator for ProtoBuf as the various Objective-C generators are out of date (just use <tt>.mm</tt> file extensions).
 		</ul>
 	</td></tr>
 
 	<tr><td>iOS 5.x</td><td>
 		<ul>
-			<li>umundo.core compiled and runs without problems.
-			<li>Haven't bothered with older iOS releases.
 			<li>umundo.s11n employs the C++ generator as with Mac OSX.
+			<li>The automated test are not executed on the build-server.
 		</ul>
 	</td></tr>
 	<tr><td>Windows 7</td><td>
 		<ul>
-			<li>Everything builds and runs just fine with MS Visual Compiler and Visual Studio 10.
-			<li>MinGW still needs precompiled libraries for our build-time dependencies.
-			<li>Building the JAR for the JNI wrappers when building from source fails, the <tt>.java</tt> 
+			<li>Everything builds and runs just fine with MS Visual Compiler and Visual Studio 10 and NMake.
+			<li>We do not support MinGW as we would need precompiled libraries for our build-time dependencies.
+			<li>Building the JAR for the JNI wrappers when building from source fails. The <tt>.java</tt> 
 				files are still generated though. Just copy/package them by hand or use a jar from another platform.
 		</ul>
 	</td></tr>
@@ -79,8 +79,8 @@ especially with the embedded mDNS server on Android. Furthermore sleeping / awak
 	</td></tr>
 	<tr><td>Android 4.x</td><td>
 		<ul>
-			<li>Builds links and runs fine.
 			<li>I cannot test it without a device, as <a href="http://developer.android.com/guide/developing/devices/emulator.html#emulatornetworking">google does not deem multicast to be important</a>.
+			<li>The automated test are not executed on the build-server.
 		</ul>
 	</td></tr>
     </tr>

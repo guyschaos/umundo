@@ -43,11 +43,10 @@ uMundo is divided into three components with different responsibilities in vario
 
 ## Status
 
-The authority on the state of uMundo is <a href="/tklab-tud/umundo/tree/master/rpc">our build-server</a>. The tests, while not 
-numerous, are rather strict as there are plenty of <tt>asserts</tt> in the source code.
-
-But overall, uMundo is not yet suited for serious deployments, there are still some memory leaks and discovery is still somewhat 
-flakey, especially with the embedded mDNS server on Android.
+The authority on the state of uMundo is <a href="http://umundo.tk.informatik.tu-darmstadt.de/cdash/index.php?project=umundo">our 
+build-server</a>. The tests, while not numerous, are rather strict as there are plenty of <tt>asserts</tt> in the source code. 
+Overall, uMundo is not yet suited for serious deployments, there are still some memory leaks and discovery is still somewhat flakey, 
+especially with the embedded mDNS server on Android.
 
 <table>
     </tr>

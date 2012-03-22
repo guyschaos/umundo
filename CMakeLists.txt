@@ -310,7 +310,7 @@ endif()
 # Some concluding remarks
 ############################################################
 
-if (OFF)
+#if (OFF)
 	message(STATUS "umundo.core files: ")
 	foreach(file ${UMUNDOCORE_FILES})
 		message(STATUS "  ${file}")
@@ -340,7 +340,7 @@ if (OFF)
 	foreach(file ${UMUNDORPC_LIBRARIES})
 		message(STATUS "  ${file}")
 	endforeach()
-endif()
+#endif()
 
 message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
 

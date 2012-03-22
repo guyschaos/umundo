@@ -233,7 +233,7 @@ void BonjourNodeDiscovery::add(shared_ptr<NodeImpl> node) {
 	}
 
 	LOG_DEBUG("Trying to register: %s.%s as %s",
-	          (name == NULL ? "null" : name),
+	          (name == NULL ? "null" : strndup(name, 8)),
 	          (domain == NULL ? "null" : domain),
 	          regtype);
 

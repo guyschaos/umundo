@@ -53,8 +53,8 @@ public:
 #endif
 #ifndef HAVE_EXECINFO
 	// noop with non-gcc compilers
-	void abortWithStackTraceOnSignal(int sig) {};
-	void stackTraceSigHandler(int sig) {};
+	static void abortWithStackTraceOnSignal(int sig) {};
+	static void stackTraceSigHandler(int sig) {};
 #endif
 };
 

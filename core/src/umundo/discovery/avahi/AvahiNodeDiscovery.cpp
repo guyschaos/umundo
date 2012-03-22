@@ -194,7 +194,11 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 		asprintf(&domain, "local.");
 	}
 
-	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", domain, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
+	char* regtype;
+	const char* transport = (query->getTransport().length() ? query->getTransport().c_str() : "tcp");
+	asprintf(&regtype, "_mundo._%s", transport);
+
+	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, regtype, domain, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
 		LOG_WARN("avahi_service_browser_new failed %s", avahi_strerror(error));
 		assert(validateState());
 		UMUNDO_UNLOCK(_mutex);
@@ -209,6 +213,7 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	_avahiBrowsers[address] = sb;
 
 	free(domain);
+	free(regtype);
 	start();
 	assert(validateState());
 	UMUNDO_UNLOCK(_mutex);
@@ -293,7 +298,14 @@ void AvahiNodeDiscovery::browseCallback(
 		if (!knownNode) {
 			// we found ourselves a new node
 			node = shared_ptr<AvahiNodeStub>(new AvahiNodeStub());
-			node->_transport = "tcp";
+			if (strncmp(type + strlen(type) - 3, "tcp", 3) == 0) {
+				node->setTransport("tcp");
+			} else if (strncmp(type + strlen(type) - 3, "udp", 3) == 0) {
+				node->setTransport("udp");
+			} else {
+				LOG_WARN("Unknown transport %s, defaulting to tcp", type + strlen(type) - 3);
+				node->setTransport("tcp");
+			}
 			node->_uuid = name;
 			node->_domain = domain;
 			node->_interfaceIndices.insert(interface);
@@ -306,14 +318,14 @@ void AvahiNodeDiscovery::browseCallback(
 	case AVAHI_BROWSER_REMOVE: {
 		assert(name != NULL);
 		if (myself->_queryNodes[query].find(name) == myself->_queryNodes[query].end()) {
-			LOG_INFO("Node '%s' already removed of type '%s' in domain '%s' at iface %d with proto %d\n", strndup(name, 8), type, domain, interface, protocol);
+			LOG_INFO("Node '%s' already removed of type '%s' in domain '%s' at iface %d with proto %d", strndup(name, 8), type, domain, interface, protocol);
 			assert(getInstance()->validateState());
 			UMUNDO_UNLOCK(getInstance()->_mutex);
 			return;
 		}
 
 		shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
-		LOG_INFO("Removing node '%s' of type '%s' in domain '%s' at iface %d with proto %d\n", strndup(name, 8), type, domain, interface, protocol);
+		LOG_INFO("Removing node '%s' of type '%s' in domain '%s' at iface %d with proto %d", strndup(name, 8), type, domain, interface, protocol);
 		if (protocol == AVAHI_PROTO_INET6)
 			node->_interfacesIPv6.erase(interface);
 		if (protocol == AVAHI_PROTO_INET)
@@ -367,16 +379,17 @@ void AvahiNodeDiscovery::resolveCallback(
 	          interface,
 	          protocol);
 
-	if (myself->_queryNodes[query].find(name) != myself->_queryNodes[query].end()) {
-		LOG_WARN("resolveCallback: got reply for unknown query %p", queryAddr);
-		UMUNDO_UNLOCK(getInstance()->_mutex);
-		return;
-	}
-
 	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
 	assert(myself->_browsers.find((intptr_t)queryAddr) != myself->_browsers.end());
 	assert(myself->_avahiClients.find((intptr_t)queryAddr) != myself->_avahiClients.end());
 	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)queryAddr];
+
+	if (myself->_queryNodes[query].find(name) == myself->_queryNodes[query].end()) {
+		LOG_WARN("resolveCallback: %p resolved unknown node %s", (name == NULL ? "NULL" : strndup(name, 8)));
+		UMUNDO_UNLOCK(getInstance()->_mutex);
+		return;
+	}
+
 	assert(myself->_queryNodes[query].find(name) != myself->_queryNodes[query].end());
 	AvahiClient* client = myself->_avahiClients[(intptr_t)queryAddr];
 	shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
@@ -537,11 +550,16 @@ void AvahiNodeDiscovery::clientCallback(AvahiClient* c, AvahiClientState state, 
 				asprintf(&domain, "local.");
 			}
 
+			char* regtype;
+			const char* transport = (node->getTransport().length() ? node->getTransport().c_str() : "tcp");
+			asprintf(&regtype, "_mundo._%s", transport);
+
 			LOG_DEBUG("clientCallback: avahi_entry_group_add_service in domain %s", domain);
-			if ((err = avahi_entry_group_add_service(group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, (AvahiPublishFlags)0, node->getUUID().c_str(), "_mundo._tcp", domain, NULL, node->getPort(), NULL)) < 0) {
+			if ((err = avahi_entry_group_add_service(group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, (AvahiPublishFlags)0, node->getUUID().c_str(), regtype, domain, NULL, node->getPort(), NULL)) < 0) {
 				LOG_WARN("clientCallback: avahi_entry_group_add_service failed: %s", avahi_strerror(err));
 			}
 			free(domain);
+			free(regtype);
 			/* Tell the server to register the service */
 			if ((err = avahi_entry_group_commit(group)) < 0) {
 				LOG_WARN("clientCallback: avahi_entry_group_commit failed: %s", avahi_strerror(err));

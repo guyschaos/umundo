@@ -41,6 +41,15 @@ class Debug {
 public:
 	static const char* relFileName(const char* filename);
 	static bool logMsg(int lvl, const char* fmt, const char* filename, const int line, ...);
+#ifdef __GNUC__
+	static void abortWithStackTraceOnSignal(int sig);
+	static void stackTraceSigHandler(int sig);
+#endif
+#ifndef __GNUC__
+	// noop with non-gcc compilers
+	void abortWithStackTraceOnSignal(int sig) {};
+	void stackTraceSigHandler(int sig) {};
+#endif
 };
 
 }

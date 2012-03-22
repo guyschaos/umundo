@@ -22,6 +22,10 @@
 #error "No discovery implementation choosen"
 #endif
 
+#ifdef BUILD_DEBUG
+#include <signal.h>
+#endif
+
 namespace umundo {
 
 string procUUID = UUID::getUUID();
@@ -30,6 +34,9 @@ Factory* Factory::_instance = NULL;
 
 Factory* Factory::getInstance() {
 	if (Factory::_instance == NULL) {
+#ifdef BUILD_DEBUG
+		Debug::abortWithStackTraceOnSignal(SIGSEGV);
+#endif
 		Factory::_instance = new Factory();
 		assert(_instance->_prototypes["publisher"] != NULL);
 		assert(_instance->_prototypes["subscriber"] != NULL);

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd /var/builds/scripts
+TESTS=`ls umundo*.ctest`
+for test in ${TESTS}; do
+	/usr/local/bin/ctest -VV --timeout 600 -S $test
+done

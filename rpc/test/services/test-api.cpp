@@ -58,10 +58,10 @@ int main(int argc, char** argv) {
 		sends++;
 		time(&now);
 		if ((now - start) > 0) {
+			iterations--;
 			std::cout << sends << " messages per second " << iterations << " iterations remaining" << std::endl;
 			time(&start);
 			sends = 0;
-			iterations--;
 		}
 		delete echoRep;
 	}

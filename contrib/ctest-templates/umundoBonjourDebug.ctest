@@ -1,0 +1,6 @@
+set(CTEST_BUILD_NAME "linux-gcc-bonjour")
+set(CTEST_SUBMIT_TYPE "Experimental")
+set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+set(CTEST_BUILD_CONFIGURATION "Debug")
+set(CTEST_BUILD_OPTIONS "-DDISC_BONJOUR=ON -DDISC_BONJOUR_EMBED=ON -DDISC_AVAHI=OFF")
+include("umundoCommon.ctest.inc")

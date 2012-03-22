@@ -195,7 +195,7 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 	}
 
 	if (!(sb = avahi_service_browser_new(client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_mundo._tcp", domain, (AvahiLookupFlags)0, browseCallback, (void*)address))) {
-		LOG_WARN("avahi_service_browser_new failed", error);
+		LOG_WARN("avahi_service_browser_new failed %s", avahi_strerror(error));
 		assert(validateState());
 		UMUNDO_UNLOCK(_mutex);
 		return;
@@ -355,7 +355,7 @@ void AvahiNodeDiscovery::resolveCallback(
     uint16_t port,
     AvahiStringList *txt,
     AvahiLookupResultFlags flags,
-    void* userdata
+    void* queryAddr
 ) {
 	UMUNDO_LOCK(getInstance()->_mutex);
 	LOG_DEBUG("resolveCallback: %s %s/%s:%d as %s at if %d with protocol %d",
@@ -367,17 +367,23 @@ void AvahiNodeDiscovery::resolveCallback(
 	          interface,
 	          protocol);
 
+	if (myself->_queryNodes[query].find(name) != myself->_queryNodes[query].end()) {
+		LOG_WARN("resolveCallback: got reply for unknown query %p", queryAddr);
+		UMUNDO_UNLOCK(getInstance()->_mutex);
+		return;
+	}
+
 	shared_ptr<AvahiNodeDiscovery> myself = getInstance();
-	assert(myself->_browsers.find((intptr_t)userdata) != myself->_browsers.end());
-	assert(myself->_avahiClients.find((intptr_t)userdata) != myself->_avahiClients.end());
-	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)userdata];
+	assert(myself->_browsers.find((intptr_t)queryAddr) != myself->_browsers.end());
+	assert(myself->_avahiClients.find((intptr_t)queryAddr) != myself->_avahiClients.end());
+	shared_ptr<NodeQuery> query = myself->_browsers[(intptr_t)queryAddr];
 	assert(myself->_queryNodes[query].find(name) != myself->_queryNodes[query].end());
-	AvahiClient* client = myself->_avahiClients[(intptr_t)userdata];
+	AvahiClient* client = myself->_avahiClients[(intptr_t)queryAddr];
 	shared_ptr<AvahiNodeStub> node = myself->_queryNodes[query][name];
 
-	(query.get() != NULL) || LOG_ERR("no browser known for userdata");
-	(client != NULL) || LOG_ERR("no client known for userdata");
-	(node.get() != NULL) || LOG_ERR("no node named %s known for query", strndup(name, 8));
+	(query.get() != NULL) || LOG_ERR("no browser known for queryAddr %p", queryAddr);
+	(client != NULL) || LOG_ERR("no client known for queryAddr %p", queryAddr);
+	(node.get() != NULL) || LOG_ERR("no node named %s known for query %p", strndup(name, 8), queryAddr);
 
 	// do no ignore ipv6 anymore
 	if (protocol == AVAHI_PROTO_INET6 && false) {

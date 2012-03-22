@@ -1,6 +1,5 @@
 set(CTEST_BUILD_NAME "linux-gcc-avahi")
-set(CTEST_SUBMIT_TYPE "Experimental")
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 set(CTEST_BUILD_CONFIGURATION "Debug")
-set(CTEST_BUILD_OPTIONS "-DDISC_AVAHI=ON")
+set(CTEST_BUILD_OPTIONS "-DDISC_BONJOUR=OFF -DDISC_BONJOUR_EMBED=OFF -DDISC_AVAHI=ON")
 include("umundoCommon.ctest.inc")

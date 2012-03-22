@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cd /var/builds/scripts
+
+if [ -d ../umundo/build ]; then
+
+cd ../umundo/build
+make docs
+cp -R ../umundo/docs/html/* /var/www/html/docs
+
+fi
+

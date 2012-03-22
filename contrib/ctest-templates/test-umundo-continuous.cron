@@ -1,0 +1,15 @@
+#!/bin/bash
+export CTEST_SUBMIT_TYPE="Continuous"
+
+cd /var/builds/scripts
+TESTS=`ls umundo*.ctest`
+for test in ${TESTS}; do
+	RUNNING=`ps ax | grep "/usr/local/bin/ctest -VV --timeout 60 -S ${test}" | grep -v "grep" |wc -l`
+	if [ $RUNNING == "0" ]; then
+		/usr/local/bin/ctest -VV --timeout 60 -S ${test} &
+	else
+		echo "ALREADY RUNNING"		
+	fi
+#	/usr/local/bin/ctest -VV --timeout 60 -S $test
+done
+

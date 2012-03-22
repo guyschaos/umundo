@@ -198,14 +198,13 @@ endif()
 
 # CMake does not allow explicit dependencies
 if (DISC_BONJOUR_EMBED AND NOT DISC_BONJOUR)
-	message("Cannot use embedded bonjour without bonjour - DISC_BONJOUR!")
-	SET(DISC_BONJOUR CACHE ON FORCE)
+	message(FATAL_ERROR "Cannot use embedded bonjour without bonjour - enable DISC_BONJOUR!")
 endif()
 if (DISC_BONJOUR AND DISC_AVAHI)
-	message("Cannot use both avahi and bonjour for discovery - disable one!")
+	message(FATAL_ERROR "Cannot use both avahi and bonjour for discovery - choose either DISC_BONJOUR or DISC_AVAHI!")
 endif()
 if (NOT DISC_AVAHI AND NOT DISC_BONJOUR)
-	message("No discovery implementation choosen - enable either DISC_BONJOUR or DISC_AVAHI!")
+	message(FATAL_ERROR "No discovery implementation choosen - enable either DISC_BONJOUR or DISC_AVAHI!")
 endif()
 
 if(WIN32)

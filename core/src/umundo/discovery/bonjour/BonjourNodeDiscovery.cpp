@@ -60,7 +60,9 @@ shared_ptr<BonjourNodeDiscovery> BonjourNodeDiscovery::_instance;
 
 BonjourNodeDiscovery::~BonjourNodeDiscovery() {
 	stop();
-	join();
+#ifndef DISC_BONJOUR_EMBED
+	join(); // we have deadlock in embedded?
+#endif
 #ifdef DISC_BONJOUR_EMBED
 	// notify every other host that we are about to vanish
 	embedded_mDNSExit();

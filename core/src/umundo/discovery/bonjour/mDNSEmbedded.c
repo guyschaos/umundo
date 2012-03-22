@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
+#include <assert.h>
 #include "mDNSEmbeddedAPI.h"
 #include "mDNSPosix.h"    // Defines the specific types needed to run mDNS on this platform
 
@@ -52,6 +53,7 @@ mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
 //	timeout.tv_sec = 0x3FFFFFFF;
 //	timeout.tv_usec = 0;
 
+	assert(timeout.tv_sec < 10);
 	// 3. Give the mDNSPosix layer a chance to add its information to the fd_set and timeout
 	mDNSPosixGetFDSet(&mDNSStorage, &nfds, &readfds, &timeout);
 

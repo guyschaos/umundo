@@ -129,6 +129,8 @@ void BonjourNodeDiscovery::run() {
 		tv.tv_usec = BONJOUR_REPOLL_USEC;
 		embedded_mDNSmainLoop(tv);
 		UMUNDO_UNLOCK(_mutex);
+		// give other threads a chance to react before locking again
+		Thread::yield();
 	}
 #else
 

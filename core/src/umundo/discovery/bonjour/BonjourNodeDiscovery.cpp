@@ -64,7 +64,7 @@ BonjourNodeDiscovery::~BonjourNodeDiscovery() {
 	// notify every other host that we are about to vanish
 	embedded_mDNSExit();
 #endif
-	join(); // we have deadlock in embedded?
+	join();
 }
 
 /**

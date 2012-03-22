@@ -218,7 +218,7 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 	return true;
 }
 
-#ifdef __GNUC__
+#ifdef HAVE_EXECINFO
 #include <execinfo.h>
 #include <signal.h>
 

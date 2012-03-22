@@ -119,9 +119,6 @@ int main(int argc, char** argv, char** envp) {
 	while(i-- > 0) {
 		printf("##### testDifferentDomain #####################################\n");
 		testDifferentDomain();
-		int *foo = (int*)-1; // make a bad pointer
-		printf("%d\n", *foo); // causes segfault
-
 		assert(Node::instances == 0);
 		printf("##### testSameDomain ##########################################\n");
 		testSameDomain();

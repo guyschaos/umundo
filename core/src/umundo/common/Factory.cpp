@@ -132,6 +132,7 @@ void Factory::resumeInstances() {
 			implementation->resume();
 			implIter++;
 		} else {
+			// weak pointer points to deleted object
 			implIter = factory->_implementations.erase(implIter);
 		}
 	}

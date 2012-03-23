@@ -10,6 +10,7 @@ CTEST=`which ctest`
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 RUNNING=`ps ax | grep "test-umundo-continuous.cron" | grep -v "grep" |wc -l`
+# not sure why we get two lines if the process is running ..
 if [ $RUNNING -gt "2" ]; then
 	echo "ALREADY RUNNING"
 	exit

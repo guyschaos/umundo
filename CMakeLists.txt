@@ -306,6 +306,10 @@ if (NOT CMAKE_CROSSCOMPILING)
 	add_subdirectory(docs)
 endif()
 
+# we have to use CMAKE_TOOLCHAIN_FILE to avoid not used warning with existing binary dir
+if (CMAKE_TOOLCHAIN_FILE)
+endif()
+
 ############################################################
 # Some concluding remarks
 ############################################################

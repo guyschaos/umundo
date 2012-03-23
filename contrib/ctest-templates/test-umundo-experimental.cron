@@ -6,7 +6,7 @@ if [ ! -n "${UMUNDO_SOURCE_DIR:+x}" ]; then
 fi
 
 ME=`basename $0`
-CTEST=`which ctest`
+CTEST="/usr/local/bin/ctest"
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 cd $SCRIPT_DIR

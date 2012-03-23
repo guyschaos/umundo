@@ -255,7 +255,7 @@ bool Monitor::wait(uint32_t ms) {
 	int rv;
 	pthread_mutex_lock(&_mutex);
 	if (_signaled) {
-		LOG_DEBUG("Signaled prior to waiting");
+		//LOG_DEBUG("Signaled prior to waiting");
 		_signaled = false;
 		pthread_mutex_unlock(&_mutex);
 		return true;

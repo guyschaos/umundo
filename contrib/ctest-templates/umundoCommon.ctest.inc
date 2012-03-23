@@ -10,7 +10,7 @@ endif()
 
 set(CTEST_SOURCE_DIRECTORY $ENV{UMUNDO_SOURCE_DIR})
 set(CTEST_BINARY_DIRECTORY "/tmp/build-${CTEST_SUBMIT_TYPE}-${CTEST_SCRIPT_NAME}")
-set(CTEST_SITE "epikur.tk.informatik.tu-darmstadt.de")
+set(CTEST_SITE "umundo.tk.informatik.tu-darmstadt.de")
 
 #######################################################################
 
@@ -46,9 +46,9 @@ if("${CTEST_SUBMIT_TYPE}" STREQUAL "Continuous")
 #	endwhile()
 #
 else()
-#	ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 endif()
 
+ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 ctest_start(${CTEST_SUBMIT_TYPE})
 ctest_update()
 ctest_configure()
@@ -62,4 +62,3 @@ if (WITH_MEMCHECK AND CTEST_MEMORYCHECK_COMMAND)
   ctest_memcheck()
 endif (WITH_MEMCHECK AND CTEST_MEMORYCHECK_COMMAND)
 ctest_submit()
-

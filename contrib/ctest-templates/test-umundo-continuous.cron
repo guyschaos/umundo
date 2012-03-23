@@ -1,15 +1,40 @@
 #!/bin/bash
 export CTEST_SUBMIT_TYPE="Continuous"
 
-cd /var/builds/scripts
-TESTS=`ls umundo*.ctest`
-for test in ${TESTS}; do
-	RUNNING=`ps ax | grep "/usr/local/bin/ctest -VV --timeout 60 -S ${test}" | grep -v "grep" |wc -l`
-	if [ $RUNNING == "0" ]; then
-		/usr/local/bin/ctest -VV --timeout 60 -S ${test} &
-	else
-		echo "ALREADY RUNNING"		
-	fi
-#	/usr/local/bin/ctest -VV --timeout 60 -S $test
-done
+if [ ! -n "${UMUNDO_SOURCE_DIR:+x}" ]; then
+	export UMUNDO_SOURCE_DIR="/var/builds/umundo"
+fi
 
+ME=`basename $0`
+CTEST=`which ctest`
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+RUNNING=`ps ax | grep "test-umundo-continuous.cron" | grep -v "grep" |wc -l`
+if [ $RUNNING -gt "2" ]; then
+	echo "ALREADY RUNNING"
+	exit
+fi
+
+while true
+do
+	cd $SOURCE_DIR
+	#git clean -f -d
+	GIT_SYNC=`git pull`
+	echo $GIT_SYNC
+	if [ ! "$GIT_SYNC" = "Already up-to-date." ]; then
+		echo "Here we go"
+		cd $SCRIPT_DIR
+		TESTS=`ls umundo*.ctest`
+		for TEST in ${TESTS}; do
+			RUNNING=`ps ax | grep "${CTEST} -VV --timeout 60 -S ${TEST}" | grep -v "grep" |wc -l`
+			if [ $RUNNING == "0" ]; then
+				nice /usr/local/bin/ctest -VV --timeout 60 -S ${TEST}
+			else
+				echo "${TEST} is already running"
+			fi
+		done
+	else
+		echo "Nothing to do ..."
+		sleep 120
+	fi
+done

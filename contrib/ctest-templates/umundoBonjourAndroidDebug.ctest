@@ -1,4 +1,4 @@
-set(CTEST_BUILD_NAME "linux-x86_64 gcc-android-r7b bonjour-embedded")
+set(CTEST_BUILD_NAME "linux-x86_64 gcc-android-r7b bonjour-embed")
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 set(CTEST_BUILD_CONFIGURATION "Debug")
 set(ENV{ANDROID_NDK} "/opt/android-ndk-r7b")

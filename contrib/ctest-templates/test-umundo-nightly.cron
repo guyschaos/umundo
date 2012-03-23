@@ -1,0 +1,16 @@
+#!/bin/bash
+export CTEST_SUBMIT_TYPE="Nightly"
+
+if [ ! -n "${UMUNDO_SOURCE_DIR:+x}" ]; then
+	export UMUNDO_SOURCE_DIR="/var/builds/umundo"
+fi
+
+ME=`basename $0`
+CTEST=`which ctest`
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+cd $SCRIPT_DIR
+TESTS=`ls umundo*.ctest`
+for TEST in ${TESTS}; do
+	nice ${CTEST} -VV --timeout 60 -S ${TEST}
+done

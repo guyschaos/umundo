@@ -8,4 +8,4 @@ to adapt these.
     *        2   *   *   *       UMUNDO_SOURCE_DIR=/var/builds/umundo /var/builds/scripts/test-umundo-nightly.cron
     */2      *   *   *   *       UMUNDO_SOURCE_DIR=/var/builds/umundo /var/builds/scripts/test-umundo-continuous.cron
     58       *   *   *   *       UMUNDO_SOURCE_DIR=/var/builds/umundo /var/builds/scripts/deploy-umundo-docs.cron
-    *        1   *   *   *       rm -rf /tmp/build*
+    *        1   *   *   *       rm -rf /tmp/build-*

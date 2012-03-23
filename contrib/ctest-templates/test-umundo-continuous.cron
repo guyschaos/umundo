@@ -18,7 +18,7 @@ fi
 
 while true
 do
-	cd $SOURCE_DIR
+	cd $UMUNDO_SOURCE_DIR
 	#git clean -f -d
 	GIT_SYNC=`git pull`
 	echo $GIT_SYNC

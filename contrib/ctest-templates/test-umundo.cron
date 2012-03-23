@@ -1,8 +1,0 @@
-#!/bin/bash
-export CTEST_SUBMIT_TYPE="Experimental"
-
-cd /var/builds/scripts
-TESTS=`ls umundo*.ctest`
-for test in ${TESTS}; do
-	/usr/local/bin/ctest -VV --timeout 60 -S $test
-done

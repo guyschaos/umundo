@@ -6,11 +6,21 @@ if [ ! -n "${UMUNDO_SOURCE_DIR:+x}" ]; then
 fi
 
 ME=`basename $0`
-CTEST="/usr/local/bin/ctest"
+CTEST=`which ctest`
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+LOCK_DIR=/tmp/umundo-build.lock
 
 cd $SCRIPT_DIR
 TESTS=`ls umundo*.ctest`
-for TEST in ${TESTS}; do
-	nice ${CTEST} -VV --timeout 60 -S ${TEST}
+while true; do
+	if mkdir "$LOCK_DIR"; then
+		trap 'rm -rf "$LOCK_DIR"' 0    # remove directory when script finishes
+		for TEST in ${TESTS}; do
+			nice ${CTEST} -VV --timeout 60 -S ${TEST}
+		done
+		exit
+	else
+		echo "Could not get build lock- waiting"
+		sleep 10
+	fi
 done

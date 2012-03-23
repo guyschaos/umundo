@@ -33,7 +33,7 @@ set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} ${CTEST_BUILD_OPTIONS}")
 set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} \"-G${CTEST_CMAKE_GENERATOR}\"")
 set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} \"${CTEST_SOURCE_DIRECTORY}\"")
 
-#if("${CTEST_SUBMIT_TYPE}" STREQUAL "Continuous")
+if("${CTEST_SUBMIT_TYPE}" STREQUAL "Continuous")
 #	while (${CTEST_ELAPSED_TIME} LESS 36000)
 #		set (START_TIME ${CTEST_ELAPSED_TIME})
 #		ctest_start(Continuous)
@@ -45,11 +45,10 @@ set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} \"${CTEST_SOURCE_DIRECTO
 #		ctest_sleep( ${START_TIME} 300 ${CTEST_ELAPSED_TIME})
 #	endwhile()
 #
-#else()
+else()
 #	ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
-#endif()
+endif()
 
-ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 ctest_start(${CTEST_SUBMIT_TYPE})
 ctest_update()
 ctest_configure()

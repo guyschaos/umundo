@@ -56,7 +56,8 @@ void Thread::join() {
 }
 
 int Thread::getThreadId() {
-	static int nextindex = 1;
+	static int _nextThreadId = 1;
+	static Mutex _threadIdMutex;
 #ifdef THREAD_PTHREAD
 	static std::map<pthread_t, int> ids;
 	pthread_t pt = pthread_self();
@@ -65,9 +66,11 @@ int Thread::getThreadId() {
 	static std::map<DWORD, int> ids;
 	DWORD pt = GetCurrentThreadId();
 #endif
+	_threadIdMutex.lock();
 	if (ids.find(pt) == ids.end()) {
-		ids[pt] = nextindex++;
+		ids[pt] = _nextThreadId++;
 	}
+	_threadIdMutex.unlock();
 	return ids[pt];
 }
 

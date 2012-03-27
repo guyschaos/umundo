@@ -13,7 +13,7 @@ public:
 	PBSerializer();
 	virtual ~PBSerializer();
 
-	virtual shared_ptr<Implementation> create();
+	virtual shared_ptr<Implementation> create(void*);
 	virtual void destroy();
 	virtual void init(shared_ptr<Configuration>);
 

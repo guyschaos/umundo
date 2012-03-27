@@ -61,8 +61,9 @@ using namespace umundo;
 //*************************************************/
 
 
-// allow Java receivers to act as callbacks from C++
+// allow Java classes to act as callbacks from C++
 %feature("director") umundo::Receiver;
+%feature("director") umundo::Greeter;
 
 // enable conversion from char*, int to jbytearray
 %apply (char *STRING, size_t LENGTH) { (const char* data, size_t length) }; 

@@ -14,7 +14,7 @@ public:
 
 	void destroy();
 	void init(shared_ptr<Configuration>);
-	shared_ptr<Implementation> create();
+	shared_ptr<Implementation> create(void*);
 	void* deserialize(const string& type, const string& data);
 //		void* deserialize(const std::string& data);
 

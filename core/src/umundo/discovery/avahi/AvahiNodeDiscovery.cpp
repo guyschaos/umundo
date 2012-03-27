@@ -11,7 +11,7 @@
 
 namespace umundo {
 
-shared_ptr<Implementation> AvahiNodeDiscovery::create() {
+shared_ptr<Implementation> AvahiNodeDiscovery::create(void*) {
 	return getInstance();
 }
 

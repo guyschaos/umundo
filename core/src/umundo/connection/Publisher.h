@@ -9,6 +9,19 @@ namespace umundo {
 
 class NodeStub;
 class Message;
+class Publisher;
+
+/**
+ * Wait for new subscribers and welcome them.
+ *
+ * A greeter can be registered at a publisher to send a message, whenever a new subscriber 
+ * is added to the publisher.
+ */
+class Greeter {
+public:
+	virtual ~Greeter() {};
+	virtual void welcome(Publisher*, const string nodeId, const string subId) = 0;
+};
 
 class PublisherConfig : public Configuration {
 public:
@@ -62,7 +75,7 @@ protected:
 class PublisherImpl : public Implementation, public PublisherStub {
 public:
 	PublisherImpl() {}
-	virtual ~PublisherImpl() {}
+	virtual ~PublisherImpl();
 
 	virtual void send(Message* msg) = 0;
 	virtual const string& getUUID()                  {
@@ -77,19 +90,23 @@ public:
 	virtual int waitForSubscribers(int count)        {
 		return -1;
 	}
+	virtual void setGreeter(Greeter* greeter)        {
+		_greeter = greeter;
+	}
 	//@}
 
 protected:
 	/** @name Optional subscriber awareness */
 	//@{
-	virtual void addedSubscriber()                   {
+	virtual void addedSubscriber(const string, const string) {
 		/* Ignore or overwrite */
 	}
-	virtual void removedSubscriber()                 {
+	virtual void removedSubscriber()                         {
 		/* Ignore or overwrite */
 	}
 	//@}
 
+	Greeter* _greeter;
 	string _uuid;
 	friend class Publisher;
 };
@@ -112,6 +129,9 @@ public:
 	void send(const char* data, size_t length);
 	int waitForSubscribers(int count)              {
 		return _impl->waitForSubscribers(count);
+	}
+	void setGreeter(Greeter* greeter)    {
+		return _impl->setGreeter(greeter);
 	}
 	//@}
 
@@ -165,8 +185,8 @@ public:
 	//@{
 
 protected:
-	void addedSubscriber()       {
-		_impl->addedSubscriber();
+	void addedSubscriber(const string nodeId, const string subId)  {
+		_impl->addedSubscriber(nodeId, subId);
 	}
 	void removedSubscriber()     {
 		_impl->removedSubscriber();

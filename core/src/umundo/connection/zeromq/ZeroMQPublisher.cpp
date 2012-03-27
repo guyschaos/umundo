@@ -19,8 +19,9 @@
 
 namespace umundo {
 
-shared_ptr<Implementation> ZeroMQPublisher::create() {
+shared_ptr<Implementation> ZeroMQPublisher::create(void* facade) {
 	shared_ptr<Implementation> instance(new ZeroMQPublisher());
+	boost::static_pointer_cast<ZeroMQPublisher>(instance)->_facade = facade;
 	return instance;
 }
 
@@ -96,9 +97,11 @@ int ZeroMQPublisher::waitForSubscribers(int count) {
 	return _pubCount;
 }
 
-void ZeroMQPublisher::addedSubscriber() {
+void ZeroMQPublisher::addedSubscriber(const string remoteId, const string subId) {
 	_pubCount++;
 	UMUNDO_SIGNAL(_pubLock);
+	if (_greeter != NULL)
+		_greeter->welcome((Publisher*)_facade, remoteId, subId);
 }
 
 void ZeroMQPublisher::removedSubscriber() {
@@ -113,9 +116,15 @@ void ZeroMQPublisher::send(Message* msg) {
 		return;
 	}
 
-	// topic name is first message in envelope
+	// topic name or explicit subscriber id is first message in envelope
 	zmq_msg_t channelEnvlp;
-	ZMQ_PREPARE_STRING(channelEnvlp, _channelName.c_str(), _channelName.size());
+	if (msg->getMeta().find("subscriber") != msg->getMeta().end()) {
+		// explicit destination
+		ZMQ_PREPARE_STRING(channelEnvlp, msg->getMeta("subscriber").c_str(), msg->getMeta("subscriber").size());
+	} else {
+		// everyone on channel
+		ZMQ_PREPARE_STRING(channelEnvlp, _channelName.c_str(), _channelName.size());
+	}
 	zmq_sendmsg(_socket, &channelEnvlp, ZMQ_SNDMORE) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&channelEnvlp) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 

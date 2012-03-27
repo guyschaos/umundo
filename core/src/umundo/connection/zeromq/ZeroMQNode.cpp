@@ -78,7 +78,7 @@ void* ZeroMQNode::_zmqContext = NULL;
 ZeroMQNode::ZeroMQNode() {
 }
 
-shared_ptr<Implementation> ZeroMQNode::create() {
+shared_ptr<Implementation> ZeroMQNode::create(void*) {
 	return shared_ptr<ZeroMQNode>(new ZeroMQNode());
 }
 
@@ -321,7 +321,9 @@ void ZeroMQNode::processPubSub(const char* remoteId, zmq_msg_t message, bool sub
 	char* buffer = (char*)zmq_msg_data(&message);
 	uint16_t port = 0;
 	char* channel;
+	char* subId;
 	buffer = readPubInfo(buffer + 2, port, channel);
+	buffer = readSubInfo(buffer, subId);
 
 	if (buffer - (char*)zmq_msg_data(&message) != msgSize) {
 		if (subscribe) {
@@ -342,7 +344,7 @@ void ZeroMQNode::processPubSub(const char* remoteId, zmq_msg_t message, bool sub
 		if (_remoteSubs[remoteId].find(port) == _remoteSubs[remoteId].end())
 			_remoteSubs[remoteId][port] = 0;
 		_remoteSubs[remoteId][port] = _remoteSubs[remoteId][port] + 1;
-		pub->addedSubscriber();
+		pub->addedSubscriber(remoteId, subId);
 	} else {
 		// remove subscription on remote node for publisher
 		pub->removedSubscriber();
@@ -431,12 +433,21 @@ void ZeroMQNode::processPubRemoved(const char* remoteId, zmq_msg_t message) {
  */
 void ZeroMQNode::notifyOfUnsubscription(void* socket, shared_ptr<ZeroMQSubscriber> zSub, shared_ptr<PublisherStub> zPub) {
 	zmq_msg_t msg;
-	ZMQ_PREPARE(msg, zPub->getChannelName().length() + 5);
+	ZMQ_PREPARE(msg, 
+    2 +                                      // uint16_t message type
+    zPub->getChannelName().length() +        // publisher channel name
+    1 +                                      // \0 string terminator
+    2 +                                      // uint16_t port
+    zSub->getUUID().length() +               // uuid of subscriber
+    1                                        // \0 string terminator
+  );
 
 	char* buffer = (char*)zmq_msg_data(&msg);
 	*(uint16_t*)(buffer) = htons(Message::UNSUBSCRIBE);
-	writePubInfo(buffer + 2, zPub->getPort(), zPub->getChannelName().c_str());
-
+	buffer = writePubInfo(buffer + 2, zPub);
+	buffer = writeSubInfo(buffer, zSub);
+  assert((size_t)(buffer - (char*)zmq_msg_data(&msg)) == zmq_msg_size(&msg));
+  
 	zmq_sendmsg(socket, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 }
@@ -446,11 +457,20 @@ void ZeroMQNode::notifyOfUnsubscription(void* socket, shared_ptr<ZeroMQSubscribe
  */
 void ZeroMQNode::notifyOfSubscription(void* socket, shared_ptr<ZeroMQSubscriber> zSub, shared_ptr<PublisherStub> zPub) {
 	zmq_msg_t msg;
-	ZMQ_PREPARE(msg, zPub->getChannelName().length() + 5);
+	ZMQ_PREPARE(msg, 
+    2 +                                      // uint16_t message type
+    zPub->getChannelName().length() +        // publisher channel name
+    1 +                                      // \0 string terminator
+    2 +                                      // uint16_t port
+    zSub->getUUID().length() +               // uuid of subscriber
+    1                                        // \0 string terminator
+  );
 
 	char* buffer = (char*)zmq_msg_data(&msg);
 	*(uint16_t*)(buffer) = htons(Message::SUBSCRIBE);
-	writePubInfo(buffer + 2, zPub->getPort(), zPub->getChannelName().c_str());
+	buffer = writePubInfo(buffer + 2, zPub);
+	buffer = writeSubInfo(buffer, zSub);
+  assert((size_t)(buffer - (char*)zmq_msg_data(&msg)) == zmq_msg_size(&msg));
 
 	zmq_sendmsg(socket, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
@@ -507,7 +527,7 @@ void ZeroMQNode::added(shared_ptr<NodeStub> node) {
 
 			char* buffer = (char*)zmq_msg_data(&msg);
 			*(uint16_t*)(buffer) = htons(Message::PUB_ADDED);
-			char* end = writePubInfo(buffer + 2, zPub->getPort(), zPub->getChannelName().c_str());
+			char* end = writePubInfo(buffer + 2, zPub);
 			(void)end;
 			assert(end - buffer == (int)zPub->getChannelName().length() + 5);
 
@@ -721,7 +741,7 @@ void ZeroMQNode::addPublisher(shared_ptr<PublisherImpl> pub) {
 
 			char* buffer = (char*)zmq_msg_data(&msg);
 			*(uint16_t*)(buffer) = htons(Message::PUB_ADDED);
-			writePubInfo(buffer + 2, zPub->getPort(), zPub->getChannelName().c_str());
+			writePubInfo(buffer + 2, zPub);
 
 			LOG_DEBUG("Informing %s of new publisher", SHORT_UUID(sockIter->first).c_str());
 			zmq_sendmsg(sockIter->second, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
@@ -754,7 +774,7 @@ void ZeroMQNode::removePublisher(shared_ptr<PublisherImpl> pub) {
 
 			char* buffer = (char*)zmq_msg_data(&msg);
 			*(uint16_t*)(buffer) = htons(Message::PUB_REMOVED);
-			writePubInfo(buffer + 2, zPub->getPort(), zPub->getChannelName().c_str());
+			writePubInfo(buffer + 2, zPub);
 
 			LOG_DEBUG("Informing %s", sockIter->first.c_str());
 			zmq_sendmsg(sockIter->second, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
@@ -771,7 +791,10 @@ void ZeroMQNode::removePublisher(shared_ptr<PublisherImpl> pub) {
 /**
  * Write channel\0port into the given byte array
  */
-char* ZeroMQNode::writePubInfo(char* buffer, uint16_t port, const char* channel) {
+char* ZeroMQNode::writePubInfo(char* buffer, shared_ptr<PublisherStub> pub) {
+  const char* channel = pub->getChannelName().c_str();
+  uint16_t port = pub->getPort();
+  
 	char* start = buffer;
 	(void)start; // surpress unused warning wiithout assert
 	memcpy(buffer, channel, strlen(channel));
@@ -787,16 +810,39 @@ char* ZeroMQNode::writePubInfo(char* buffer, uint16_t port, const char* channel)
 /**
  * Read channel\0port from the given byte array into the variables
  */
-char* ZeroMQNode::readPubInfo(char* buffer, uint16_t& port, char*& channel) {
+char* ZeroMQNode::readPubInfo(char* buffer, uint16_t& port, char*& channelName) {
 	char* start = buffer;
-	(void)start; // surpress unused warning wiithout assert
-	channel = buffer;
+	(void)start; // surpress unused warning without assert
+	channelName = buffer;
 	buffer += strlen(buffer);
 	buffer++;
 	port = ntohs(*(short*)(buffer));
 	buffer += 2;
-	assert(buffer - start == (int)strlen(channel) + 3);
+	assert(buffer - start == (int)strlen(channelName) + 3);
 	return buffer;
+}
+
+char* ZeroMQNode::writeSubInfo(char* buffer, shared_ptr<ZeroMQSubscriber> sub) {
+  const char* uuid = sub->getUUID().c_str();
+	
+  char* start = buffer;
+  (void)start; // surpress unused warning without assert	
+  memcpy(buffer, uuid, strlen(uuid));
+	buffer += strlen(uuid);
+	*buffer = 0;
+  buffer++;
+	assert(buffer - start == (int)strlen(uuid) + 1);
+  return buffer;
+}
+
+char* ZeroMQNode::readSubInfo(char* buffer, char*& uuid) {
+  char* start = buffer;
+	(void)start; // surpress unused warning without assert
+	uuid = buffer;
+	buffer += strlen(buffer);
+	buffer++;
+  assert(buffer - start == (int)strlen(uuid) + 1);
+  return buffer;
 }
 
 bool ZeroMQNode::validateState() {

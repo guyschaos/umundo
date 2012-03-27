@@ -70,6 +70,12 @@ public:
 		return _keys;
 	}
 
+	static Message* toSubscriber(const string& uuid) {
+		Message* msg = new Message();
+		msg->setMeta("subscriber", uuid);
+		return msg;
+	}
+
 protected:
 	string _data;
 	map<string, string> _meta;

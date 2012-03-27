@@ -7,7 +7,7 @@ PBSerializer::PBSerializer() {}
 
 PBSerializer::~PBSerializer() {}
 
-shared_ptr<Implementation> PBSerializer::create() {
+shared_ptr<Implementation> PBSerializer::create(void*) {
 	shared_ptr<Implementation> instance(new PBSerializer());
 	return instance;
 }

@@ -10,7 +10,7 @@ shared_ptr<Configuration> PublisherConfig::create() {
 }
 
 Publisher::Publisher(const string& channelName) {
-	_impl = boost::static_pointer_cast<PublisherImpl>(Factory::create("publisher"));
+	_impl = boost::static_pointer_cast<PublisherImpl>(Factory::create("publisher", this));
 	_impl->setChannelName(channelName);
 	shared_ptr<PublisherConfig> config = boost::static_pointer_cast<PublisherConfig>(Factory::config("publisher"));
 	config->channelName = channelName;
@@ -24,6 +24,11 @@ void Publisher::send(const char* data, size_t length) {
 }
 
 Publisher::~Publisher() {
+}
+
+PublisherImpl::~PublisherImpl() {
+	if (_greeter != NULL)
+		delete(_greeter);
 }
 
 }

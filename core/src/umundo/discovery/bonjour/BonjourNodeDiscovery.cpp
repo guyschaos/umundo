@@ -33,7 +33,7 @@ namespace umundo {
 BonjourNodeDiscovery::BonjourNodeDiscovery() {
 }
 
-shared_ptr<Implementation> BonjourNodeDiscovery::create() {
+shared_ptr<Implementation> BonjourNodeDiscovery::create(void*) {
 	return getInstance();
 }
 

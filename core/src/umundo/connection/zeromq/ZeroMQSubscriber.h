@@ -16,7 +16,7 @@ class PublisherStub;
  */
 class ZeroMQSubscriber : public SubscriberImpl, public ResultSet<PublisherStub>, public boost::enable_shared_from_this<ZeroMQSubscriber> {
 public:
-	shared_ptr<Implementation> create();
+	shared_ptr<Implementation> create(void*);
 	void destroy();
 	void init(shared_ptr<Configuration>);
 	virtual ~ZeroMQSubscriber();

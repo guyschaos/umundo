@@ -14,6 +14,17 @@ class PublisherImpl;
 class Subscriber;
 class SubscriberImpl;
 class NodeStub;
+class Connectable;
+
+/**
+ * Convinience class to connect register an entity with many publishers / subscribers.
+ */
+class Connectable {
+public:
+  virtual ~Connectable() {};
+	virtual set<Publisher*> getPublishers() { return set<Publisher*>(); }
+	virtual set<Subscriber*> getSubscribers() { return set<Subscriber*>(); }
+};
 
 /**
  * Representation of a remote umundo Node.
@@ -94,6 +105,8 @@ public:
 	void removeSubscriber(Subscriber*);
 	void addPublisher(Publisher*);
 	void removePublisher(Publisher*);
+	void connect(Connectable*);
+	void disconnect(Connectable*);
 	//@}
 
 	/** @name Sleeping for Power Saving */

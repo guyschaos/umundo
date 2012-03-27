@@ -22,7 +22,7 @@ public:
 	virtual ~AvahiNodeDiscovery();
 	static shared_ptr<AvahiNodeDiscovery> getInstance();
 
-	shared_ptr<Implementation> create();
+	shared_ptr<Implementation> create(void*);
 	void destroy();
 	void init(shared_ptr<Configuration>);
 	void suspend();

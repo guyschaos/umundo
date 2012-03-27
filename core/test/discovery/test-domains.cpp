@@ -15,7 +15,7 @@ public:
 	TestReceiver(std::string name) : _name(name) {};
 	void receive(Message* msg) {
 		//std::cout << "received " << msg->getData().size() << "bytes" << std::endl;
-		assert(_name.compare(msg->getMeta("channelName")) == 0);
+//		assert(_name.compare(msg->getMeta("channelName")) == 0);
 		UMUNDO_LOCK(mutex);
 		// not an atomic operation!
 		receives++;
@@ -113,13 +113,13 @@ void testDomainReception() {
 }
 
 int main(int argc, char** argv, char** envp) {
-	setenv("UMUNDO_LOGLEVEL_DISC", "4", 1);
-	setenv("UMUNDO_LOGLEVEL_NET", "2", 1);
+//	setenv("UMUNDO_LOGLEVEL_DISC", "4", 1);
+//	setenv("UMUNDO_LOGLEVEL_NET", "2", 1);
 	int i = 1;
 	while(i-- > 0) {
-		printf("##### testDifferentDomain #####################################\n");
-		testDifferentDomain();
-		assert(Node::instances == 0);
+//		printf("##### testDifferentDomain #####################################\n");
+//		testDifferentDomain();
+//		assert(Node::instances == 0);
 		printf("##### testSameDomain ##########################################\n");
 		testSameDomain();
 		assert(Node::instances == 0);

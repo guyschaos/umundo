@@ -16,7 +16,7 @@ class ZeroMQPublisher : public PublisherImpl, public boost::enable_shared_from_t
 public:
 	virtual ~ZeroMQPublisher();
 
-	shared_ptr<Implementation> create();
+	shared_ptr<Implementation> create(void*);
 	void init(shared_ptr<Configuration>);
 	void destroy();
 	void suspend();
@@ -30,7 +30,7 @@ protected:
 	* Constructor used for prototype in Factory only.
 	*/
 	ZeroMQPublisher();
-	void addedSubscriber();
+	void addedSubscriber(const string, const string);
 	void removedSubscriber();
 
 private:

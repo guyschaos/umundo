@@ -74,7 +74,7 @@ shared_ptr<Configuration> Factory::config(string name) {
 	return config;
 }
 
-shared_ptr<Implementation> Factory::create(string name) {
+shared_ptr<Implementation> Factory::create(string name, void* facade) {
 	Factory* factory = getInstance();
 	UMUNDO_LOCK(factory->_mutex);
 	if (factory->_prototypes.find(name) == factory->_prototypes.end()) {
@@ -82,7 +82,7 @@ shared_ptr<Implementation> Factory::create(string name) {
 		UMUNDO_UNLOCK(factory->_mutex);
 		return shared_ptr<Implementation>();
 	}
-	shared_ptr<Implementation> implementation = factory->_prototypes[name]->create();
+	shared_ptr<Implementation> implementation = factory->_prototypes[name]->create(facade);
 	factory->_implementations.push_back(implementation);
 	UMUNDO_UNLOCK(factory->_mutex);
 	return implementation;

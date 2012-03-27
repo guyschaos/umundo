@@ -35,7 +35,7 @@ public:
 	virtual ~BonjourNodeDiscovery();
 	static shared_ptr<BonjourNodeDiscovery> getInstance();  ///< Return the singleton instance.
 
-	shared_ptr<Implementation> create();
+	shared_ptr<Implementation> create(void*);
 	void destroy();
 	void init(shared_ptr<Configuration>);
 	void suspend();

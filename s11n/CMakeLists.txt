@@ -91,7 +91,9 @@ if (UNIX AND NOT APPLE)
 	LIST(APPEND UMUNDOS11N_LIBRARIES ${UMUNDOS11N_LIBRARIES})
 endif()
 
-add_subdirectory(test)          # build tests
+if (NOT CMAKE_CROSSCOMPILING)
+	add_subdirectory(test)          # build tests
+endif()
 
 INSTALL_HEADERS_WITH_DIRECTORY("UMUNDOS11N_HEADER_FILES" headerS11N)
 

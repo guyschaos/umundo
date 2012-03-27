@@ -56,6 +56,36 @@ void Node::removePublisher(Publisher* pub) {
 	_impl->removePublisher(pub->_impl);
 }
 
+void Node::connect(Connectable* conn) {
+	set<Subscriber*> subs = conn->getSubscribers();
+	set<Subscriber*>::iterator subIter = subs.begin();
+	while(subIter != subs.end()) {
+		_impl->addSubscriber((*subIter)->_impl);
+		subIter++;
+	}
+	set<Publisher*> pubs = conn->getPublishers();
+	set<Publisher*>::iterator pubIter = pubs.begin();
+	while(pubIter != pubs.end()) {
+		_impl->addPublisher((*pubIter)->_impl);
+		pubIter++;
+	}
+}
+
+void Node::disconnect(Connectable* conn) {
+	set<Publisher*> pubs = conn->getPublishers();
+	set<Publisher*>::iterator pubIter = pubs.begin();
+	while(pubIter != pubs.end()) {
+		_impl->removePublisher((*pubIter)->_impl);
+		pubIter++;
+	}
+	set<Subscriber*> subs = conn->getSubscribers();
+	set<Subscriber*>::iterator subIter = subs.begin();
+	while(subIter != subs.end()) {
+		_impl->removeSubscriber((*subIter)->_impl);
+		subIter++;
+	}
+}
+
 void Node::suspend() {
 	_impl->suspend();
 }

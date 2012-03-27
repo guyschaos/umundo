@@ -42,7 +42,7 @@ public:
 
 	/** @name Implementor */
 	//@{
-	shared_ptr<Implementation> create();
+	shared_ptr<Implementation> create(void*);
 	void destroy();
 	void init(shared_ptr<Configuration>);
 	void suspend();
@@ -103,8 +103,10 @@ private:
 	void processPubSub(const char*, zmq_msg_t, bool); ///< notify local publishers about subscriptions
 	bool validateState(); ///< check the nodes state
 
-	static char* writePubInfo(char*, uint16_t, const char*); ///< write publisher info into given byte array
-	static char* readPubInfo(char*, uint16_t&, char*&); ///< read publisher from into given byte array
+	static char* writePubInfo(char*, shared_ptr<PublisherStub>); ///< write publisher info into given byte array
+	static char* readPubInfo(char*, uint16_t&, char*&); ///< read publisher from  given byte array
+	static char* writeSubInfo(char*, shared_ptr<ZeroMQSubscriber>); ///< write subscriber info into given byte array
+	static char* readSubInfo(char*, char*&); ///< read subscriber from given byte array
 
 	static void* _zmqContext; ///< global 0MQ context.
 	void* _responder; ///< 0MQ node socket for administrative messages.

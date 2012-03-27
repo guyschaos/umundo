@@ -8,7 +8,7 @@ shared_ptr<Configuration> SubscriberConfig::create() {
 }
 
 Subscriber::Subscriber(string channelName, Receiver* receiver) {
-	_impl = boost::static_pointer_cast<SubscriberImpl>(Factory::create("subscriber"));
+	_impl = boost::static_pointer_cast<SubscriberImpl>(Factory::create("subscriber", this));
 	_config = boost::static_pointer_cast<SubscriberConfig>(Factory::config("subscriber"));
 //	_config->channelName = channelName;
 //	_config->receiver = receiver;

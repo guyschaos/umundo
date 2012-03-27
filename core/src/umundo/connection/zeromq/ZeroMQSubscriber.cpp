@@ -14,7 +14,7 @@
 
 namespace umundo {
 
-shared_ptr<Implementation> ZeroMQSubscriber::create() {
+shared_ptr<Implementation> ZeroMQSubscriber::create(void*) {
 	shared_ptr<Implementation> instance(new ZeroMQSubscriber());
 	return instance;
 }
@@ -44,6 +44,9 @@ void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	int hwm = NET_ZEROMQ_RCV_HWM;
 	zmq_setsockopt(_socket, ZMQ_RCVHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, _channelName.c_str(), _channelName.size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+	LOG_DEBUG("Subscribing to %s", _channelName.c_str());
+	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, SHORT_UUID(_uuid).c_str(), SHORT_UUID(_uuid).size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+	LOG_DEBUG("Subscribing to %s", SHORT_UUID(_uuid).c_str());
 	zmq_setsockopt(_socket, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 
 	// make sure we can close the socket later

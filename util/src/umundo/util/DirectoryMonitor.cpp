@@ -1,5 +1,9 @@
 #include "umundo/util/DirectoryMonitor.h"
 
+#include <dirent.h>
+#include <stdio.h>
+#include <string.h>
+
 namespace umundo {
 
 DirectoryMonitor::DirectoryMonitor(string directory, string channelName) : 

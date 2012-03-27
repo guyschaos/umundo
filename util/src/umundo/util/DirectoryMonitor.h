@@ -1,7 +1,6 @@
 #ifndef DIRECTORYMONITOR_H_XVF5N5JI
 #define DIRECTORYMONITOR_H_XVF5N5JI
 
-#include <dirent.h>
 #include <sys/stat.h>
 
 #include "umundo/connection/Node.h"

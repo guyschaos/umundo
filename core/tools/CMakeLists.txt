@@ -7,10 +7,8 @@ endif()
 target_link_libraries(umundo-monitor ${UMUNDOCORE_LIBRARIES})
 set_target_properties(umundo-monitor PROPERTIES FOLDER "Tools")
 
-install(
+INSTALL_EXECUTABLE(
 	TARGETS umundo-monitor
-	DESTINATION bin
-	PERMISSIONS WORLD_EXECUTE OWNER_EXECUTE GROUP_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
 	COMPONENT tools 
 )
 
@@ -18,9 +16,7 @@ add_executable(umundo-pingpong umundo-pingpong.cpp)
 target_link_libraries(umundo-pingpong ${UMUNDOCORE_LIBRARIES})
 set_target_properties(umundo-pingpong PROPERTIES FOLDER "Tools")
 
-install(
+INSTALL_EXECUTABLE(
 	TARGETS umundo-pingpong
-	DESTINATION bin
-	PERMISSIONS WORLD_EXECUTE OWNER_EXECUTE GROUP_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
 	COMPONENT tools 
 )

@@ -30,61 +30,27 @@ SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES SWIG_FLAGS "-package;${UMUND
 SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES CPLUSPLUS ON)
 SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}")
 
-if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
-	SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
-	SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARIES})
-	SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
-	set_target_properties(umundocoreSwig PROPERTIES FOLDER "Bindings")
-else()
-	if (CMAKE_BUILD_TYPE MATCHES "Debug")
-		SWIG_ADD_MODULE(umundocoreSwig_d java umundocore.i)
-		SWIG_LINK_LIBRARIES(umundocoreSwig_d
-		${JNI_LIBRARIES}
-		${UMUNDOCORE_LIBRARIES})
-		set_target_properties(umundocoreSwig_d PROPERTIES FOLDER "Bindings")
-	else()
-		SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
-		SWIG_LINK_LIBRARIES(umundocoreSwig
-		${JNI_LIBRARIES}
-		${UMUNDOCORE_LIBRARIES})
-		set_target_properties(umundocoreSwig PROPERTIES FOLDER "Bindings")
-	endif()
-endif()
+SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
+SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARIES})
+SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
+INSTALL_LIBRARY(TARGETS umundocoreSwig COMPONENT librarySwig)
 
-# message(STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
-# message(STATUS "CMAKE_ECLIPSE_VERSION: ${CMAKE_ECLIPSE_VERSION}")
+# build jar and copy to library output dir
 FIND_PACKAGE(Java)
-# use java started 
 if(Java_JAVAC_EXECUTABLE AND CMAKE_PATCH_VERSION GREATER 5)
-	if(CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
-		# using java to build jars gives the following error in MSVS
-		# Error	179	error MSB6001: Invalid command line switch for "cmd.exe". Illegal characters in path.	C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets	151	6	umundocoreSwigJNI
-			# ADD_CUSTOM_COMMAND(
-			# 		    TARGET umundocoreSwigJNI
-			# 		    POST_BUILD
-			# 		    COMMAND ${CMAKE_COMMAND} -E copy
-			# 	${CMAKE_CURRENT_BINARY_DIR}\\\\umundocoreSwigJNI.jar
-			# 	${LIBRARY_OUTPUT_PATH}
-			# )
-		message(STATUS "NOTE: we cannot build the umundocoreSwigJNI.jar in windows, please use one from the other platforms or build it by hand!")
-	else()
-		include (UseJava)
-		ADD_JAR(umundocoreSwigJNI ${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/*.java)
-		ADD_CUSTOM_COMMAND(
-		    TARGET umundocoreSwigJNI
-		    POST_BUILD
-		    COMMAND ${CMAKE_COMMAND} -E copy
-				${CMAKE_CURRENT_BINARY_DIR}/umundocoreSwigJNI.jar
-				${LIBRARY_OUTPUT_PATH}
-		)
-		if (CMAKE_BUILD_TYPE MATCHES "Debug")
-			add_dependencies(umundocoreSwigJNI umundocoreSwig_d)
-		else()
-			add_dependencies(umundocoreSwigJNI umundocoreSwig)
-		endif()
-		set_target_properties(umundocoreSwigJNI PROPERTIES FOLDER "Bindings")
-
-	endif()
-else()
-	message("Could not find javac or cmake not >= 2.8.6, not building jar")
+	include (UseJava)
+	ADD_JAR(umundocoreSwigJNI ${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/*.java)
+	ADD_CUSTOM_COMMAND(
+	    TARGET umundocoreSwigJNI
+	    POST_BUILD
+	    COMMAND ${CMAKE_COMMAND} -E copy
+			${CMAKE_CURRENT_BINARY_DIR}/umundocoreSwigJNI.jar
+			${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+	)
+	add_dependencies(umundocoreSwigJNI umundocoreSwig)
+	install_files(
+		FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/umundocoreSwigJNI.jar 
+		DESTINATION share/umundo/java 
+		COMPONENT librarySwig)
+	set_target_properties(umundocoreSwigJNI PROPERTIES FOLDER "Bindings")
 endif()

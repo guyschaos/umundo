@@ -1,49 +1,83 @@
 ############################################################
-# General setup
+# Gather libraries and header files
 ############################################################
+
+# include directories for our header files
+include_directories(./src)
+include_directories(./test)
 
 # gather all header files
 file(GLOB_RECURSE UMUNDOCORE_HEADER_FILES src/*.h)
 
-############################################################
-# Gather libraries and header files
-############################################################
+###########################################
+# gather implementation agnostic files
+###########################################
+file(GLOB COMMON_FILES src/umundo/common/*.cpp)
+file(GLOB CONN_FILES src/umundo/connection/*.cpp)
+file(GLOB DISC_FILES src/umundo/discovery/*.cpp)
+file(GLOB TREAD_FILES src/umundo/thread/*.cpp)
 
+list(APPEND UMUNDOCORE_FILES 
+	${COMMON_FILES}
+	${CONN_FILES}
+	${DISC_FILES}
+	${TREAD_FILES}
+)
+
+###########################################
+# ZeroMQ
+###########################################
 if(NET_ZEROMQ)
 	find_package(ZeroMQ REQUIRED)
-	LIST(APPEND UMUNDOCORE_LIBRARIES optimized ${ZeroMQ_LIBRARY})
-	LIST(APPEND UMUNDOCORE_LIBRARIES debug ${ZeroMQ_LIBRARY_DEBUG})
+	LIST(APPEND UMUNDOCORE_LIBRARIES ${ZeroMQ_LIBRARY})
 	include_directories(${ZeroMQ_INCLUDE_DIR})
+
+	file(GLOB_RECURSE NET_ZEROMQ_FILES src/umundo/connection/zeromq/*.cpp)
+	list(APPEND UMUNDOCORE_FILES ${NET_ZEROMQ_FILES})
 endif()
 
-if(DISC_BONJOUR)
-	# do not search for embedded bonjour libraries
+###########################################
+# Bonjour
+###########################################
+if (DISC_BONJOUR)
 	if (NOT APPLE AND NOT IOS)
+		# bonjour is automatically available on mac
 		find_package(Bonjour REQUIRED)
-		LIST(APPEND UMUNDOCORE_LIBRARIES optimized ${Bonjour_LIBRARY})
-		LIST(APPEND UMUNDOCORE_LIBRARIES debug ${Bonjour_LIBRARY_DEBUG})
-	elseif(DISC_BONJOUR_EMBED AND NOT IOS)
-		# except when building with embedded mdns
-		find_package(Bonjour REQUIRED)
-		LIST(APPEND UMUNDOCORE_LIBRARIES optimized ${Bonjour_LIBRARY})
-		LIST(APPEND UMUNDOCORE_LIBRARIES debug ${Bonjour_LIBRARY_DEBUG})
+		LIST(APPEND UMUNDOCORE_LIBRARIES ${Bonjour_LIBRARY})
+	endif()
+
+	file(GLOB_RECURSE DISC_BONJOUR_FILES src/umundo/discovery/bonjour/*.cpp)
+	list(APPEND UMUNDOCORE_FILES ${DISC_BONJOUR_FILES})
+
+	if (DISC_BONJOUR_EMBED)
+		file(GLOB_RECURSE DISC_BONJOUR_EMBED_FILES src/umundo/discovery/bonjour/mDNSEmbedded.c)
+		list(APPEND UMUNDOCORE_FILES ${DISC_BONJOUR_EMBED_FILES})
 	endif()
 endif()
 
+###########################################
+# Avahi
+###########################################
 if(DISC_AVAHI)
 	find_package(Avahi REQUIRED)
 	LIST(APPEND UMUNDOCORE_LIBRARIES ${Avahi_LIBRARIES})
 	include_directories(${Avahi_INCLUDE_DIR})
+
+	file(GLOB_RECURSE DISC_AVAHI_FILES src/umundo/discovery/avahi/*.cpp)
+	list(APPEND UMUNDOCORE_FILES ${DISC_AVAHI_FILES})
 endif()
 
+###########################################
+# Threads
+###########################################
 if(THREAD_PTHREAD AND NOT ANDROID)
 	LIST(APPEND UMUNDOCORE_LIBRARIES "pthread")
 endif()
 
-FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
-	PATHS /usr/include
-)
-include_directories(${Boost_INCLUDE_DIR})
+
+###########################################
+# additional libraries required for core
+###########################################
 
 if (ANDROID)
 	LIST(APPEND UMUNDOCORE_LIBRARIES log)
@@ -52,89 +86,42 @@ endif()
 if (UNIX AND NOT APPLE AND NOT ANDROID)
 	LIST(APPEND UMUNDOCORE_LIBRARIES rt)
 endif()
+
 if (WIN32)
 	LIST(APPEND UMUNDOCORE_LIBRARIES Ws2_32)
 endif()
 
-LIST(SORT UMUNDOCORE_HEADER_FILES)
+LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
 
-# include directories for our header files
-include_directories(./src)
-include_directories(./test)
+############################################################
+# process other directories
+############################################################
 
-add_subdirectory(src/umundo)    # gather UMUNDOCORE_FILES and add target umundo library
-
-# add objective-c bindings on mac and ios
-if (APPLE OR IOS)
-	file(GLOB_RECURSE UMUNDOCORE_OBJC_FILES bindings/umundo-objc/core/*.mm)
-	list(APPEND UMUNDOCORE_FILES ${UMUNDOCORE_OBJC_FILES})
-	file(GLOB_RECURSE UMUNDOCORE_OBJC_HEADER_FILES bindings/umundo-objc/core/*.h)
-	list(APPEND UMUNDOCORE_HEADER_FILES ${UMUNDOCORE_OBJC_HEADER_FILES})
-	if (IOSSIM)
-		foreach(UMUNDOCORE_OBJC_FILE ${UMUNDOCORE_OBJC_FILES})
-			set_source_files_properties(${UMUNDOCORE_OBJC_FILE} PROPERTIES COMPILE_FLAGS "-fobjc-abi-version=2 -fobjc-legacy-dispatch")
-		endforeach()
-	endif()
-	include_directories(bindings)
-endif()
-
-# library name suffix depending on build type
-if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
-	add_library(umundocore
-		${UMUNDOCORE_FILES}
-		${UMUNDOCORE_HEADER_FILES}
-	)
-	LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
-	set_target_properties(umundocore PROPERTIES FOLDER "Libraries")
-else()
-	if (CMAKE_BUILD_TYPE MATCHES "Debug")
-		add_library(umundocore_d
-			${UMUNDOCORE_FILES}
-			${UMUNDOCORE_HEADER_FILES}
-		)
-		LIST(APPEND UMUNDOCORE_LIBRARIES debug umundocore_d)
-		set_target_properties(umundocore_d PROPERTIES FOLDER "Libraries")
-	else()
-		add_library(umundocore
-			${UMUNDOCORE_FILES}
-			${UMUNDOCORE_HEADER_FILES}
-		)
-		LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
-		set_target_properties(umundocore PROPERTIES FOLDER "Libraries")
-	endif()
-endif()
-
-INSTALL_HEADERS_WITH_DIRECTORY("UMUNDOCORE_HEADER_FILES" headerCore)
-
-# ok to have in IDEs, but do not install
-LIST(APPEND UMUNDOCORE_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)
-
-if (UNIX AND NOT APPLE)
-	# we need to duplicate the libraries on debian - is this a cmake bug?
-	LIST(APPEND UMUNDOCORE_LIBRARIES ${UMUNDOCORE_LIBRARIES})
-endif()
-
+add_subdirectory(bindings)    
 if (NOT CMAKE_CROSSCOMPILING)
 	add_subdirectory(test)          # build tests
 	add_subdirectory(tools)         # command-line tools
 endif()
 
 ############################################################
-# Generate wrappers for other languages
+# setup umundocore library
 ############################################################
 
-if (NOT CMAKE_CROSSCOMPILING OR ANDROID)
-	add_subdirectory(bindings/swig)  # build umundocore JNI library
-endif()
+LIST(SORT UMUNDOCORE_HEADER_FILES)
+
+add_library(umundocore ${UMUNDOCORE_FILES})
+INSTALL_HEADERS(HEADERS ${UMUNDOCORE_HEADER_FILES} COMPONENT headerCore)
+INSTALL_LIBRARY(TARGETS umundocore COMPONENT libraryCore)
+
+# ok to have in IDEs, but do not install
+LIST(APPEND UMUNDOCORE_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)
+
 
 ############################################################
 # Miscellaneous
 ############################################################
 
-MARK_AS_ADVANCED(CMAKE_OSX_ARCHITECTURES CMAKE_OSX_DEPLOYMENT_TARGET CMAKE_OSX_SYSROOT)
-
 set(UMUNDOCORE_FILES "${UMUNDOCORE_FILES}" PARENT_SCOPE)
 set(UMUNDOCORE_LIBRARIES "${UMUNDOCORE_LIBRARIES}" PARENT_SCOPE)
 set(UMUNDOCORE_HEADER_FILES "${UMUNDOCORE_HEADER_FILES}" PARENT_SCOPE)
-
 

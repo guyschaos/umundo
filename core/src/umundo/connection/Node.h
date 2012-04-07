@@ -21,9 +21,13 @@ class Connectable;
  */
 class Connectable {
 public:
-  virtual ~Connectable() {};
-	virtual set<Publisher*> getPublishers() { return set<Publisher*>(); }
-	virtual set<Subscriber*> getSubscribers() { return set<Subscriber*>(); }
+	virtual ~Connectable() {};
+	virtual set<Publisher*> getPublishers() {
+		return set<Publisher*>();
+	}
+	virtual set<Subscriber*> getSubscribers() {
+		return set<Subscriber*>();
+	}
 };
 
 /**

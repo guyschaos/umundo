@@ -17,7 +17,9 @@ FIND_PATH(Bonjour_INCLUDE_DIR dns_sd.h
   /opt
 )
 
-FIND_LIBRARY(Bonjour_LIBRARY 
+set(Bonjour_LIBRARY)
+
+FIND_LIBRARY(Bonjour_LIBRARY_RELEASE
   NAMES ${BONJOUR_LIBNAME}
   HINTS
   $ENV{BonjourDIR}
@@ -29,6 +31,9 @@ FIND_LIBRARY(Bonjour_LIBRARY
   /opt/csw
   /opt
 )
+if (Bonjour_LIBRARY_RELEASE)
+	list(APPEND Bonjour_LIBRARY optimized ${Bonjour_LIBRARY_RELEASE})
+endif()
 
 FIND_LIBRARY(Bonjour_LIBRARY_DEBUG
   NAMES ${BONJOUR_LIBNAME}_d ${BONJOUR_LIBNAME}
@@ -42,12 +47,12 @@ FIND_LIBRARY(Bonjour_LIBRARY_DEBUG
   /opt/csw
   /opt
 )
-
-message(STATUS "Bonjour_LIBRARY ${Bonjour_LIBRARY}")
-message(STATUS "Bonjour_LIBRARY_DEBUG ${Bonjour_LIBRARY_DEBUG}")
+if (Bonjour_LIBRARY_DEBUG)
+	list(APPEND Bonjour_LIBRARY debug ${Bonjour_LIBRARY_DEBUG})
+endif()
 
 # handle the QUIETLY and REQUIRED arguments and set OPENAL_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Bonjour DEFAULT_MSG Bonjour_LIBRARY Bonjour_LIBRARY_DEBUG Bonjour_INCLUDE_DIR)
-MARK_AS_ADVANCED(Bonjour_INCLUDE_DIR Bonjour_LIBRARY Bonjour_LIBRARY_DEBUG)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Bonjour DEFAULT_MSG Bonjour_LIBRARY Bonjour_INCLUDE_DIR)
+MARK_AS_ADVANCED(Bonjour_LIBRARY_RELEASE Bonjour_LIBRARY_DEBUG)

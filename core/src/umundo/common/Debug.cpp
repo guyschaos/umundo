@@ -164,7 +164,7 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 
 	// get current thread id
 	int threadId = -1;
-//	if (strcmp(filename, "Thread.cpp") != 0) 
+//	if (strcmp(filename, "Thread.cpp") != 0)
 //		threadId = Thread::getThreadId();
 
 	// timestamp
@@ -229,16 +229,16 @@ void Debug::abortWithStackTraceOnSignal(int sig) {
 }
 
 void Debug::stackTraceSigHandler(int sig) {
-  void *array[10];
-  size_t size;
+	void *array[10];
+	size_t size;
 
-  // get void*'s for all entries on the stack
-  size = backtrace(array, 10);
+	// get void*'s for all entries on the stack
+	size = backtrace(array, 10);
 
-  // print out all the frames to stderr
-  fprintf(stderr, "Error: signal %d:\n", sig);
-  backtrace_symbols_fd(array, size, 2);
-  exit(1);
+	// print out all the frames to stderr
+	fprintf(stderr, "Error: signal %d:\n", sig);
+	backtrace_symbols_fd(array, size, 2);
+	exit(1);
 }
 
 #endif

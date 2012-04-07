@@ -14,7 +14,7 @@ class Publisher;
 /**
  * Wait for new subscribers and welcome them.
  *
- * A greeter can be registered at a publisher to send a message, whenever a new subscriber 
+ * A greeter can be registered at a publisher to send a message, whenever a new subscriber
  * is added to the publisher.
  */
 class Greeter {

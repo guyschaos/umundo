@@ -4,12 +4,12 @@
 #
 cmake_minimum_required(VERSION 2.8.5)
 
-# build type has to be set first
+# build type has to be set before the project definition
 SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
 IF(DEFINED CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING ${BUILD_TYPE_HELP})
 ELSE()
-   SET(CMAKE_BUILD_TYPE Debug CACHE STRING ${BUILD_TYPE_HELP})
+   SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
 ENDIF()
 
 project(umundo)
@@ -47,7 +47,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	endif()
 endif()
 
-# find libraries
+# search roots for libraries
 if(CMAKE_CROSSCOMPILING)
 	SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "ONLY")
 	if (IOS)
@@ -67,41 +67,15 @@ endif()
 #message(STATUS "CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH}")
 
 ############################################################
-# Macros we need later on for installation
-############################################################
-
-# Preserve directory structure for header files in distribution packages
-# adapted with authors permission from http://www.semipol.de/archives/251
-MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST COMPONENT)
-	FOREACH(HEADER ${${HEADER_LIST}})
-#		message(STATUS "ADDING HEADER ${HEADER}")
-		if (${HEADER} MATCHES "${CMAKE_BINARY_DIR}.*")
-			STRING(REGEX REPLACE "${CMAKE_BINARY_DIR}" "" REL_HEADER ${HEADER})
-			STRING(REGEX MATCH "[^/\\](.*)[/\\]" REL_HEADER ${REL_HEADER})
-			SET(REL_HEADER "umundo/${REL_HEADER}")
-#			message(STATUS "MATCHED CMAKE_BINARY_DIR -> ${REL_HEADER}")
-		elseif(${HEADER} MATCHES "${PROJECT_SOURCE_DIR}.*")
-			STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}" "" REL_HEADER ${HEADER})
-			STRING(REGEX MATCH "umundo(.*)[/\\]" REL_HEADER ${REL_HEADER})
-#			message(STATUS "MATCHED PROJECT_SOURCE_DIR -> ${REL_HEADER}")
-		endif()
-		STRING(REGEX MATCH "(.*)[/\\]" DIR ${REL_HEADER})
-		if (NOT DIR)
-			message(STATUS "Refusing to add header file ${REL_HEADER} for include in uppermost directory")
-		else()
-#			message("ADDING ${HEADER} in include/${DIR} for ${COMPONENT}")
-			INSTALL(FILES ${HEADER} DESTINATION include/${DIR} COMPONENT ${COMPONENT})
-		endif()
-	ENDFOREACH()
-ENDMACRO()
-
-############################################################
 # General setup
 ############################################################
 
+OPTION(DIST_PREPARE "Put libraries into the lib folder of the source tree" OFF)
+OPTION(DIST_PACKAGE "Create a distribution from the libraries in the source folder" OFF)
+
 # where to find the cmake modules we distribute
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
-
+include("${CMAKE_MODULE_PATH}/UMUNDOMacros.cmake")
 include("${CMAKE_MODULE_PATH}/FunctionExists.cmake")
 
 # some compiler flags
@@ -118,6 +92,8 @@ elseif (MSVC)
 	add_definitions("-DZMQ_STATIC")	
 	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+	# SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB")
+	# SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /NODEFAULTLIB:MSVCRTD.lib")
 endif()
 
 # build type as macro to strip logging in release builds
@@ -172,6 +148,15 @@ SET_PROPERTY(CACHE LOGLEVEL_NET PROPERTY STRINGS 0 1 2 3)
 SET_PROPERTY(CACHE LOGLEVEL_S11N PROPERTY STRINGS 0 1 2 3)
 
 ############################################################
+# postfixes for all built targets depending on build type
+############################################################
+
+SET(CMAKE_DEBUG_POSTFIX "_d")
+SET(CMAKE_RELEASE_POSTFIX "")
+SET(CMAKE_RELWITHDEBINFO_POSTFIX "_rd")
+SET(CMAKE_MINSIZEREL_POSTFIX "_s")
+
+############################################################
 # Select implementations depending on build target
 ############################################################
 
@@ -218,6 +203,11 @@ OPTION(NET_ZEROMQ "Use 0MQ for networking" ON)
 OPTION(S11N_PROTOBUF "Use protobuf object serialization" ON) 
 OPTION(RPC_PROTOBUF "Use protobuf remote procedure calls" ON) 
 
+if (S11N_PROTOBUF)
+	# take a guess at PROTOBUF_SRC_ROOT_FOLDER
+	set(PROTOBUF_SRC_ROOT_FOLDER "${PROJECT_BINARY_DIR}/../protobuf-2.4.1")
+endif()
+
 if (NET_ZEROMQ)
 	SET(NET_ZEROMQ_SND_HWM "10000" CACHE STRING "Maximum queue size for publishers")
 	SET(NET_ZEROMQ_RCV_HWM "10000" CACHE STRING "Maximum queue size for subscribers")
@@ -240,26 +230,38 @@ if(BUILD_PREFER_STATIC_LIBRARIES)
 endif()
 
 # where should libraries end up?
-#
-# LIBRARY_ROOT_PATH is the path up to the Debug/Release directories
-# LIBRARY_OUTPUT_PATH is including the Debug/Release components, except for MSVS where it is added automatically
-#
-if(CMAKE_CROSSCOMPILING)
-	string(TOLOWER ${CMAKE_CROSSCOMPILING_TARGET} CMAKE_CROSSCOMPILING_TARGET_LC)
-	SET(LIBRARY_ROOT_PATH 
-		${PROJECT_SOURCE_DIR}/lib/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
-	SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH}/${CMAKE_BUILD_TYPE})
-else()
-	if (CMAKE_GENERATOR MATCHES "Visual Studio.*" OR CMAKE_GENERATOR MATCHES "NMake.*")
-		SET(LIBRARY_ROOT_PATH 
-			${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
-		SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH})
+if (DIST_PREPARE OR DIST_PACKAGE)
+	if (CMAKE_CROSSCOMPILING)
+		string(TOLOWER ${CMAKE_CROSSCOMPILING_TARGET} CMAKE_CROSSCOMPILING_TARGET_LC)
+		set(OUTPUT_DIR 
+			${PROJECT_SOURCE_DIR}/lib/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
 	else()
-		SET(LIBRARY_ROOT_PATH 
+		set(OUTPUT_DIR 
 			${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
-		SET(LIBRARY_OUTPUT_PATH ${LIBRARY_ROOT_PATH}/${CMAKE_BUILD_TYPE})
 	endif()
+else()
+	set(OUTPUT_DIR ${PROJECT_BINARY_DIR})
 endif()
+
+# set 
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/bin" )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib" )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib" )
+foreach( OUTPUT_CONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    string( TOUPPER ${OUTPUT_CONFIG} OUTPUT_CONFIG )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/bin" )
+    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
+    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} "${OUTPUT_DIR}/lib" )
+endforeach()
+
+############################################################
+# Dependancies used in more than one of our components
+# are included here to avoid multiple find* statements
+############################################################
+
+FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp PATHS /usr/include)
+include_directories(${Boost_INCLUDE_DIR})
+
 
 ############################################################
 # Create config.h

@@ -26,3 +26,9 @@ astyle  \
 	--indent=tab \
 	--recursive ${DIR}/../rpc/*.cpp ${DIR}/../rpc/*.h
 find ${DIR}/../rpc/ -iname '*.orig' -exec rm {} \;
+
+astyle  \
+	--style=java \
+	--indent=tab \
+	--recursive ${DIR}/../util/*.cpp ${DIR}/../rpc/*.h
+find ${DIR}/../util/ -iname '*.orig' -exec rm {} \;

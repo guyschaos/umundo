@@ -29,6 +29,10 @@
 #endif
 
 #ifdef DEBUG_THREADS
+#define UMUNDO_SCOPE_LOCK(mutex) \
+LOG_DEBUG("Locking mutex %p", &mutex); \
+ScopeLock lock(mutex);
+
 #define UMUNDO_LOCK(mutex) \
 LOG_DEBUG("Locking mutex %p", &mutex); \
 mutex.lock(); \
@@ -53,6 +57,7 @@ monitor.signal();
 #endif
 
 #ifndef DEBUG_THREADS
+#define UMUNDO_SCOPE_LOCK(mutex) ScopeLock lock(mutex);
 #define UMUNDO_LOCK(mutex) mutex.lock();
 #define UMUNDO_TRYLOCK(mutex) mutex.tryLock();
 #define UMUNDO_UNLOCK(mutex) mutex.unlock();
@@ -115,6 +120,17 @@ private:
 	HANDLE _mutex;
 #endif
 
+};
+
+/**
+ * Instantiate on stack to give code in scope below exclusive access.
+ */
+class ScopeLock {
+public:
+	ScopeLock(Mutex&);
+	~ScopeLock();
+
+	Mutex _mutex;
 };
 
 /**

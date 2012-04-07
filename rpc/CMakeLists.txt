@@ -1,29 +1,53 @@
 ############################################################
-# General setup
+# Gather libraries and header files
 ############################################################
 
+# include directories for our header files
+include_directories(./src)
+
 # gather all header files
-file(GLOB_RECURSE UMUNDORPC_HEADER_FILES src/*.h)
-#message("UMUNDORPC_HEADER_FILES ${UMUNDORPC_HEADER_FILES}")
+file(GLOB_RECURSE UMUNDORPC_HEADER_FILES src/umundo/rpc/*.h)
 
 include(UseUMundo)
 
-############################################################
-# Select implementations depending on build target
-############################################################
+###########################################
+# gather implementation agnostic files
+###########################################
 
-if(RPC_PROTOBUF)
+file(GLOB RPC_FILES src/umundo/rpc/*.cpp)
+list(APPEND UMUNDORPC_FILES  ${RPC_FILES})
+
+###########################################
+# Protocol Buffers
+###########################################
+
+if (RPC_PROTOBUF)
 	find_package(Protobuf REQUIRED)
+	LIST(APPEND UMUNDORPC_LIBRARIES optimized ${PROTOBUF_LIBRARY})
+	LIST(APPEND UMUNDORPC_LIBRARIES debug ${PROTOBUF_LIBRARY_DEBUG})
+	include_directories(${PROTOBUF_INCLUDE_DIRS})
+
+ 	if (NOT CMAKE_CROSSCOMPILING)
+		file(GLOB_RECURSE RPC_PROTOBUF_FILES src/umundo/protoc-rpc/*.cpp)
+		add_executable(protoc-umundo-rpc ${RPC_PROTOBUF_FILES})
+		target_link_libraries(protoc-umundo-rpc ${PROTOBUF_PROTOC_LIBRARIES} ${PROTOBUF_LIBRARIES})
+		set_target_properties(protoc-umundo-rpc PROPERTIES FOLDER "Tools")
+
+		install(
+			TARGETS protoc-umundo-rpc
+			DESTINATION bin
+			PERMISSIONS WORLD_EXECUTE OWNER_EXECUTE GROUP_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+			COMPONENT tools 
+		)
+	endif()
+	
+	# process .proto files
 	if (NOT PROTOBUF_PROTOC_EXECUTABLE)
 		message(FATAL_ERROR "Protobuf required for remote procedure calls")
 	endif()
-	include_directories(${PROTOBUF_INCLUDE_DIRS})
-	LIST(APPEND UMUNDORPC_LIBRARIES optimized ${PROTOBUF_LIBRARY})
-	LIST(APPEND UMUNDORPC_LIBRARIES debug ${PROTOBUF_LIBRARY_DEBUG})
-
-	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 	file(GLOB_RECURSE PROTOBUF_INTERFACES services/protobuf/*.proto)
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 	UMUNDO_PROTOBUF_GENERATE_CPP_S11N(PROTO_SRCS PROTO_HDRS ${PROTOBUF_INTERFACES})
 	list(APPEND UMUNDORPC_HEADER_FILES ${PROTO_HDRS})	
@@ -32,73 +56,36 @@ if(RPC_PROTOBUF)
 	UMUNDO_PROTOBUF_GENERATE_CPP_RPC(PROTO_SRCS PROTO_HDRS ${PROTOBUF_INTERFACES})
 	list(APPEND UMUNDORPC_HEADER_FILES ${PROTO_HDRS})	
 	list(APPEND UMUNDORPC_FILES ${PROTO_SRCS})	
+endif()
 
-	
-endif(RPC_PROTOBUF)
+LIST(APPEND UMUNDORPC_LIBRARIES umundorpc)
 
 ############################################################
-# Gather libraries and header files
+# process other directories
 ############################################################
 
-# include directories for our header files
-#include_directories(/src)
-
-FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
-	PATHS ../contrib/prebuilt/include
-)
-include_directories(${Boost_INCLUDE_DIR})
-
-add_subdirectory(src/umundo)           # gather UMUNDORPC_FILES and add target umundo library
-
-# add objective-c bindings on mac and ios
-if (APPLE OR IOS)
-	file(GLOB_RECURSE UMUNDORPC_OBJC_FILES src/umundo-objc/rpc/*.mm)
-	list(APPEND UMUNDORPC_FILES ${UMUNDORPC_OBJC_FILES})
-	file(GLOB_RECURSE UMUNDORPC_OBJC_HEADER_FILES src/umundo-objc/rpc/*.h)
-	list(APPEND UMUNDORPC_HEADER_FILES ${UMUNDORPC_OBJC_HEADER_FILES})
-	if (IOSSIM)
-	foreach(UMUNDORPC_OBJC_FILE ${UMUNDORPC_OBJC_FILES})
-		set_source_files_properties(${UMUNDORPC_OBJC_FILE} PROPERTIES COMPILE_FLAGS "-fobjc-abi-version=2 -fobjc-legacy-dispatch")
-	endforeach()
-	endif()
-	include_directories(${PROJECT_SOURCE_DIR}/core/bindings/)
+if (NOT CMAKE_CROSSCOMPILING)
+	add_subdirectory(test)          # build tests
 endif()
 
-# library name suffix depending on build type
-if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
-	add_library(umundorpc
-		${UMUNDORPC_FILES}
-		${UMUNDORPC_HEADER_FILES}
-	)
-	LIST(APPEND UMUNDORPC_LIBRARIES umundorpc)
-	set_target_properties(umundorpc PROPERTIES FOLDER "Libraries")
-else()
-	if (CMAKE_BUILD_TYPE MATCHES "Debug")
-		add_library(umundorpc_d
-			${UMUNDORPC_FILES}
-			${UMUNDORPC_HEADER_FILES}
-		)
-		LIST(APPEND UMUNDORPC_LIBRARIES debug umundorpc_d)
-		set_target_properties(umundorpc_d PROPERTIES FOLDER "Libraries")
-	else()
-		add_library(umundorpc
-			${UMUNDORPC_FILES}
-			${UMUNDORPC_HEADER_FILES}
-		)
-		LIST(APPEND UMUNDORPC_LIBRARIES umundorpc)
-		set_target_properties(umundorpc PROPERTIES FOLDER "Libraries")
-	endif()
-endif()
+############################################################
+# setup umundorpc library
+############################################################
 
-if (UNIX AND NOT APPLE)
-	# we need to duplicate the libraries on debian - is this a cmake bug?
-	LIST(APPEND UMUNDORPC_LIBRARIES ${UMUNDORPC_LIBRARIES})
-endif()
+LIST(SORT UMUNDORPC_HEADER_FILES)
 
-add_subdirectory(test)          # build tests
+add_library(umundorpc ${UMUNDORPC_FILES})
+INSTALL_HEADERS(HEADERS ${UMUNDORPC_HEADER_FILES} COMPONENT headerRPC)
+INSTALL_LIBRARY(TARGETS umundorpc COMPONENT libraryRPC)
 
-INSTALL_HEADERS_WITH_DIRECTORY("UMUNDORPC_HEADER_FILES" headerRPC)
+# ok to have in IDEs, but do not install
+LIST(APPEND UMUNDORPC_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)
+
+############################################################
+# Miscellaneous
+############################################################
 
 set(UMUNDORPC_FILES "${UMUNDORPC_FILES}" PARENT_SCOPE)
 set(UMUNDORPC_LIBRARIES "${UMUNDORPC_LIBRARIES}" PARENT_SCOPE)
-set(UMUNDORPC_LIBRARIES_DEBUG "${UMUNDORPC_LIBRARIES_DEBUG}" PARENT_SCOPE)
+set(UMUNDORPC_HEADER_FILES "${UMUNDORPC_HEADER_FILES}" PARENT_SCOPE)
+

@@ -187,6 +187,14 @@ void Mutex::unlock() {
 
 }
 
+ScopeLock::ScopeLock(Mutex& mutex) : _mutex(mutex) {
+	_mutex.lock();
+}
+
+ScopeLock::~ScopeLock() {
+	_mutex.unlock();
+}
+
 Monitor::Monitor() {
 #ifdef THREAD_PTHREAD
 	int err;

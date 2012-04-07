@@ -1,0 +1,32 @@
+# if you build swig from sources on windows, this is where it will end up
+# see also: http://www.swig.org/Doc2.0/Windows.html#Windows_mingw_msys
+LIST(APPEND CMAKE_PROGRAM_PATH "C:/MinGW/msys/1.0/src/swig")
+
+find_package(SWIG)
+if (SWIG_FOUND)
+	if(SWIG_VERSION VERSION_GREATER 2.0.4)
+		MARK_AS_ADVANCED(SWIG_DIR SWIG_EXECUTABLE SWIG_VERSION)
+		INCLUDE(${SWIG_USE_FILE})
+		add_subdirectory(swig/java)
+	else()
+		message("SWIG version 2.0.5 is required, found ${SWIG_VERSION} - skipping java wrapper generation")
+	endif()
+else()
+	message("SWIG not found - skipping wrapper generation")
+endif()
+
+# add objective-c bindings on mac and ios
+if (APPLE OR IOS)
+	file(GLOB_RECURSE UMUNDOCORE_OBJC_FILES umundo-objc/core/*.mm)
+	list(APPEND UMUNDOCORE_FILES ${UMUNDOCORE_OBJC_FILES})
+	file(GLOB_RECURSE UMUNDOCORE_OBJC_HEADER_FILES bindings/umundo-objc/core/*.h)
+	list(APPEND UMUNDOCORE_HEADER_FILES ${UMUNDOCORE_OBJC_HEADER_FILES})
+	if (IOSSIM)
+		foreach(UMUNDOCORE_OBJC_FILE ${UMUNDOCORE_OBJC_FILES})
+			set_source_files_properties(${UMUNDOCORE_OBJC_FILE} PROPERTIES COMPILE_FLAGS "-fobjc-abi-version=2 -fobjc-legacy-dispatch")
+		endforeach()
+	endif()
+	include_directories(.)
+	set(UMUNDOCORE_FILES "${UMUNDOCORE_FILES}" PARENT_SCOPE)
+	set(UMUNDOCORE_HEADER_FILES "${UMUNDOCORE_HEADER_FILES}" PARENT_SCOPE)
+endif()

@@ -423,7 +423,8 @@ void AvahiNodeDiscovery::resolveCallback(
 		if (protocol == AVAHI_PROTO_INET) {
 			LOG_DEBUG("resolveCallback ipv4 for iface %d: %s", interface, addr);
 			// Sometimes avahi reports an ipv6 address as a ipv4 address
-			char* start = addr; int dots = 0;
+			char* start = addr;
+			int dots = 0;
 			while ((start = strchr(++start, '.')) != NULL) {
 				dots++;
 			}

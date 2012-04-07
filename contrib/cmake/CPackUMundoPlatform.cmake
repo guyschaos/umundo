@@ -1,62 +1,51 @@
 # see: http://www.vtk.org/Wiki/CMake:CPackConfiguration
 
-#
-# Throughout the source, we used INSTALL_HEADERS_WITH_DIRECTORY to 
-# prepare header files for installation. Now add the actual libraries 
-# and invoke the packager
-# 
-
 ########################################
 # gather libraries for package
 ########################################
 
-file(GLOB_RECURSE PLATFORM_LIBS 
-	${LIBRARY_ROOT_PATH}/Debug/*.a
-	${LIBRARY_ROOT_PATH}/Debug/*.so
-	${LIBRARY_ROOT_PATH}/Debug/*.lib
-	${LIBRARY_ROOT_PATH}/Debug/*.jar
-	${LIBRARY_ROOT_PATH}/Debug/*.dylib
-	${LIBRARY_ROOT_PATH}/Debug/*.dll
-	${LIBRARY_ROOT_PATH}/Debug/*.pdb
-	${LIBRARY_ROOT_PATH}/Debug/*.exp
-	${LIBRARY_ROOT_PATH}/Debug/*.ilk
-	${LIBRARY_ROOT_PATH}/Debug/*.jnilib
-	${LIBRARY_ROOT_PATH}/Release/*.a
-	${LIBRARY_ROOT_PATH}/Release/*.so
-	${LIBRARY_ROOT_PATH}/Release/*.lib
-	${LIBRARY_ROOT_PATH}/Release/*.jar
-	${LIBRARY_ROOT_PATH}/Release/*.dylib
-	${LIBRARY_ROOT_PATH}/Release/*.dll
-	${LIBRARY_ROOT_PATH}/Release/*.exp
-	${LIBRARY_ROOT_PATH}/Release/*.jnilib
-)
+if (DIST_PACKAGE)
+	file(GLOB_RECURSE PLATFORM_LIBS 
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.a
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.so
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.lib
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.jar
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.dylib
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.dll
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.pdb
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.exp
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.ilk
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.jnilib
+	)
 
-# platform dependant libraries
-foreach(PLATFORM_LIB ${PLATFORM_LIBS})
-	if (PLATFORM_LIB MATCHES ".*umundocore.wig.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION share/umundo/java COMPONENT librarySwig)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
-#		message(STATUS "PACKAGE RELEASE SWIG ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundoserial.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryS11N)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "libraryS11N")
-#		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundocore.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryCore)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "libraryCore")
-#		message(STATUS "PACKAGE RELEASE CORE ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundorpc.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryRPC)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "libraryRPC")
-#		message(STATUS "PACKAGE RELEASE RPC ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundoutil.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryUtil)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "libraryUtil")
-#		message(STATUS "PACKAGE RELEASE UTIL ${PLATFORM_LIB}")
-	else()
-		message(STATUS "PACKAGE RELEASE UNK ${PLATFORM_LIB} - not packaging")	
-	endif()
-endforeach()
+	# platform dependant libraries
+	foreach(PLATFORM_LIB ${PLATFORM_LIBS})
+		message("PLATFORM_LIB: ${PLATFORM_LIB}")
+		if (PLATFORM_LIB MATCHES ".*umundocore.wig.*")
+			install(FILES ${PLATFORM_LIB} DESTINATION share/umundo/java COMPONENT librarySwig)
+			list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
+	#		message(STATUS "PACKAGE RELEASE SWIG ${PLATFORM_LIB}")
+		elseif (PLATFORM_LIB MATCHES ".*umundoserial.*")
+			install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryS11N)
+			list (APPEND UMUNDO_CPACK_COMPONENTS "libraryS11N")
+	#		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
+		elseif (PLATFORM_LIB MATCHES ".*umundocore.*")
+			install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryCore)
+			list (APPEND UMUNDO_CPACK_COMPONENTS "libraryCore")
+	#		message(STATUS "PACKAGE RELEASE CORE ${PLATFORM_LIB}")
+		elseif (PLATFORM_LIB MATCHES ".*umundorpc.*")
+			install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryRPC)
+			list (APPEND UMUNDO_CPACK_COMPONENTS "libraryRPC")
+	#		message(STATUS "PACKAGE RELEASE RPC ${PLATFORM_LIB}")
+		elseif (PLATFORM_LIB MATCHES ".*umundoutil.*")
+			install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT libraryUtil)
+			list (APPEND UMUNDO_CPACK_COMPONENTS "libraryUtil")
+	#		message(STATUS "PACKAGE RELEASE UTIL ${PLATFORM_LIB}")
+		else()
+			message(STATUS "PACKAGE RELEASE UNK ${PLATFORM_LIB} - not packaging")	
+		endif()
+	endforeach()
+endif()
 
 if (WIN32)
 	# we still have problems packaging jars in windows, use one from another platform

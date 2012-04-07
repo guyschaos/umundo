@@ -1,6 +1,8 @@
 # if you build swig from sources on windows, this is where it will end up
 # see also: http://www.swig.org/Doc2.0/Windows.html#Windows_mingw_msys
-LIST(APPEND CMAKE_PROGRAM_PATH "C:/MinGW/msys/1.0/src/swig")
+if (WIN32)
+	LIST(APPEND CMAKE_PROGRAM_PATH "C:/MinGW/msys/1.0/src/swig")
+endif()
 
 find_package(SWIG)
 if (SWIG_FOUND)

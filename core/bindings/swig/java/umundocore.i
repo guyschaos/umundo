@@ -1,17 +1,15 @@
 %module(directors="1") umundocoreCPP
 // import swig typemaps
-%include "arrays_java.i"
-%include "std_string.i"
-%include "std_vector.i"
-%include "inttypes.i" 
+%include <arrays_java.i>
+%include <stl.i>
+%include <inttypes.i>
+%include "stl_set.i"
 //%include "boost_shared_ptr.i"
 
 // SWIG does not recognize 'using std::string' from an include
 typedef std::string string;
 typedef std::vector vector;
-
-// used to get all the keys in message meta information
-%template(StringVector) std::vector<std::string>;
+typedef std::set set;
 
 %javaconst(1);
 
@@ -30,7 +28,7 @@ typedef std::vector vector;
 #if 0
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	using umundo::Debug;
-	LOG_ERR("This is mundo.core speaking!");
+//	LOG_ERR("This is mundo.core speaking!");
 	return JNI_VERSION_1_2;
 }
 #endif
@@ -60,9 +58,14 @@ using namespace umundo;
 
 //*************************************************/
 
+// used to get all the keys in message meta information
+%template(StringVector) std::vector<std::string>;
+%template(PublisherSet) std::set<umundo::Publisher*>;
+%template(SubcriberSet) std::set<umundo::Subscriber*>;
 
 // allow Java classes to act as callbacks from C++
 %feature("director") umundo::Receiver;
+%feature("director") umundo::Connectable;
 %feature("director") umundo::Greeter;
 
 // enable conversion from char*, int to jbytearray
@@ -113,6 +116,12 @@ import java.util.HashMap;
 %}
 
 //******************************
+// Beautify Connectable interface
+//******************************
+
+
+
+//******************************
 // Ignore whole classes
 //******************************
 
@@ -128,6 +137,7 @@ import java.util.HashMap;
 %ignore Thread;
 %ignore Monitor;
 %ignore MemoryBuffer;
+%ignore ScopeLock;
 
 
 //***********************************************

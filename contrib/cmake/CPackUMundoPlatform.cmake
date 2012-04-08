@@ -47,14 +47,14 @@ if (DIST_PACKAGE)
 	endforeach()
 endif()
 
-if (WIN32)
-	# we still have problems packaging jars in windows, use one from another platform
-	file(GLOB_RECURSE SWIG_JARS ${PROJECT_SOURCE_DIR}/lib/*umundocoreSwigJNI.jar)
-	list(REVERSE SWIG_JARS) # do not use the android jars as they are more likely out of date :(
-	list(GET SWIG_JARS 0 SWIG_JAR)
-	install(FILES ${SWIG_JAR} DESTINATION share/umundo COMPONENT librarySwig)
-	list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
-endif()
+# if (WIN32)
+# 	# we still have problems packaging jars in windows, use one from another platform
+# 	file(GLOB_RECURSE SWIG_JARS ${PROJECT_SOURCE_DIR}/lib/*umundocoreSwigJNI.jar)
+# 	list(REVERSE SWIG_JARS) # do not use the android jars as they are more likely out of date :(
+# 	list(GET SWIG_JARS 0 SWIG_JAR)
+# 	install(FILES ${SWIG_JAR} DESTINATION share/umundo COMPONENT librarySwig)
+# 	list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
+# endif()
 
 ########################################
 # Include documentation

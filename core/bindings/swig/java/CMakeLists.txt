@@ -43,7 +43,34 @@ INSTALL_LIBRARY(TARGETS umundocoreSwig COMPONENT librarySwig)
 FIND_PACKAGE(Java)
 if(Java_JAVAC_EXECUTABLE AND CMAKE_PATCH_VERSION GREATER 5)
 	include (UseJava)
-	ADD_JAR(umundocoreSwigJNI ${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/*.java)
+	if(WIN32)
+		# adding java files per wildcard does not work on windows
+		# see also: http://www.cmake.org/Bug/view.php?id=13110
+		ADD_JAR(umundocoreSwigJNI 
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/Connectable.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/EndPoint.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/Greeter.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/Message.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/Node.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/NodeStub.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/Publisher.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/PublisherSet.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/PublisherStub.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/Receiver.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/SWIGTYPE_p_p_char.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/StringVector.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/SubcriberSet.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/Subscriber.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/umundocoreCPP.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/umundocoreCPPConstants.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/umundocoreCPPJNI.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/imaxdiv_t.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/SubcriberSet.java
+			${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/SubcriberSet.java
+		)
+	else()
+		ADD_JAR(umundocoreSwigJNI ${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}/*.java)
+	endif()
 	ADD_CUSTOM_COMMAND(
 	    TARGET umundocoreSwigJNI
 	    POST_BUILD

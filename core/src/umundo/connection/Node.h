@@ -22,10 +22,11 @@ class Connectable;
 class Connectable {
 public:
 	virtual ~Connectable() {};
-	virtual set<Publisher*> getPublishers() {
+	// namepace qualifiers are required for swig typemaps!
+	virtual std::set<umundo::Publisher*> getPublishers() {
 		return set<Publisher*>();
 	}
-	virtual set<Subscriber*> getSubscribers() {
+	virtual std::set<umundo::Subscriber*> getSubscribers() {
 		return set<Subscriber*>();
 	}
 };

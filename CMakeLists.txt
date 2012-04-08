@@ -13,6 +13,7 @@ ELSE()
 ENDIF()
 
 project(umundo)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # lower case version of system name and compiler for library paths
 string(TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME_LC)

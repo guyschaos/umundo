@@ -112,6 +112,7 @@ LIST(SORT UMUNDOCORE_HEADER_FILES)
 add_library(umundocore ${UMUNDOCORE_FILES})
 INSTALL_HEADERS(HEADERS ${UMUNDOCORE_HEADER_FILES} COMPONENT headerCore)
 INSTALL_LIBRARY(TARGETS umundocore COMPONENT libraryCore)
+set_target_properties(umundocore PROPERTIES FOLDER "Libraries")
 
 # ok to have in IDEs, but do not install
 LIST(APPEND UMUNDOCORE_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)

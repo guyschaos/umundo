@@ -77,6 +77,7 @@ LIST(SORT UMUNDORPC_HEADER_FILES)
 add_library(umundorpc ${UMUNDORPC_FILES})
 INSTALL_HEADERS(HEADERS ${UMUNDORPC_HEADER_FILES} COMPONENT headerRPC)
 INSTALL_LIBRARY(TARGETS umundorpc COMPONENT libraryRPC)
+set_target_properties(umundorpc PROPERTIES FOLDER "Libraries")
 
 # ok to have in IDEs, but do not install
 LIST(APPEND UMUNDORPC_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)

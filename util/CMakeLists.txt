@@ -30,6 +30,7 @@ LIST(SORT UMUNDOUTIL_HEADER_FILES)
 add_library(umundoutil ${UMUNDOUTIL_FILES})
 INSTALL_HEADERS(HEADERS ${UMUNDOUTIL_HEADER_FILES} COMPONENT headerUtil)
 INSTALL_LIBRARY(TARGETS umundoutil COMPONENT libraryUtil)
+set_target_properties(umundoutil PROPERTIES FOLDER "Libraries")
 
 # ok to have in IDEs, but do not install
 LIST(APPEND UMUNDOUTIL_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)

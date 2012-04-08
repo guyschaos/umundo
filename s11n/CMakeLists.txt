@@ -80,6 +80,7 @@ LIST(SORT UMUNDOS11N_HEADER_FILES)
 add_library(umundoserial ${UMUNDOS11N_FILES})
 INSTALL_HEADERS(HEADERS ${UMUNDOS11N_HEADER_FILES} COMPONENT headerS11N)
 INSTALL_LIBRARY(TARGETS umundoserial COMPONENT libraryS11N)
+set_target_properties(umundoserial PROPERTIES FOLDER "Libraries")
 
 # ok to have in IDEs, but do not install
 LIST(APPEND UMUNDOS11N_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/../umundo/config.h)

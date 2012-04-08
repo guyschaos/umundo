@@ -180,8 +180,8 @@ set( ANDROID_STANDALONE_TOOLCHAIN_SEARCH_PATH /opt/android-toolchain )
 set( ANDROID_SUPPORTED_ABIS_arm "armeabi-v7a;armeabi;armeabi-v7a with NEON;armeabi-v7a with VFPV3;armeabi-v6 with VFP" )
 set( ANDROID_SUPPORTED_ABIS_x86 "x86" )
 
-set( ANDROID_DEFAULT_NDK_API_LEVEL 14 )
-set( ANDROID_DEFAULT_NDK_API_LEVEL_x86 9 )
+set( ANDROID_DEFAULT_NDK_API_LEVEL 8 )
+set( ANDROID_DEFAULT_NDK_API_LEVEL_x86 8 )
 
 
 macro( __LIST_FILTER listvar regex )

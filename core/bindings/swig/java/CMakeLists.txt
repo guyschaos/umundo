@@ -32,7 +32,11 @@ SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}")
 
 SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
 SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARIES})
+
+# I am not sure why we need it twice, but we do at least on android
 SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
+SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
+
 INSTALL_LIBRARY(TARGETS umundocoreSwig COMPONENT librarySwig)
 
 # build jar and copy to library output dir

@@ -124,7 +124,7 @@ void DirectoryMonitor::run() {
 			}
 		}
 
-		if ((unsigned)dirStat.st_mtime >= _lastChecked) {
+		if (dirStat.st_mtime >= (unsigned)_lastChecked) {
 			// there are changes in the directory
 			_mutex.lock();
 			set<string> currEntries;

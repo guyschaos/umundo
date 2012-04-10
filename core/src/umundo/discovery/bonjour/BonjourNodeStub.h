@@ -1,9 +1,7 @@
 #ifndef BonjourNodeStub_H_WRJ8277D
 #define BonjourNodeStub_H_WRJ8277D
 
-extern "C" {
-	#include "dns_sd.h"
-}
+#include "dns_sd.h"
 
 #include "umundo/connection/Node.h"
 #include "umundo/thread/Thread.h"

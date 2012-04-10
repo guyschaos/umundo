@@ -10,7 +10,6 @@
 #include "mDNSPosix.h"    // Defines the specific types needed to run mDNS on posix platforms
 #endif
 
-
 #define RR_CACHE_SIZE 500
 static CacheEntity rrcachestorage[RR_CACHE_SIZE];
 mDNS mDNSStorage;

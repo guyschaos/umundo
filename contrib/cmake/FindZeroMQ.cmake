@@ -45,6 +45,11 @@ FIND_LIBRARY(ZeroMQ_LIBRARY_DEBUG
 )
 if (ZeroMQ_LIBRARY_DEBUG)
 	list(APPEND ZeroMQ_LIBRARY debug ${ZeroMQ_LIBRARY_DEBUG})
+else()
+	if (NOT WIN32)
+		# fall back to release library in debug builds on unices
+		list(APPEND ZeroMQ_LIBRARY debug ${ZeroMQ_LIBRARY_RELEASE})
+	endif()
 endif()
 
 INCLUDE(FindPackageHandleStandardArgs)

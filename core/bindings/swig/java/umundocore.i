@@ -1,4 +1,4 @@
-%module(directors="1") umundocoreCPP
+%module(directors="1", allprotected="1") umundocoreCPP
 // import swig typemaps
 %include <arrays_java.i>
 %include <stl.i>

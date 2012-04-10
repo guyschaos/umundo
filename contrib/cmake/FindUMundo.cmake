@@ -17,7 +17,7 @@
 set(_UMUNDO_LIB_SEARCHPATH 
 	"/usr/local" 
 	"/opt/local" 
-	"C:\\Program\ Files\ \(x86\)\\uMundo"
+	"C:/Program Files (x86)/uMundo"
 )
 
 ###################################################
@@ -53,7 +53,8 @@ foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 
 	# prefer MinSizeRel libraries
 	FIND_LIBRARY(${_CURR_COMPONENT} 
-  	NAMES umundo${_UMUNDO_COMPONENT_LC}s 
+		PATH_SUFFIXES lib
+  	NAMES umundo${_UMUNDO_COMPONENT_LC}_s 
 		PATHS ${_UMUNDO_LIB_SEARCHPATH}
 		ENV UMUNDO_LIB_DIR
 	)
@@ -62,6 +63,7 @@ foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 	else()
 		# if no minsize libraries were found try normal release
 		FIND_LIBRARY(${_CURR_COMPONENT} 
+			PATH_SUFFIXES lib
 	  	NAMES umundo${_UMUNDO_COMPONENT_LC} 
 			PATHS ${_UMUNDO_LIB_SEARCHPATH}
 			ENV UMUNDO_LIB_DIR
@@ -73,7 +75,8 @@ foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 	
 	# prefer RelWithDebInfo libraries
 	FIND_LIBRARY(${_CURR_COMPONENT}_DEBUG 
-  	NAMES umundo${_UMUNDO_COMPONENT_LC}rd
+		PATH_SUFFIXES lib
+  	NAMES umundo${_UMUNDO_COMPONENT_LC}_rd
  		PATHS ${_UMUNDO_LIB_SEARCHPATH}
 		ENV UMUNDO_LIB_DIR
 	)
@@ -81,7 +84,8 @@ foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 		list(APPEND UMUNDO_LIBRARIES debug ${${_CURR_COMPONENT}_DEBUG})
 	else()
 		FIND_LIBRARY(${_CURR_COMPONENT}_DEBUG 
-  		NAMES umundo${_UMUNDO_COMPONENT_LC}d
+			PATH_SUFFIXES lib
+  		NAMES umundo${_UMUNDO_COMPONENT_LC}_d
  			PATHS ${_UMUNDO_LIB_SEARCHPATH}
 			ENV UMUNDO_LIB_DIR
 		)
@@ -90,8 +94,7 @@ foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 		endif()
 	endif()
 	
-	# 
-	if (NOT ${_CURR_COMPONENT} OR ${_CURR_COMPONENT}_DEBUG)
+	if (NOT ${_CURR_COMPONENT} AND NOT ${_CURR_COMPONENT}_DEBUG)
 		message(FATAL_ERROR "Could not find umundo component ${_UMUNDO_COMPONENT}")
 	endif()
 endforeach()

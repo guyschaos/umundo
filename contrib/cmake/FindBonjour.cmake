@@ -1,13 +1,7 @@
-if (DISC_BONJOUR_EMBED)
-	SET(BONJOUR_LIBNAME "mDNSEmbedded")
-else()
-	SET(BONJOUR_LIBNAME "dns_sd;dnssd")
-endif()
-
 FIND_PATH(Bonjour_INCLUDE_DIR dns_sd.h
   HINTS
   $ENV{BonjourDIR}
-  PATH_SUFFIXES include
+  PATH_SUFFIXES bonjour
   PATHS
   /usr/local
   /usr
@@ -20,7 +14,7 @@ FIND_PATH(Bonjour_INCLUDE_DIR dns_sd.h
 set(Bonjour_LIBRARY)
 
 FIND_LIBRARY(Bonjour_LIBRARY_RELEASE
-  NAMES ${BONJOUR_LIBNAME}
+  NAMES dnssd dns_sd
   HINTS
   $ENV{BonjourDIR}
   PATHS
@@ -36,7 +30,7 @@ if (Bonjour_LIBRARY_RELEASE)
 endif()
 
 FIND_LIBRARY(Bonjour_LIBRARY_DEBUG
-  NAMES ${BONJOUR_LIBNAME}_d ${BONJOUR_LIBNAME}
+  NAMES dnssd dns_sd_d dnssd dns_sd
   HINTS
   $ENV{BonjourDIR}
   PATHS

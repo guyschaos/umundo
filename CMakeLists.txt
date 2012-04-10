@@ -13,6 +13,7 @@ ELSE()
 ENDIF()
 
 project(umundo)
+# use folders in the IDEs for the various targets (e.g. Library, Testing, Tools ..)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # lower case version of system name and compiler for library paths
@@ -124,12 +125,6 @@ endif()
 
 # Enable verbose Makefiles to debug the build process itself
 set(CMAKE_VERBOSE_MAKEFILE OFF)
-
-# enable testing and actual output with tests
-if (NOT CMAKE_CROSSCOMPILING)
-	enable_testing()
-	SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
-endif()
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
 	SET(LOGLEVEL_S11N "1" CACHE STRING "Log-level for serialization - higher is more verbose" FORCE)
@@ -368,20 +363,27 @@ endif()
 
 #endif()
 
-message(STATUS "Libraries will end up in: " ${LIBRARY_OUTPUT_PATH})
+message(STATUS "Libraries will end up in: " ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 ############################################################
 # Test reports
 ############################################################
 
-include (CTest)
+# enable testing and actual output with tests
+if (NOT CMAKE_CROSSCOMPILING)
+	enable_testing()
+	SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
+	include (CTest)
+endif()
 
 ############################################################
 # Installation / Provide package target
 ############################################################
 
-# see contrib/cmake/CPackUMundoPlatform.cmake
-include(contrib/cmake/CPackUMundoPlatform.cmake)
+if (DIST_PACKAGE)
+	# see contrib/cmake/CPackUMundoPlatform.cmake
+	include(contrib/cmake/CPackUMundoPlatform.cmake)
 
-# This must always be last!
-include(CPack)
+	# This must always be last!
+	include(CPack)
+endif()

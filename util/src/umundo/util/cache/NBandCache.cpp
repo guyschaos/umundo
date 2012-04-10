@@ -45,7 +45,7 @@ SCacheItem* NBandCachePtr::getItem() {
 }
 
 NBandCacheItem* NBandCachePtr::left(bool moveBand) {
-	ScopeLock lock(_cache->_mutex);
+	ScopeLock lock(&_cache->_mutex);
 	if (_item->_left == NULL) {
 		return NULL;
 	}
@@ -59,7 +59,7 @@ NBandCacheItem* NBandCachePtr::left(bool moveBand) {
 }
 
 NBandCacheItem* NBandCachePtr::right(bool moveBand) {
-	ScopeLock lock(_cache->_mutex);
+	ScopeLock lock(&_cache->_mutex);
 	if (_item->_right == NULL) {
 		return NULL;
 	}
@@ -73,7 +73,7 @@ NBandCacheItem* NBandCachePtr::right(bool moveBand) {
 }
 
 NBandCacheItem* NBandCachePtr::up() {
-	ScopeLock lock(_cache->_mutex);
+	ScopeLock lock(&_cache->_mutex);
 	if (_item->_up->_otherBand == NULL) {
 		return NULL;
 	}
@@ -83,7 +83,7 @@ NBandCacheItem* NBandCachePtr::up() {
 }
 
 NBandCacheItem* NBandCachePtr::down() {
-	ScopeLock lock(_cache->_mutex);
+	ScopeLock lock(&_cache->_mutex);
 	if (_item->_down->_otherBand == NULL) {
 		return NULL;
 	}
@@ -95,7 +95,7 @@ NBandCacheItem* NBandCachePtr::down() {
 NBandCache::NBandCache() {}
 
 shared_ptr<NBandCachePtr> NBandCache::getPointer() {
-	ScopeLock lock(_mutex);
+	ScopeLock lock(&_mutex);
 	if (_bands.size() > 0) {
 		return getPointer(_bands.begin()->first);
 	} else {
@@ -104,7 +104,7 @@ shared_ptr<NBandCachePtr> NBandCache::getPointer() {
 }
 
 shared_ptr<NBandCachePtr> NBandCache::getPointer(const string& band, int elemId) {
-	ScopeLock lock(_mutex);
+	ScopeLock lock(&_mutex);
 	// is there such a band?
 	BandIter bandIter = _bands.find(band);
 	if (bandIter == _bands.end())
@@ -130,7 +130,7 @@ shared_ptr<NBandCachePtr> NBandCache::getPointer(const string& band, int elemId)
 }
 
 void NBandCache::insert(NBandCacheItem* item) {
-	ScopeLock lock(_mutex);
+	ScopeLock lock(&_mutex);
 	SCache::insert((SCacheItem*)item);
 	Proxies currProxies;
 	// if there is no such band yet establish its proxy

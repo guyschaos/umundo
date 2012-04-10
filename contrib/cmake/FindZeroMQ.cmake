@@ -1,7 +1,7 @@
 FIND_PATH(ZeroMQ_INCLUDE_DIR zmq.h
   HINTS
   $ENV{ZeroMQ_INCLUDE_DIR}
-  PATH_SUFFIXES include
+  PATH_SUFFIXES zeromq
   PATHS
   /usr/local
   /usr
@@ -30,7 +30,7 @@ if (ZeroMQ_LIBRARY_RELEASE)
 endif()
 
 FIND_LIBRARY(ZeroMQ_LIBRARY_DEBUG
-  NAMES libzmq_d zmq_d zmq
+  NAMES libzmq_d zmq_d
   HINTS
   $ENV{ZeroMQ_LIBRARY}
   PATH_SUFFIXES lib

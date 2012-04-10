@@ -127,10 +127,10 @@ private:
  */
 class ScopeLock {
 public:
-	ScopeLock(Mutex&);
+	ScopeLock(Mutex*);
 	~ScopeLock();
 
-	Mutex _mutex;
+	Mutex* _mutex;
 };
 
 /**

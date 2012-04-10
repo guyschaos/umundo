@@ -1,6 +1,20 @@
+diff -rupN mDNSResponder-333.10/mDNSCore/mDNSEmbeddedAPI.h mDNSResponder-333.10.patched/mDNSCore/mDNSEmbeddedAPI.h
+--- mDNSResponder-333.10/mDNSCore/mDNSEmbeddedAPI.h	2011-06-30 22:56:04.000000000 +0200
++++ mDNSResponder-333.10.patched/mDNSCore/mDNSEmbeddedAPI.h	2012-04-09 22:12:43.000000000 +0200
+@@ -1051,6 +1051,10 @@ enum
+ 	McastResolver_FlagNew    = 2
+ 	};
+ 
++// everyone loves proprietary language extensions in the global namespace
++#ifdef _MSC_VER
++#undef interface
++#endif
+ typedef struct McastResolver
+ 	{
+ 	struct McastResolver *next;
 diff -rupN mDNSResponder-333.10/mDNSPosix/mDNSPosix.h mDNSResponder-333.10.patched/mDNSPosix/mDNSPosix.h
 --- mDNSResponder-333.10/mDNSPosix/mDNSPosix.h	2009-08-11 03:13:47.000000000 +0200
-+++ mDNSResponder-333.10.patched/mDNSPosix/mDNSPosix.h	2012-03-05 11:55:13.000000000 +0100
++++ mDNSResponder-333.10.patched/mDNSPosix/mDNSPosix.h	2012-04-09 21:03:45.000000000 +0200
 @@ -25,6 +25,10 @@
      extern "C" {
  #endif
@@ -12,9 +26,10 @@ diff -rupN mDNSResponder-333.10/mDNSPosix/mDNSPosix.h mDNSResponder-333.10.patch
  // PosixNetworkInterface is a record extension of the core NetworkInterfaceInfo
  // type that supports extra fields needed by the Posix platform.
  //
+Binary files mDNSResponder-333.10/mDNSResponder.suo and mDNSResponder-333.10.patched/mDNSResponder.suo differ
 diff -rupN mDNSResponder-333.10/mDNSShared/PlatformCommon.c mDNSResponder-333.10.patched/mDNSShared/PlatformCommon.c
 --- mDNSResponder-333.10/mDNSShared/PlatformCommon.c	2011-04-12 00:54:35.000000000 +0200
-+++ mDNSResponder-333.10.patched/mDNSShared/PlatformCommon.c	2012-03-05 14:08:34.000000000 +0100
++++ mDNSResponder-333.10.patched/mDNSShared/PlatformCommon.c	2012-04-09 21:03:45.000000000 +0200
 @@ -27,6 +27,10 @@
  #include "DNSCommon.h"
  #include "PlatformCommon.h"
@@ -53,20 +68,34 @@ diff -rupN mDNSResponder-333.10/mDNSShared/PlatformCommon.c mDNSResponder-333.10
  		}
 +#endif
  	}
+diff -rupN mDNSResponder-333.10/mDNSShared/dns_sd.h mDNSResponder-333.10.patched/mDNSShared/dns_sd.h
+--- mDNSResponder-333.10/mDNSShared/dns_sd.h	2011-08-31 03:44:17.000000000 +0200
++++ mDNSResponder-333.10.patched/mDNSShared/dns_sd.h	2012-04-09 22:17:19.000000000 +0200
+@@ -93,7 +93,7 @@
+ /* standard calling convention under Win32 is __stdcall */
+ /* Note: When compiling Intel EFI (Extensible Firmware Interface) under MS Visual Studio, the */
+ /* _WIN32 symbol is defined by the compiler even though it's NOT compiling code for Windows32 */
+-#if defined(_WIN32) && !defined(EFI32) && !defined(EFI64)
++#if defined(_WIN32) && !defined(EFI32) && !defined(EFI64) && !defined(BONJOUR_STATIC)
+ #define DNSSD_API __stdcall
+ #else
+ #define DNSSD_API
 diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c mDNSResponder-333.10.patched/mDNSShared/dnssd_clientshim.c
 --- mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c	2011-06-02 00:44:37.000000000 +0200
-+++ mDNSResponder-333.10.patched/mDNSShared/dnssd_clientshim.c	2012-03-05 11:55:13.000000000 +0100
-@@ -25,6 +25,9 @@
++++ mDNSResponder-333.10.patched/mDNSShared/dnssd_clientshim.c	2012-04-09 22:14:00.000000000 +0200
+@@ -25,6 +25,11 @@
  
  #include "dns_sd.h"				// Defines the interface to the client layer above
  #include "mDNSEmbeddedAPI.h"		// The interface we're building on top of
++#ifndef _MSC_VER
 +#include <sys/socket.h>
 +#include <netinet/in.h>
++#endif
 +
  extern mDNS mDNSStorage;		// We need to pass the address of this storage to the lower-layer functions
  
  #if MDNS_BUILDINGSHAREDLIBRARY || MDNS_BUILDINGSTUBLIBRARY
-@@ -71,6 +74,14 @@ typedef struct
+@@ -71,6 +76,14 @@ typedef struct
  typedef struct
  	{
  	mDNS_DirectOP_Dispose  *disposefn;
@@ -81,7 +110,7 @@ diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c mDNSResponder-333.
  	DNSServiceResolveReply  callback;
  	void                   *context;
  	const ResourceRecord   *SRV;
-@@ -659,7 +670,7 @@ DNSServiceErrorType DNSServiceQueryRecor
+@@ -659,7 +672,7 @@ DNSServiceErrorType DNSServiceQueryRecor
  	x->q.ExpectUnique        = mDNSfalse;
  	x->q.ForceMCast          = (flags & kDNSServiceFlagsForceMulticast) != 0;
  	x->q.ReturnIntermed      = (flags & kDNSServiceFlagsReturnIntermediates) != 0;
@@ -92,7 +121,7 @@ diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_clientshim.c mDNSResponder-333.
  	x->q.RetryWithSearchDomains = mDNSfalse;
 diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_ipc.h mDNSResponder-333.10.patched/mDNSShared/dnssd_ipc.h
 --- mDNSResponder-333.10/mDNSShared/dnssd_ipc.h	2011-06-30 22:56:04.000000000 +0200
-+++ mDNSResponder-333.10.patched/mDNSShared/dnssd_ipc.h	2012-03-05 11:55:13.000000000 +0100
++++ mDNSResponder-333.10.patched/mDNSShared/dnssd_ipc.h	2012-04-09 21:03:45.000000000 +0200
 @@ -29,6 +29,11 @@
  #ifndef DNSSD_IPC_H
  #define DNSSD_IPC_H
@@ -107,7 +136,7 @@ diff -rupN mDNSResponder-333.10/mDNSShared/dnssd_ipc.h mDNSResponder-333.10.patc
  //
 diff -rupN mDNSResponder-333.10/mDNSShared/uds_daemon.h mDNSResponder-333.10.patched/mDNSShared/uds_daemon.h
 --- mDNSResponder-333.10/mDNSShared/uds_daemon.h	2011-05-18 00:18:08.000000000 +0200
-+++ mDNSResponder-333.10.patched/mDNSShared/uds_daemon.h	2012-03-05 11:55:13.000000000 +0100
++++ mDNSResponder-333.10.patched/mDNSShared/uds_daemon.h	2012-04-09 21:03:45.000000000 +0200
 @@ -22,6 +22,11 @@
  
   */
@@ -119,4 +148,3 @@ diff -rupN mDNSResponder-333.10/mDNSShared/uds_daemon.h mDNSResponder-333.10.pat
 +
  #include "mDNSEmbeddedAPI.h"
  #include "dnssd_ipc.h"
- 

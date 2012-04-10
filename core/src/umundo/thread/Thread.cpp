@@ -187,12 +187,12 @@ void Mutex::unlock() {
 
 }
 
-ScopeLock::ScopeLock(Mutex& mutex) : _mutex(mutex) {
-	_mutex.lock();
+ScopeLock::ScopeLock(Mutex* mutex) : _mutex(mutex) {
+	_mutex->lock();
 }
 
 ScopeLock::~ScopeLock() {
-	_mutex.unlock();
+	_mutex->unlock();
 }
 
 Monitor::Monitor() {

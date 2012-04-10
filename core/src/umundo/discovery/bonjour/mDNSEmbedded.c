@@ -1,8 +1,14 @@
 #include <stdlib.h>
+
+#ifdef WIN32
+#include "mDNSWin32.h"
+#else
 #include <sys/time.h>
+#include "mDNSPosix.h"    // Defines the specific types needed to run mDNS on posix platforms
+#endif
+
 #include <assert.h>
 #include "mDNSEmbeddedAPI.h"
-#include "mDNSPosix.h"    // Defines the specific types needed to run mDNS on this platform
 
 #define RR_CACHE_SIZE 500
 static CacheEntity rrcachestorage[RR_CACHE_SIZE];
@@ -15,10 +21,12 @@ extern mDNSexport void mDNSPosixGetFDSet(mDNS *m, int *nfds, fd_set *readfds, st
 extern mDNSexport void mDNSPosixProcessFDSet(mDNS *const m, fd_set *readfds);
 
 mDNSexport int embedded_mDNSInit() {
-	if (mDNSIsInitialized)
+	mStatus err;
+	if (mDNSIsInitialized != 0) {
 		return 0;
+	}
 
-	mStatus err = mDNS_Init(
+	err = mDNS_Init(
 		&mDNSStorage, 
 		&platformSupport, 
 		rrcachestorage, 

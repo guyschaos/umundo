@@ -23,7 +23,7 @@ void SCache::run() {
 	while(isStarted()) {
 		// sleep here to avoid holding the lock all the time
 		Thread::sleepMs(300);
-		ScopeLock lock(_mutex);
+		ScopeLock lock(&_mutex);
 		std::cout << "Cache pruning!" << std::endl;
 
 		map<intptr_t, SCacheItem*>::iterator itemIter = _cacheItems.begin();
@@ -40,7 +40,7 @@ void SCache::run() {
 }
 
 void SCache::resetDistances() {
-	ScopeLock lock(_mutex);
+	ScopeLock lock(&_mutex);
 
 	// set distance to infinity
 	map<intptr_t, SCacheItem*>::iterator itemIter = _cacheItems.begin();

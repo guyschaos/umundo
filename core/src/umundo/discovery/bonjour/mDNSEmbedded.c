@@ -1,14 +1,15 @@
 #include <stdlib.h>
+#include <assert.h>
 
+// include order matters 
+#include "mDNSEmbeddedAPI.h"
 #ifdef WIN32
-#include "mDNSWin32.h"
+#include "mDNSWin32.h"    // Defines the specific types needed to run mDNS on windows platforms
 #else
 #include <sys/time.h>
 #include "mDNSPosix.h"    // Defines the specific types needed to run mDNS on posix platforms
 #endif
 
-#include <assert.h>
-#include "mDNSEmbeddedAPI.h"
 
 #define RR_CACHE_SIZE 500
 static CacheEntity rrcachestorage[RR_CACHE_SIZE];
@@ -78,3 +79,4 @@ mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
 	}
 	return result;
 }
+

@@ -53,6 +53,12 @@ if (DISC_BONJOUR OR DISC_BONJOUR_EMBED)
 
 			file(GLOB_RECURSE DISC_BONJOUR_EMBED_FILES src/umundo/discovery/bonjour/mDNSEmbedded.c)
 			list(APPEND UMUNDOCORE_FILES ${DISC_BONJOUR_EMBED_FILES})
+			
+			if (WIN32)
+				LIST(APPEND UMUNDOCORE_LIBRARIES "Iphlpapi")
+				LIST(APPEND UMUNDOCORE_LIBRARIES "Netapi32")
+			endif()
+
 		else()
 			find_package(Bonjour REQUIRED)
 			include_directories(${Bonjour_INCLUDE_DIR})

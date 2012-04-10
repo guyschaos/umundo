@@ -45,6 +45,11 @@ mDNSexport void embedded_mDNSExit() {
 	mDNS_Close(&mDNSStorage);
 }
 
+#ifdef WIN32
+mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
+}
+
+#else
 mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
 	int nfds = 0;
 	fd_set readfds;
@@ -78,4 +83,4 @@ mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
 	}
 	return result;
 }
-
+#endif

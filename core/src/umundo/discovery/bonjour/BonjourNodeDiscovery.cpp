@@ -25,6 +25,7 @@ extern "C" {
 	int embedded_mDNSInit();
 	void embedded_mDNSExit();
 	int embedded_mDNSmainLoop(timeval);
+	void DNSServiceRefDeallocate(DNSServiceRef sdRef);
 }
 #endif
 

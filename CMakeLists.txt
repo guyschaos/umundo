@@ -72,6 +72,12 @@ endif()
 # General setup
 ############################################################
 
+# enable testing and actual output with tests
+if (NOT CMAKE_CROSSCOMPILING)
+	enable_testing()
+	SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
+endif()
+
 OPTION(DIST_PREPARE "Put libraries into the lib folder of the source tree" OFF)
 OPTION(DIST_PACKAGE "Create a distribution from the libraries in the source folder" OFF)
 
@@ -369,10 +375,7 @@ message(STATUS "Libraries will end up in: " ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 # Test reports
 ############################################################
 
-# enable testing and actual output with tests
 if (NOT CMAKE_CROSSCOMPILING)
-	enable_testing()
-	SET(ENV{CTEST_OUTPUT_ON_FAILURE} ON)
 	include (CTest)
 endif()
 

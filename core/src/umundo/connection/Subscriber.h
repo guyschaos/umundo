@@ -66,8 +66,11 @@ protected:
  */
 class Subscriber {
 public:
+	Subscriber(string channelName);
 	Subscriber(string channelName, Receiver* receiver);
 	virtual ~Subscriber();
+
+	void setReceiver(Receiver* receiver);
 
 	virtual const string& getChannelName()           {
 		return _impl->getChannelName();
@@ -77,9 +80,6 @@ public:
 	}
 
 protected:
-	///Java does not allow *this* to be passed to a superclass, so we cannot inherit a Subscriber and be its Receiver as in the TypedPublishers
-	Subscriber(string channelName);
-	void setReceiver(Receiver* receiver);
 
 	shared_ptr<SubscriberImpl> _impl;
 	shared_ptr<SubscriberConfig> _config;

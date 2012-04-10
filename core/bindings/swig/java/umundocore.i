@@ -91,7 +91,7 @@ using namespace umundo;
 
 
 //******************************
-// Beautify Message interface
+// Beautify Message class
 //******************************
 
 // ignore ugly std::map return
@@ -114,6 +114,13 @@ import java.util.HashMap;
 		return keys;
 	}
 %}
+
+//******************************
+// Beautify Publisher class
+//******************************
+
+// %javamethodmodifiers Subscriber(string channelName) "protected";
+// %javamethodmodifiers Subscriber::setReceiver(Receiver* receiver) "protected";
 
 //******************************
 // Beautify Connectable interface

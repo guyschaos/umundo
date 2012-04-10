@@ -119,8 +119,8 @@ import java.util.HashMap;
 // Beautify Publisher class
 //******************************
 
-// %javamethodmodifiers Subscriber(string channelName) "protected";
-// %javamethodmodifiers Subscriber::setReceiver(Receiver* receiver) "protected";
+%javamethodmodifiers umundo::Subscriber::Subscriber(string channelName) "protected";
+%javamethodmodifiers umundo::Subscriber::setReceiver(Receiver* receiver) "protected";
 
 //******************************
 // Beautify Connectable interface

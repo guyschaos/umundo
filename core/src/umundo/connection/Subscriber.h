@@ -62,7 +62,10 @@ protected:
 /**
  * Subscriber abstraction (bridge pattern).
  *
- * We need to overwrite everything to use the concrete implementors functions
+ * We need to overwrite everything to use the concrete implementors functions. The preferred
+ * constructor is the Subscriber(string channelName, Receiver* receiver) one, the unqualified
+ * constructor without a receiver and the setReceiver method are required for Java as we cannot
+ * inherit publishers while being its receiver at the same time as is used for the TypedSubscriber.
  */
 class Subscriber {
 public:

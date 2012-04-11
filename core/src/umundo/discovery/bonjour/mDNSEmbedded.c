@@ -35,6 +35,19 @@ mDNSexport int embedded_mDNSInit() {
 		mDNS_Init_NoInitCallback, 
 		mDNS_Init_NoInitCallbackContext
 	);
+	if (err)
+		return err;
+
+#ifdef WIN32
+	// err = SetupInterfaceList( &mDNSStorage );
+	// if (err)
+	// 	return err;
+	// 
+	// err = uDNS_SetupDNSConfig( &mDNSStorage );
+	// if (err)
+	// 	return err;
+#endif
+
 	if (err == 0) {
 		mDNSIsInitialized = 1;
 	}
@@ -46,10 +59,15 @@ mDNSexport void embedded_mDNSExit() {
 }
 
 #ifdef WIN32
+// from <mDNSDir>/mDNSWindows/SystemService/Service.c
 mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
+	mDNS_Execute(&mDNSStorage);
+	return 0;
 }
 
 #else
+
+// From <mDNSDir>/ExampleClientApp.c
 mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
 	int nfds = 0;
 	fd_set readfds;

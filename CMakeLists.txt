@@ -323,6 +323,32 @@ if (CMAKE_TOOLCHAIN_FILE)
 endif()
 
 ############################################################
+# Run ant to package the jar and setup some tests
+############################################################
+
+# only run ant if we actually build the java bindings
+GET_TARGET_PROPERTY(UMUNDOCORESWIG_LOCATION umundocoreSwig LOCATION)
+if (UMUNDOCORESWIG_LOCATION)
+	FIND_PROGRAM(ANT_EXECUTABLE ant PATHS $ENV{ANT_HOME} ENV PATH )
+	if (ANT_EXECUTABLE)
+		ADD_CUSTOM_TARGET(ant_build ALL
+		  COMMAND ${ANT_EXECUTABLE} 
+				-Dlib.dir=${CMAKE_LIBRARY_OUTPUT_DIRECTORY} 
+				-Dsrc.dir=${PROJECT_SOURCE_DIR} 
+				-Dbuild.dir=${PROJECT_BINARY_DIR} 
+				-Dbuild.type=${CMAKE_BUILD_TYPE} 
+				-Djnilib.file=${UMUNDOCORESWIG_LOCATION} 
+				-f build-java.xml
+		  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
+		  COMMENT "Running Ant ...")
+		# make sure ant runs after we built the wrappers
+		add_dependencies(ant_build umundocoreSwig)
+	else()
+		message("Could not find ant binary")
+	endif()
+endif()
+
+############################################################
 # Some concluding remarks
 ############################################################
 

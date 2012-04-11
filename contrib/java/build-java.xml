@@ -1,0 +1,10 @@
+<project name="umundo" default="jar">
+
+  <target name="jar">
+		<echo message="library output dir: ${lib.dir}"/>
+		<echo message="source dir:         ${src.dir}"/>
+		<echo message="build dir:          ${build.dir}"/>
+		<echo message="build type:         ${build.type}"/>
+		<echo message="jni library:        ${jnilib.file}"/>
+  </target>
+</project>

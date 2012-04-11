@@ -147,7 +147,7 @@ void ZeroMQSubscriber::run() {
 				}
 				zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 			} else {
-				msg->setData(string((char*)zmq_msg_data(&message), msgSize));
+				msg->setData((char*)zmq_msg_data(&message), msgSize);
 				zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 				_receiver->receive(msg);
 				break; // last message part

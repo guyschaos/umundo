@@ -2,15 +2,34 @@
 #define MESSAGE_H_Y7TB6U8
 
 #include "umundo/common/Common.h"
+#include <string.h>
 
 namespace umundo {
 class Message;
 class Type;
 
+/**
+ * This used to be a std::string but windows replaces newlines with carriage return
+ * newline, even with binary data, so we just mimick string behaviour but will not
+ * do anything to the actual buffer.
+ */
 class MemoryBuffer {
 public:
-	char* data;
-	size_t size;
+	MemoryBuffer() : _data(NULL), _size(0) {}
+	MemoryBuffer(const char* data, size_t length) : _size(length) {
+		_data = (char*)malloc(_size);
+		memcpy(_data, data, _size);
+	}
+	~MemoryBuffer() {
+		if (_data)
+			free(_data);
+	}
+	size_t size() const { return _size; }
+	const char* data() const { return (char*) _data; }
+
+protected:
+	char* _data;
+	size_t _size;
 };
 
 /**
@@ -38,18 +57,21 @@ public:
 	}
 
 	Message() {}
-	Message(string data) : _data(data) {}
+	Message(MemoryBuffer data) : _data(data) {}
 	Message(const char* data, size_t length) : _data(data, length) {}
 	virtual ~Message() {}
 
-	virtual const string& getData()                                     {
+	virtual const MemoryBuffer& getData()                                     {
 		return _data;
 	}
-	virtual void setData(const string& data)                            {
+	virtual void setData(const MemoryBuffer& data)                            {
 		_data = data;
 	}
+	virtual void setData(const string& data)                            {
+		_data = MemoryBuffer(data.data(), data.size());
+	}
 	virtual void setData(const char* data, size_t length)               {
-		_data = string(data, length);
+		_data = MemoryBuffer(data, length);
 	}
 	virtual const void setMeta(const string& key, const string& value)  {
 		_meta[key] = value;
@@ -77,7 +99,7 @@ public:
 	}
 
 protected:
-	string _data;
+	MemoryBuffer _data;
 	map<string, string> _meta;
 	vector<string> _keys;
 };

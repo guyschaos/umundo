@@ -33,7 +33,7 @@ void umundoTypedReceiverWrapper::receive(umundo::Message* msg) {
 		// use an @autorelease {} here?
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     google::protobuf::MessageLite* pbObj = _deserializers[msg->getMeta("type")]->New();
-    pbObj->ParseFromString(msg->getData());
+    pbObj->ParseFromString(std::string(msg->getData().data(), msg->getData().size()));
     assert(pbObj->SerializeAsString().compare(msg->getData()) == 0);
     NSMutableDictionary* meta = [[NSMutableDictionary alloc] init];
     

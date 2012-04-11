@@ -93,7 +93,7 @@ void testDomainReception() {
 	receives = 0;
 	for (int i = 0; i < iterations; i++) {
 		Message* msg = new Message();
-		msg->setData(string(buffer, BUFFER_SIZE));
+		msg->setData(buffer, BUFFER_SIZE);
 		msg->setMeta("type", "foo!");
 		pub->send(msg);
 		delete(msg);

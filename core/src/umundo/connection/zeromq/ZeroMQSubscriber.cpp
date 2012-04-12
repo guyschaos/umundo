@@ -35,7 +35,8 @@ ZeroMQSubscriber::~ZeroMQSubscriber() {
 void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	_config = boost::static_pointer_cast<SubscriberConfig>(config);
 	_uuid = (_uuid.length() > 0 ? _uuid : UUID::getUUID());
-
+  assert(_uuid.length() == 36);
+  
 	void* ctx = ZeroMQNode::getZeroMQContext();
 	(_socket = zmq_socket(ctx, ZMQ_SUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
 	(_closer = zmq_socket(ctx, ZMQ_PUB)) || LOG_WARN("zmq_socket: %s",zmq_strerror(errno));
@@ -116,7 +117,9 @@ void ZeroMQSubscriber::run() {
 			zmq_msg_t message;
 			zmq_msg_init(&message) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
 
-			zmq_recvmsg(_socket, &message, 0) >= 0 || LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
+			while (zmq_recvmsg(_socket, &message, 0) < 0)
+        LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
+
 			size_t msgSize = zmq_msg_size(&message);
 
 			if (!isStarted()) {

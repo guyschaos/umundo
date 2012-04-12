@@ -74,7 +74,7 @@ protected:
  */
 class PublisherImpl : public Implementation, public PublisherStub {
 public:
-	PublisherImpl() {}
+	PublisherImpl() : _greeter(NULL) {}
 	virtual ~PublisherImpl();
 
 	virtual void send(Message* msg) = 0;

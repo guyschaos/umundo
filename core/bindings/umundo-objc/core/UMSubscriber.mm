@@ -16,7 +16,7 @@ public:
 	virtual void receive(umundo::Message* msg) {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    NSData* nsData = [[NSData alloc] initWithBytes:(msg->getData().data()) length:msg->getData().size()];
+    NSData* nsData = [[NSData alloc] initWithBytes:(msg->data()) length:msg->size()];
     NSMutableDictionary* nsMeta = [[NSMutableDictionary alloc] init];
     std::map<std::string, std::string>::const_iterator metaIter;
     for (metaIter = msg->getMeta().begin(); metaIter != msg->getMeta().end(); metaIter++) {

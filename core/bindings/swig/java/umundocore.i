@@ -98,13 +98,16 @@ using namespace umundo;
 %ignore umundo::Message::getMeta();
 %ignore umundo::Message::setData(string const &);
 %ignore umundo::Message::Message(string);
+%ignore umundo::Message::Message(string);
+%rename(getData) umundo::Message::data;
+%rename(getSize) umundo::Message::size;
 
 // import java.util.HashMap
 %typemap(javaimports) umundo::Message %{ 
 import java.util.HashMap; 
 %}
 
-// provide convinience methods within Message Java class
+// provide convinience methods within Message Java class for meta keys
 %typemap(javacode) umundo::Message %{
 	public HashMap<String, String> getMeta() {
 		HashMap<String, String> keys = new HashMap<String, String>();
@@ -112,8 +115,25 @@ import java.util.HashMap;
 			keys.put(getKeys().get(i), getMeta(getKeys().get(i)));
 		}
 		return keys;
-	}
+	}	
 %}
+
+// passing a jbytearray is done by applying the STRING, LENGTH conversion above
+// but we also want to return a jbytearray to get the contents of a message.
+// see: http://stackoverflow.com/questions/9934059/swig-technique-to-wrap-unsigned-binary-data
+
+%typemap(jni) char *data "jbyteArray"
+%typemap(jtype) char *data "byte[]"
+%typemap(jstype) char* data "byte[]"
+%typemap(javaout) char* data {
+  return $jnicall;
+}
+
+%typemap(out) char *data {
+  $result = JCALL1(NewByteArray, jenv, ((umundo::Message const *)arg1)->size());
+  JCALL4(SetByteArrayRegion, jenv, $result, 0, ((umundo::Message const *)arg1)->size(), (jbyte *)$1);
+}
+
 
 //******************************
 // Beautify Publisher class

@@ -169,7 +169,7 @@ void ZeroMQPublisher::send(Message* msg) {
 
 	// data as the second part of a multipart message
 	zmq_msg_t publication;
-	ZMQ_PREPARE_DATA(publication, msg->getData().data(), msg->getData().size());
+	ZMQ_PREPARE_DATA(publication, msg->data(), msg->size());
 	zmq_sendmsg(_socket, &publication, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 	zmq_msg_close(&publication) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 }

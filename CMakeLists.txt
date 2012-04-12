@@ -30,7 +30,6 @@ string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
 # http://www.vtk.org/Wiki/CMake_Cross_Compiling#Searching_and_finding_external_software
 #
 
-# search root for includes
 LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt")
 
 # this happens when we ssh into windows to build there, see also:
@@ -343,6 +342,7 @@ if (UMUNDOCORESWIG_LOCATION)
 			COMMENT "Running Ant ...")
 		# make sure ant runs after we built the wrappers
 		add_dependencies(ant_build umundocoreSwig)
+		set_target_properties(ant_build PROPERTIES FOLDER "Bindings")
 	else()
 		message(STATUS "Could not find ant binary - will not build jars")
 	endif()

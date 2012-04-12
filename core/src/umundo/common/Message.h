@@ -9,30 +9,6 @@ class Message;
 class Type;
 
 /**
- * This used to be a std::string but windows replaces newlines with carriage return
- * newline, even with binary data, so we just mimick string behaviour but will not
- * do anything to the actual buffer.
- */
-class MemoryBuffer {
-public:
-	MemoryBuffer() : _data(NULL), _size(0) {}
-	MemoryBuffer(const char* data, size_t length) : _size(length) {
-		_data = (char*)malloc(_size);
-		memcpy(_data, data, _size);
-	}
-	~MemoryBuffer() {
-		if (_data)
-			free(_data);
-	}
-	size_t size() const { return _size; }
-	const char* data() const { return (char*) _data; }
-
-protected:
-	char* _data;
-	size_t _size;
-};
-
-/**
  * Definition of message types and abstraction of message (bridge pattern).
  */
 class Message {
@@ -56,22 +32,35 @@ public:
 		return "UNKNOWN";
 	}
 
-	Message() {}
-	Message(MemoryBuffer data) : _data(data) {}
-	Message(const char* data, size_t length) : _data(data, length) {}
-	virtual ~Message() {}
+	Message() : _data(NULL), _size(0) {}
+	Message(const char* data, size_t length) : _size(length) {
+    _data = (char*)malloc(_size);
+    memcpy(_data, data, _size);
+  }
+	virtual ~Message() {
+    if (_data)
+      free(_data);
+  }
 
-	virtual const MemoryBuffer& getData()                                     {
+	virtual const char* data() const                                    {
 		return _data;
 	}
-	virtual void setData(const MemoryBuffer& data)                            {
-		_data = data;
+	virtual size_t size() const                                         {
+		return _size;
 	}
 	virtual void setData(const string& data)                            {
-		_data = MemoryBuffer(data.data(), data.size());
+    if (_data)
+      free(_data);
+    _size = data.size();
+    _data = (char*)malloc(_size);
+    memcpy(_data, data.data(), _size);
 	}
 	virtual void setData(const char* data, size_t length)               {
-		_data = MemoryBuffer(data, length);
+    if (_data)
+      free(_data);
+    _size = length;
+    _data = (char*)malloc(_size);
+    memcpy(_data, data, _size);
 	}
 	virtual const void setMeta(const string& key, const string& value)  {
 		_meta[key] = value;
@@ -99,7 +88,8 @@ public:
 	}
 
 protected:
-	MemoryBuffer _data;
+	char* _data;
+  size_t _size;
 	map<string, string> _meta;
 	vector<string> _keys;
 };

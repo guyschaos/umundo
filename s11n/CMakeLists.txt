@@ -3,10 +3,10 @@
 ############################################################
 
 # include directories for our header files
-include_directories(./src)
+include_directories(src)
 
 # gather all header files
-file(GLOB_RECURSE UMUNDOS11N_HEADER_FILES src/umundo/s11n/*.h)
+file(GLOB_RECURSE UMUNDOS11N_HEADER_FILES src/umundo/*.h)
 
 include(UseUMundo)
 
@@ -62,14 +62,6 @@ if (APPLE OR IOS)
 endif()
 
 LIST(APPEND UMUNDOS11N_LIBRARIES umundoserial)
-
-############################################################
-# process other directories
-############################################################
-
-if (NOT CMAKE_CROSSCOMPILING)
-	add_subdirectory(test)          # build tests
-endif()
 
 ############################################################
 # setup umundoserial library

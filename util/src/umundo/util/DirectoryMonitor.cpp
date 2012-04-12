@@ -1,4 +1,5 @@
 #include "umundo/util/DirectoryMonitor.h"
+#include "umundo/util/crypto/MD5.h"
 
 #ifndef WIN32
 #include <dirent.h>
@@ -95,6 +96,7 @@ void DirectoryMonitor::DirMonGreeter::welcome(Publisher* pub, const string nodeI
 		Message* msg = Message::toSubscriber(subId);
 		msg->setMeta("file", fileIter->first);
 		msg->setMeta("directory", _monitor->_directory);
+		msg->setMeta("md5", md5(buffer, size));
 		msg->setMeta("operation", "added");
 		msg->setData(buffer, size);
 
@@ -225,6 +227,7 @@ void DirectoryMonitor::publishNewFile(const string& fileName, struct stat fileSt
 	if (buffer != NULL) {
 		Message* msg = new Message();
 		msg->setMeta("file", fileName);
+		msg->setMeta("md5", md5(buffer, size));
 		msg->setMeta("directory", _directory);
 		msg->setMeta("operation", "added");
 		msg->setData(buffer, size);
@@ -244,6 +247,7 @@ void DirectoryMonitor::publishModifiedFile(const string& fileName, struct stat f
 	if (buffer != NULL) {
 		Message* msg = new Message();
 		msg->setMeta("file", fileName);
+		msg->setMeta("md5", md5(buffer, size));
 		msg->setMeta("directory", _directory);
 		msg->setMeta("operation", "modified");
 		msg->setData(buffer, size);
@@ -273,7 +277,7 @@ char* DirectoryMonitor::readFileIntoBuffer(const string& fileName, int size) {
 	char* buffer = (char*)malloc(size);
 
 	FILE* fd;
-	if ((fd = fopen(absFilename, "r")) == NULL) {
+	if ((fd = fopen(absFilename, "rb")) == NULL) {
 		LOG_ERR("Could not open %s: %s", absFilename, strerror(errno));
 		free(buffer);
 		free(absFilename);

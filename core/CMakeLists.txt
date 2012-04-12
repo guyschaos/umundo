@@ -3,11 +3,11 @@
 ############################################################
 
 # include directories for our header files
-include_directories(./src)
-include_directories(./test)
+include_directories(src)
+include_directories(bindings)
 
 # gather all header files
-file(GLOB_RECURSE UMUNDOCORE_HEADER_FILES src/*.h)
+file(GLOB_RECURSE UMUNDOCORE_HEADER_FILES src/umundo/*.h)
 
 ###########################################
 # gather implementation agnostic files
@@ -113,7 +113,6 @@ LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
 
 add_subdirectory(bindings)    
 if (NOT CMAKE_CROSSCOMPILING)
-	add_subdirectory(test)          # build tests
 	add_subdirectory(tools)         # command-line tools
 endif()
 

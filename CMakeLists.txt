@@ -284,33 +284,39 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # Handle sub-components
 ############################################################
 
+# include_directories is not global so we grab our subdirs property
+# and propagate them through the build tree
 if (BUILD_UMUNDO_CORE)
 	SET(UMUNDOCORE_LIBRARIES)
 	SET(UMUNDOCORE_FILES)
 	SET(UMUNDOCORE_HEADER_FILES)
-	include_directories(core/src)
 	add_subdirectory(core)
+	GET_DIRECTORY_PROPERTY(CORE_INCLUDES DIRECTORY core INCLUDE_DIRECTORIES)
+	include_directories(${CORE_INCLUDES})
 endif()
 if (BUILD_UMUNDO_S11N)
 	SET(UMUNDOS11N_LIBRARIES)
 	SET(UMUNDOS11N_FILES)
 	SET(UMUNDOS11N_HEADER_FILES)
-	include_directories(s11n/src)
 	add_subdirectory(s11n)
+	GET_DIRECTORY_PROPERTY(S11N_INCLUDES DIRECTORY s11n INCLUDE_DIRECTORIES)
+	include_directories(${S11N_INCLUDES})
 endif()
 if (BUILD_UMUNDO_RPC)
 	SET(UMUNDORPC_LIBRARIES)
 	SET(UMUNDORPC_FILES)
 	SET(UMUNDORPC_HEADER_FILES)
-	include_directories(rpc/src)
 	add_subdirectory(rpc)
+	GET_DIRECTORY_PROPERTY(RPC_INCLUDES DIRECTORY rpc INCLUDE_DIRECTORIES)
+	include_directories(${RPC_INCLUDES})
 endif()
 if (BUILD_UMUNDO_UTIL)
 	SET(UMUNDOUTIL_LIBRARIES)
 	SET(UMUNDOUTIL_FILES)
 	SET(UMUNDOUTIL_HEADER_FILES)
-	include_directories(util/src)
 	add_subdirectory(util)
+	GET_DIRECTORY_PROPERTY(UTIL_INCLUDES DIRECTORY util INCLUDE_DIRECTORIES)
+	include_directories(${UTIL_INCLUDES})
 endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
@@ -398,10 +404,14 @@ endif()
 message(STATUS "Libraries will end up in: " ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 ############################################################
-# Test reports
+# Tests and reports
 ############################################################
 
 if (NOT CMAKE_CROSSCOMPILING)
+	add_subdirectory(core/test)
+	add_subdirectory(util/test)
+	add_subdirectory(s11n/test)
+	add_subdirectory(rpc/test)
 	include (CTest)
 endif()
 

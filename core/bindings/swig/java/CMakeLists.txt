@@ -15,10 +15,10 @@ if (NOT CMAKE_CROSSCOMPILING)
 	endif()
 endif()
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 if (MSVC)
 	# MSVC does not include inttypes.h but SWIG needs it
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../msvc)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../msvc)
 endif()
 
 SET(CMAKE_SWIG_FLAGS "")

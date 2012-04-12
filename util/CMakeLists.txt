@@ -14,14 +14,6 @@ include_directories(src)
 LIST(APPEND UMUNDOUTIL_LIBRARIES umundoutil)
 
 ############################################################
-# process other directories
-############################################################
-
-if (NOT CMAKE_CROSSCOMPILING)
-	add_subdirectory(test)          # build tests
-endif()
-
-############################################################
 # setup umundoutil library
 ############################################################
 

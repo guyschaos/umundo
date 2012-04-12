@@ -28,12 +28,12 @@
 
 namespace umundo {
 
-string procUUID = UUID::getUUID();
-
+string procUUID;
 Factory* Factory::_instance = NULL;
 
 Factory* Factory::getInstance() {
 	if (Factory::_instance == NULL) {
+		procUUID = UUID::getUUID();
 #ifdef BUILD_DEBUG
 		Debug::abortWithStackTraceOnSignal(SIGSEGV);
 #endif

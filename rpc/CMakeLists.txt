@@ -3,10 +3,10 @@
 ############################################################
 
 # include directories for our header files
-include_directories(./src)
+include_directories(src)
 
 # gather all header files
-file(GLOB_RECURSE UMUNDORPC_HEADER_FILES src/umundo/rpc/*.h)
+file(GLOB_RECURSE UMUNDORPC_HEADER_FILES src/umundo/*.h)
 
 include(UseUMundo)
 
@@ -59,14 +59,6 @@ if (RPC_PROTOBUF)
 endif()
 
 LIST(APPEND UMUNDORPC_LIBRARIES umundorpc)
-
-############################################################
-# process other directories
-############################################################
-
-if (NOT CMAKE_CROSSCOMPILING)
-	add_subdirectory(test)          # build tests
-endif()
 
 ############################################################
 # setup umundorpc library

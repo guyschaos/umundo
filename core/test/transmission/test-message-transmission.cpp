@@ -13,9 +13,9 @@ static int bytesRecvd = 0;
 
 class TestReceiver : public Receiver {
 	void receive(Message* msg) {
-    std::cout << "md5: '" << msg->getMeta("md5") << "'" << std::endl;
-    std::cout << "md5: '" << md5(msg->data(), msg->size()) << "'" << std::endl;
-    std::cout << "equals: " << msg->getMeta("md5").compare(md5(msg->data(), msg->size())) << std::endl;
+    // std::cout << "md5: '" << msg->getMeta("md5") << "'" << std::endl;
+    // std::cout << "md5: '" << md5(msg->data(), msg->size()) << "'" << std::endl;
+    // std::cout << "equals: " << msg->getMeta("md5").compare(md5(msg->data(), msg->size())) << std::endl;
     assert(msg->getMeta("md5").compare(md5(msg->data(), msg->size())) == 0);
     nrReceptions++;
     bytesRecvd += msg->size();
@@ -46,6 +46,7 @@ int main(int argc, char** argv, char** envp) {
   
   Thread::sleepMs(50);
   
+	std::cout << "expected 100 messages, received " << nrReceptions << std::endl;
   assert(nrReceptions == 100);
   assert(bytesRecvd == nrReceptions * BUFFER_SIZE);
   

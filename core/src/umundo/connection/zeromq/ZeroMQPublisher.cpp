@@ -92,7 +92,7 @@ int ZeroMQPublisher::waitForSubscribers(int count) {
 	while (_pubCount < count) {
 		UMUNDO_WAIT(_pubLock);
 		// give the connection a moment to establish
-		Thread::sleepMs(100);
+		Thread::sleepMs(300);
 	}
 	return _pubCount;
 }

@@ -32,13 +32,13 @@ int main(int argc, char** argv, char** envp) {
   subNode->addSubscriber(sub);
   
   pub->waitForSubscribers(1);
-  
+  Thread::sleepMs(200);
+
   char* buffer = (char*)malloc(BUFFER_SIZE);
   memset(buffer, 40, BUFFER_SIZE);
   
   
-  for (int i = 0; i < 10000; i++) {
-    Thread::sleepMs(20);
+  for (int i = 0; i < 100; i++) {
     Message* msg = new Message(Message(buffer, BUFFER_SIZE));
     msg->setMeta("md5", md5(buffer, BUFFER_SIZE));
     pub->send(msg);

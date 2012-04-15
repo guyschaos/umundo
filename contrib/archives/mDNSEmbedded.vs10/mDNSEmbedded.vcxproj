@@ -46,6 +46,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DISC_BONJOUR_EMBED;WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0501;DEBUG=1;MDNS_DEBUGMSGS=0;TARGET_OS_WIN32;WIN32_LEAN_AND_MEAN;USE_TCP_LOOPBACK;PLATFORM_NO_STRSEP;PLATFORM_NO_EPIPE;PLATFORM_NO_RLIMIT;PID_FILE="";UNICODE;_UNICODE;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1;_LEGACY_NAT_TRAVERSAL_;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\mDNSResponder-333.10\mDNSWindows\SystemService;..\mDNSResponder-333.10\mDNSWindows;..\mDNSResponder-333.10\mDNSCore;..\mDNSResponder-333.10\mDNSShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ProgramDataBaseFileName>$(IntDir)mDNSResponder.vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -84,7 +85,6 @@
     <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\dnssd_ipc.c" />
     <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\GenLinkedList.c" />
     <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\mDNSDebug.c" />
-    <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\uds_daemon.c" />
     <ClCompile Include="..\mDNSResponder-333.10\mDNSWindows\mDNSWin32.c" />
     <ClCompile Include="..\mDNSResponder-333.10\mDNSWindows\Poll.c" />
     <ClCompile Include="..\mDNSResponder-333.10\mDNSWindows\Secret.c" />

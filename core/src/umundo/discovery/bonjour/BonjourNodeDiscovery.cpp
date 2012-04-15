@@ -25,7 +25,6 @@ extern "C" {
 	int embedded_mDNSInit();
 	void embedded_mDNSExit();
 	int embedded_mDNSmainLoop(timeval);
-	void DNSServiceRefDeallocate(DNSServiceRef sdRef);
 }
 #endif
 
@@ -133,7 +132,11 @@ void BonjourNodeDiscovery::run() {
 		embedded_mDNSmainLoop(tv);
 		UMUNDO_UNLOCK(_mutex);
 		// give other threads a chance to react before locking again
+#ifdef WIN32
+		Thread::sleepMs(100);
+#else
 		Thread::yield();
+#endif
 	}
 #else
 

@@ -25,6 +25,7 @@ FIND_LIBRARY(BonjourEmbedded_LIBRARY_RELEASE
   /opt/csw
   /opt
 )
+
 if (BonjourEmbedded_LIBRARY_RELEASE)
 	list(APPEND BonjourEmbedded_LIBRARY optimized ${BonjourEmbedded_LIBRARY_RELEASE})
 endif()

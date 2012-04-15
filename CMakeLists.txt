@@ -244,7 +244,7 @@ else()
 	set(OUTPUT_DIR ${PROJECT_BINARY_DIR})
 endif()
 
-# set 
+
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}/bin" )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib" )
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_DIR}/lib" )
@@ -318,6 +318,23 @@ if (BUILD_UMUNDO_UTIL)
 	GET_DIRECTORY_PROPERTY(UTIL_INCLUDES DIRECTORY util INCLUDE_DIRECTORIES)
 	include_directories(${UTIL_INCLUDES})
 endif()
+
+# build one big convinience library from all the files at the end
+# add_library(umundo
+# 	${UMUNDOCORE_FILES}
+# 	${UMUNDOS11N_FILES}
+# 	${UMUNDORPC_FILES}
+# 	${UMUNDOUTIL_FILES}
+# )
+# target_link_libraries(umundo
+# 	${UMUNDOCORE_LIBRARIES}
+# 	${UMUNDOS11N_LIBRARIES}
+# 	${UMUNDORPC_LIBRARIES}
+# 	${UMUNDOUTIL_LIBRARIES}
+# )
+# INSTALL_LIBRARY(TARGETS umundo COMPONENT libraryCore)
+# set_target_properties(umundo PROPERTIES FOLDER "Libraries")
+
 
 if (NOT CMAKE_CROSSCOMPILING)
 	add_subdirectory(docs)

@@ -18,9 +18,6 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\mDNSResponder-333.10\mDNSWindows\Secret.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\DebugServices.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,16 +48,16 @@
     <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\mDNSDebug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\dnssd_clientshim.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\mDNSResponder-333.10\mDNSWindows\Poll.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mDNSResponder-333.10\mDNSCore\uDNS.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\uds_daemon.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mDNSResponder-333.10\mDNSShared\dnssd_clientshim.c">
+    <ClCompile Include="..\mDNSResponder-333.10\mDNSWindows\Secret.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

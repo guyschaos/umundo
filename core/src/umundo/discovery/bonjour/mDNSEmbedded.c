@@ -16,15 +16,24 @@ mDNS mDNSStorage;
 //struct mDNS_PlatformSupport_struct {};
 static int mDNSIsInitialized = 0;
 static mDNS_PlatformSupport platformSupport;
+
 const char ProgramName[] = "umundo";
 extern mDNSexport void mDNSPosixGetFDSet(mDNS *m, int *nfds, fd_set *readfds, struct timeval *timeout);
 extern mDNSexport void mDNSPosixProcessFDSet(mDNS *const m, fd_set *readfds);
+
+#if WIN32
+static void	embedded_mDNSInit_ReportStatus( int inType, const char *inFormat, ... ) {
+}
+#endif
 
 mDNSexport int embedded_mDNSInit() {
 	mStatus err;
 	if (mDNSIsInitialized != 0) {
 		return 0;
 	}
+
+	mDNSPlatformMemZero( &mDNSStorage, sizeof(mDNSStorage));
+	mDNSPlatformMemZero( &platformSupport, sizeof(platformSupport));
 
 	err = mDNS_Init(
 		&mDNSStorage, 
@@ -39,12 +48,12 @@ mDNSexport int embedded_mDNSInit() {
 		return err;
 
 #ifdef WIN32
-	// err = SetupInterfaceList( &mDNSStorage );
-	// if (err)
-	// 	return err;
-	// 
-	// err = uDNS_SetupDNSConfig( &mDNSStorage );
-	// if (err)
+	platformSupport.reportStatusFunc = embedded_mDNSInit_ReportStatus;
+	err = SetupInterfaceList( &mDNSStorage );
+	if (err)
+		return err;
+	err = uDNS_SetupDNSConfig( &mDNSStorage );
+	if (err)
 	// 	return err;
 #endif
 
@@ -55,13 +64,23 @@ mDNSexport int embedded_mDNSInit() {
 }
 
 mDNSexport void embedded_mDNSExit() {
+#ifdef WIN32
+	struct timeval tv;
+	tv.tv_sec  = 0;
+	tv.tv_usec = 0;
+	mDNS_StartExit(&mDNSStorage);
+	embedded_mDNSmainLoop(tv);
+	mDNS_FinalExit(&mDNSStorage);
+#else
 	mDNS_Close(&mDNSStorage);
+#endif
 }
 
 #ifdef WIN32
-// from <mDNSDir>/mDNSWindows/SystemService/Service.c
 mDNSexport int embedded_mDNSmainLoop(struct timeval timeout) {
 	mDNS_Execute(&mDNSStorage);
+	mDNSPoll(100);
+//	Sleep(100);
 	return 0;
 }
 

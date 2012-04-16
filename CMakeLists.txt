@@ -108,13 +108,14 @@ string(TOUPPER BUILD_${CMAKE_BUILD_TYPE} BUILD_TYPE)
 add_definitions("-D${BUILD_TYPE}")
 
 OPTION(BUILD_UMUNDO_CORE "Build umundo core" ON) 
-OPTION(BUILD_UMUNDO_UTIL "Build umundo util" ON) 
 if (CMAKE_CROSSCOMPILING AND ANDROID)
 	OPTION(BUILD_UMUNDO_S11N "Build umundo serialization" OFF) 
 	OPTION(BUILD_UMUNDO_RPC "Build umundo remote procedure calls" OFF) 
+	OPTION(BUILD_UMUNDO_UTIL "Build umundo utilities" OFF) 
 else()
 	OPTION(BUILD_UMUNDO_S11N "Build umundo serialization" ON) 
 	OPTION(BUILD_UMUNDO_RPC "Build umundo remote procedure calls" ON) 
+	OPTION(BUILD_UMUNDO_UTIL "Build umundo utilities" ON) 
 endif()
 
 OPTION(BUILD_STATIC_LIBRARIES "Build static libraries" ON) 
@@ -167,9 +168,6 @@ if(UNIX AND NOT APPLE AND NOT IOS AND NOT ANDROID)
 	OPTION(DISC_BONJOUR "Use bonjour for discovery" OFF)
 	OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" OFF) 
 	OPTION(DISC_AVAHI "Use avahi for discovery" ON) 
-	# OPTION(DISC_BONJOUR "Use bonjour for discovery" ON)
-	# OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" ON) 
-	# OPTION(DISC_AVAHI "Use avahi for discovery" OFF) 
 else()
 	# build with bonjour everywhere else
 	OPTION(DISC_BONJOUR "Use bonjour for discovery" ON) 
@@ -178,6 +176,9 @@ else()
 		OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" ON)
 		# required in patched bonjour headers
 		add_definitions("-DTARGET_OS_ANDROID")
+	elseif(WIN32)
+		# build with embedded bonjour until deployment situation of bonjour improves
+		OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" ON)
 	else()
 		OPTION(DISC_BONJOUR_EMBED "Embed mDNS discovery service" OFF)
 	endif()
@@ -235,10 +236,10 @@ if (DIST_PREPARE OR DIST_PACKAGE)
 	if (CMAKE_CROSSCOMPILING)
 		string(TOLOWER ${CMAKE_CROSSCOMPILING_TARGET} CMAKE_CROSSCOMPILING_TARGET_LC)
 		set(OUTPUT_DIR 
-			${PROJECT_SOURCE_DIR}/lib/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
+			${PROJECT_SOURCE_DIR}/package/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR})
 	else()
 		set(OUTPUT_DIR 
-			${PROJECT_SOURCE_DIR}/lib/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
+			${PROJECT_SOURCE_DIR}/package)
 	endif()
 else()
 	set(OUTPUT_DIR ${PROJECT_BINARY_DIR})
@@ -359,7 +360,11 @@ if (UMUNDOCORESWIG_LOCATION)
 			-Dsrc.dir=${PROJECT_SOURCE_DIR} 
 			-Dbuild.dir=${PROJECT_BINARY_DIR} 
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
-			-Djnilib.file=${UMUNDOCORESWIG_LOCATION} 
+ 			-Djnilib.file=${UMUNDOCORESWIG_LOCATION} 
+			-Denable.build.core=${BUILD_UMUNDO_CORE} 
+			-Denable.build.s11n=${BUILD_UMUNDO_S11N} 
+			-Denable.build.rpc=${BUILD_UMUNDO_RPC} 
+			-Denable.build.util=${BUILD_UMUNDO_UTIL} 
 			-f build-java.xml
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Running Ant ...")
@@ -375,7 +380,7 @@ endif()
 # Some concluding remarks
 ############################################################
 
-#if (OFF)
+if (OFF)
 	message(STATUS "umundo.core files: ")
 	foreach(file ${UMUNDOCORE_FILES})
 		message(STATUS "  ${file}")
@@ -416,7 +421,7 @@ endif()
 		message(STATUS "  ${file}")
 	endforeach()
 
-#endif()
+endif()
 
 message(STATUS "Libraries will end up in: " ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 

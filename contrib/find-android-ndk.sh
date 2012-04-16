@@ -11,7 +11,7 @@ if [ ! -f ${ANDROID_NDK_ROOT}/ndk-build ]; then
 	if [ -d /opt/android-ndk-r7 ]; then
 		ANDROID_NDK_ROOT="/opt/android-ndk-r7"
 	elif [ -d /Developer/Applications/android-ndk-r7 ]; then
-		ANDROID_NDK_ROOT="/Developer/Applications/android-ndk-r7"
+		ANDROID_NDK_ROOT="/Developer/Applications/android-ndk-r7c"
 	elif [ -d /home/sradomski/Documents/android-dev/android-ndk-r7 ]; then
 		ANDROID_NDK_ROOT="/home/sradomski/Documents/android-dev/android-ndk-r7"
 	else

@@ -6,5 +6,9 @@
 		<echo message="build dir:          ${build.dir}"/>
 		<echo message="build type:         ${build.type}"/>
 		<echo message="jni library:        ${jnilib.file}"/>
+		<echo message="build core:         ${enable.build.core}"/>
+		<echo message="build s11n:         ${enable.build.s11n}"/>
+		<echo message="build rpc:          ${enable.build.rpc}"/>
+		<echo message="build util:         ${enable.build.util}"/>
   </target>
 </project>

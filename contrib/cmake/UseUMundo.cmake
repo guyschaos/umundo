@@ -8,7 +8,7 @@
 #
 #		file(GLOB_RECURSE PROTOBUF_INTERFACES interfaces/protobuf/*.proto)
 #		UMUNDO_PROTOBUF_GENERATE_CPP_S11N(PROTO_SRCS PROTO_HDRS ${PROTOBUF_INTERFACES})
-#		include_directories(${CMAKE_CURRENT_BINARY_DIR})
+#		include_directories(${CMAKE_BINARY_DIR}/protobuf/generated)
 #		list(APPEND UMUNDOS11N_HEADER_FILES ${PROTO_HDRS})	
 #		list(APPEND UMUNDOS11N_FILES ${PROTO_SRCS})	
 #
@@ -79,6 +79,8 @@ endfunction()
 
 function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
   find_package(Protobuf REQUIRED)
+	file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/protobuf/generated)
+	
   if(NOT ARGN)
     message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
@@ -98,30 +100,38 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
     set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
 
+  if(DEFINED PROTOBUF_IMPORT_DIRS)
+    foreach(DIR ${PROTOBUF_IMPORT_DIRS})
+      get_filename_component(ABS_PATH ${DIR} ABSOLUTE)
+      list(FIND _protobuf_include_path ${ABS_PATH} _contains_already)
+      if(${_contains_already} EQUAL -1)
+          list(APPEND _protobuf_include_path -I ${ABS_PATH})
+      endif()
+    endforeach()
+  endif()
+
   set(${SRCS})
   set(${HDRS})
   foreach(FIL ${ARGN})
     get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
     get_filename_component(FIL_WE ${FIL} NAME_WE)
-		get_filename_component(FIL_EXT ${FIL} NAME)
 
-    STRING(REPLACE ${CMAKE_CURRENT_SOURCE_DIR} "" WO_PREFIX ${FIL})
-    STRING(REPLACE ${FIL_EXT} "" REL_PATH ${WO_PREFIX})
-
-		file( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}" )
+    list(APPEND ${SRCS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.cc")
+    list(APPEND ${HDRS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.h")
 
 		if (RPC_OR_S11N MATCHES "S11N")
-	    add_custom_command(
-	      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.cc"
-	             "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.h"
-	      COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-	      ARGS --cpp_out ${CMAKE_CURRENT_BINARY_DIR}${REL_PATH} ${_protobuf_include_path} ${ABS_FIL}
-	      DEPENDS ${ABS_FIL}
-	      COMMENT "Running C++ protocol buffer compiler on ${FIL}"
-	      VERBATIM )
+			add_custom_command(
+				OUTPUT "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.cc"
+				       "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.h"
+				COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
+				ARGS --cpp_out ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
+				DEPENDS ${ABS_FIL}
+				COMMENT "Running C++ protocol buffer compiler on ${FIL}"
+				VERBATIM 
+			)
 	   	
-			list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.cc")
-   		list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.pb.h")
+    	list(APPEND ${SRCS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.cc")
+    	list(APPEND ${HDRS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.h")
 		endif()
 
 		if (RPC_OR_S11N MATCHES "RPC")
@@ -130,24 +140,26 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
 				RETURN()
 			endif()
 
-	    add_custom_command(
-	      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.rpc.pb.cc"
-	             "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.rpc.pb.h"
-	      COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-	      ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_RPC_EXECUTABLE} --cpp_rpc_out ${CMAKE_CURRENT_BINARY_DIR}${REL_PATH} ${_protobuf_include_path} ${ABS_FIL}
-	      DEPENDS ${ABS_FIL} ${UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP}
-	      COMMENT "Running C++ RPC protocol buffer compiler on ${FIL}"
-	      VERBATIM )
+			add_custom_command(
+				OUTPUT "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.cc"
+				       "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.h"
+				COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
+				ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_RPC_EXECUTABLE} --cpp_rpc_out  ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
+				DEPENDS ${ABS_FIL} ${UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP}
+				COMMENT "Running C++ RPC protocol buffer compiler on ${FIL}"
+				VERBATIM 
+			)
 
-			list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.rpc.pb.cc")
-   		list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}${REL_PATH}${FIL_WE}.rpc.pb.h")
+    	list(APPEND ${SRCS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.cc")
+    	list(APPEND ${HDRS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.h")
 		endif()
   endforeach()
 
   set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
-	set(${SRCS} ${${SRCS}} PARENT_SCOPE)
-	set(${HDRS} ${${HDRS}} PARENT_SCOPE)
+  set(${SRCS} ${${SRCS}} PARENT_SCOPE)
+  set(${HDRS} ${${HDRS}} PARENT_SCOPE)
 
 endfunction()
 
 MARK_AS_ADVANCED(UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP)
+

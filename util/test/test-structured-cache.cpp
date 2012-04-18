@@ -7,11 +7,11 @@ using namespace umundo;
 
 class StringCacheItem : public NBandCacheItem {
 public:
-  StringCacheItem(string data, string name, string band) : NBandCacheItem(name, band), _data(data) {}
+	StringCacheItem(string data, string name, string band) : NBandCacheItem(name, band), _data(data) {}
 	void alleviate(float pressure, int distance) {
-  }
-  
-  string _data;
+	}
+
+	string _data;
 };
 
 int main(int argc, char** argv, char** envp) {

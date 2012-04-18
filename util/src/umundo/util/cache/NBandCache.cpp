@@ -19,10 +19,10 @@ void NBandProxyCacheItem::propagateDistance(int distance) {
 }
 
 NBandCacheItem::NBandCacheItem(string name, string band) : _name(name), _band(band), _isPrepared(false) {
-  _left = NULL;
-  _right = NULL;
-  _up = NULL;
-  _down = NULL;
+	_left = NULL;
+	_right = NULL;
+	_up = NULL;
+	_down = NULL;
 }
 
 set<SCacheItem*> NBandCacheItem::getNext() {

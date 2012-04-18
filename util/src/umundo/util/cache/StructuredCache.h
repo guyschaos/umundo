@@ -12,7 +12,7 @@ class SCacheItem;
 /**
  * A SCachePointer is the sole handle for applications to access items in the structured cache.
  *
- * It is important to exclusively use SCachePointers or subclasses thereof retrieved from the cache or 
+ * It is important to exclusively use SCachePointers or subclasses thereof retrieved from the cache or
  * subclasses thereof to access SCacheItems in the cache as this will allow the cache to page out items
  * that are "father away" form the pointers.
  */
@@ -20,9 +20,9 @@ class SCachePointer {
 public:
 
 	SCachePointer() {}
-  virtual SCacheItem* getItem() = 0;
-  
-  SCache* _cache;
+	virtual SCacheItem* getItem() = 0;
+
+	SCache* _cache;
 	friend class SCache;
 };
 
@@ -35,7 +35,7 @@ public:
 class SCacheItem {
 public:
 	virtual ~SCacheItem();
-	
+
 	virtual void alleviate(float pressure, int distance) = 0;
 	virtual void propagateDistance(int distance);
 
@@ -44,7 +44,7 @@ public:
 protected:
 	int _distance;
 	SCache* _cache;
-	
+
 	friend class SCache;
 	friend class SCachePointer;
 };
@@ -56,23 +56,23 @@ class SCache : public Thread {
 public:
 	SCache();
 	virtual ~SCache();
-	
+
 	void insert(SCacheItem*);
 	void remove(SCacheItem*);
 	virtual bool isEmpty();
-	
+
 	void run();
-	void pressure(float pressure);	
-  void alleviate();
+	void pressure(float pressure);
+	void alleviate();
 	void resetDistances();
-  
+
 	Mutex _mutex;
 	float _pressure;
 	map<intptr_t, SCacheItem*> _cacheItems;
 	set<weak_ptr<SCachePointer> > _cachePointers;
-  
+
 	friend class SCachePointer;
-  friend class SCacheItem;
+	friend class SCacheItem;
 };
 
 }

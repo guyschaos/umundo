@@ -30,5 +30,11 @@ find ${DIR}/../rpc/ -iname '*.orig' -exec rm {} \;
 astyle  \
 	--style=java \
 	--indent=tab \
-	--recursive ${DIR}/../util/*.cpp ${DIR}/../rpc/*.h
+	--recursive ${DIR}/../util/*.cpp ${DIR}/../util/*.h
 find ${DIR}/../util/ -iname '*.orig' -exec rm {} \;
+
+astyle  \
+	--style=java \
+	--indent=tab \
+	--recursive ${DIR}/../apps/*.cpp ${DIR}/../apps/*.h
+find ${DIR}/../apps/ -iname '*.orig' -exec rm {} \;

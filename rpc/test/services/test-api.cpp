@@ -2,8 +2,8 @@
 #include <umundo/s11n.h>
 #include <umundo/rpc.h>
 
-#include "rpc/services/protobuf/EchoService.rpc.pb.h"
-#include "rpc/services/protobuf/EchoService.pb.h"
+#include "protobuf/generated/EchoService.rpc.pb.h"
+#include "protobuf/generated/EchoService.pb.h"
 
 using namespace umundo;
 

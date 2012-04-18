@@ -110,10 +110,10 @@ void ArucoPosePublisher::run() {
 				yaw = M_PI + yaw1;
 			}
 
-			std::cout << std::setw(5);
-			std::cout << "Pitch: " << pitch << " ";
-			std::cout << "Roll:  " << roll << " ";
-			std::cout << "Yaw:   " << yaw << " [" << yaw1 << "/" << yaw2 << "]" << std::endl;
+//			std::cout << std::setw(5);
+//			std::cout << "Pitch: " << pitch << " ";
+//			std::cout << "Roll:  " << roll << " ";
+//			std::cout << "Yaw:   " << yaw << " [" << yaw1 << "/" << yaw2 << "]" << std::endl;
 
 			Pose* pose = new Pose();
 			pose->mutable_orientation()->set_pitch(pitch);
@@ -126,7 +126,14 @@ void ArucoPosePublisher::run() {
 			pose->mutable_position()->set_longitude(markers[k].Tvec.at<double>(1));
 			pose->mutable_position()->set_height(markers[k].Tvec.at<double>(2));
 
-			_typedPub->sendObj("Pose", pose);
+      stringstream ss;
+      ss << markers[k].id;
+
+			Message* msg = _typedPub->prepareMsg("Pose", pose);
+      msg->setMeta("markerId", ss.str());
+
+      _typedPub->send(msg);
+      delete msg;
 		}
 	}
 }

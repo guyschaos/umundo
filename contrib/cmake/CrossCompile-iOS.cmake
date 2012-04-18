@@ -4,15 +4,31 @@
 SET(CMAKE_SYSTEM_NAME Generic)
 SET(CMAKE_SYSTEM_VERSION 5.0)
 SET(CMAKE_SYSTEM_PROCESSOR arm)
+SET(CMAKE_OSX_ARCHITECTURES "armv6" "armv7")
 
 SET(ARCHS "-arch armv6 -arch armv7")
 SET(CMAKE_CROSSCOMPILING_TARGET IOS)
 SET(IOS ON)
 
-SET(DEVROOT "/Developer/Platforms/iPhoneOS.platform/Developer")
+execute_process(COMMAND xcode-select -print-path
+    OUTPUT_VARIABLE XCODE_SELECT OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(EXISTS ${XCODE_SELECT})
+	SET(DEVROOT "${XCODE_SELECT}/Platforms/iPhoneOS.platform/Developer")
+	if (NOT EXISTS "${DEVROOT}/SDKs/iPhoneOS${CMAKE_SYSTEM_VERSION}.sdk")
+		# specified SDK version does not exist, use last one
+		file(GLOB INSTALLED_SDKS ${DEVROOT}/SDKs/*)
+		list(SORT INSTALLED_SDKS)
+		list(REVERSE INSTALLED_SDKS)
+		list(GET INSTALLED_SDKS 0 LATEST_SDK)
+		string(REGEX MATCH "[0-9]\\.[0-9]" CMAKE_SYSTEM_VERSION ${LATEST_SDK})
+	endif()
+else()
+	SET(DEVROOT "/Developer/Platforms/iPhoneOS.platform/Developer")
+endif()
+
 SET(SDKROOT "${DEVROOT}/SDKs/iPhoneOS${CMAKE_SYSTEM_VERSION}.sdk")
 SET(CMAKE_OSX_SYSROOT "${SDKROOT}")
-SET(CMAKE_OSX_ARCHITECTURES "armv6" "armv7")
 
 SET (CMAKE_C_COMPILER "${DEVROOT}/usr/bin/gcc")
 SET (CMAKE_CXX_COMPILER "${DEVROOT}/usr/bin/g++")

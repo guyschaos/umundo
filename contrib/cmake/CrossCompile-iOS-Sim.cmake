@@ -7,13 +7,30 @@ SET(CMAKE_SYSTEM_PROCESSOR i386)
 
 SET(ARCHS "-arch i386")
 SET(CMAKE_CROSSCOMPILING_TARGET IOS)
+SET(CMAKE_OSX_ARCHITECTURES "i386")
 SET(IOS ON)
 SET(IOSSIM ON)
+	
+execute_process(COMMAND xcode-select -print-path
+    OUTPUT_VARIABLE XCODE_SELECT OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-SET(DEVROOT "/Developer/Platforms/iPhoneSimulator.platform/Developer")
+if(EXISTS ${XCODE_SELECT})
+	SET(DEVROOT "${XCODE_SELECT}/Platforms/iPhoneSimulator.platform/Developer")
+	if (NOT EXISTS "${DEVROOT}/SDKs/iPhoneSimulator${CMAKE_SYSTEM_VERSION}.sdk")
+		# specified SDK version does not exist, use last one
+		file(GLOB INSTALLED_SDKS ${DEVROOT}/SDKs/*)
+		list(SORT INSTALLED_SDKS)
+		list(REVERSE INSTALLED_SDKS)
+		list(GET INSTALLED_SDKS 0 LATEST_SDK)
+		string(REGEX MATCH "[0-9]\\.[0-9]" CMAKE_SYSTEM_VERSION ${LATEST_SDK})
+	endif()
+else()
+	SET(DEVROOT "/Developer/Platforms/iPhoneSimulator.platform/Developer")
+endif()
+
 SET(SDKROOT "${DEVROOT}/SDKs/iPhoneSimulator${CMAKE_SYSTEM_VERSION}.sdk")
 SET(CMAKE_OSX_SYSROOT "${SDKROOT}")
-SET(CMAKE_OSX_ARCHITECTURES "i386")
+
 
 SET (CMAKE_C_COMPILER "${DEVROOT}/usr/bin/gcc")
 SET (CMAKE_CXX_COMPILER "${DEVROOT}/usr/bin/g++")

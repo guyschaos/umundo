@@ -30,6 +30,7 @@ string(TOLOWER ${CMAKE_CXX_COMPILER_ID} CMAKE_CXX_COMPILER_ID_LC)
 # http://www.vtk.org/Wiki/CMake_Cross_Compiling#Searching_and_finding_external_software
 #
 
+# make sure includes are found
 LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt")
 
 # this happens when we ssh into windows to build there, see also:
@@ -48,24 +49,25 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	endif()
 endif()
 
+SET(UMUNDO_PREBUILT_LIBRARY_PATH)
 # search roots for libraries
 if(CMAKE_CROSSCOMPILING)
 	SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "ONLY")
 	if (IOS)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY")
-		LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/${CMAKE_SYSTEM_VERSION}")
+		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/${CMAKE_SYSTEM_VERSION}")
 	elseif (ANDROID)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "BOTH") # we need both to find jni
 		SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
 		SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
-		LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_NDK_ABI_EXT}")
+		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_NDK_ABI_EXT}")
 		LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/bin" "/") # this is needed to find swig
 	endif ()
 else ()
-	LIST(APPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
+	SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
 endif()
 
-#message(STATUS "CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH}")
+LIST(APPEND CMAKE_FIND_ROOT_PATH ${UMUNDO_PREBUILT_LIBRARY_PATH})
 
 ############################################################
 # General setup
@@ -78,7 +80,6 @@ if (NOT CMAKE_CROSSCOMPILING)
 endif()
 
 OPTION(DIST_PREPARE "Put libraries into the lib folder of the source tree" OFF)
-OPTION(DIST_PACKAGE "Create a distribution from the libraries in the source folder" OFF)
 
 # where to find the cmake modules we distribute
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
@@ -107,7 +108,6 @@ endif()
 string(TOUPPER BUILD_${CMAKE_BUILD_TYPE} BUILD_TYPE)
 add_definitions("-D${BUILD_TYPE}")
 
-OPTION(BUILD_UMUNDO_CORE "Build umundo core" ON) 
 if (CMAKE_CROSSCOMPILING AND ANDROID)
 	OPTION(BUILD_UMUNDO_S11N "Build umundo serialization" OFF) 
 	OPTION(BUILD_UMUNDO_RPC "Build umundo remote procedure calls" OFF) 
@@ -237,11 +237,11 @@ if(BUILD_PREFER_STATIC_LIBRARIES)
 endif()
 
 # where should libraries end up?
-if (DIST_PREPARE OR DIST_PACKAGE)
+if (DIST_PREPARE)
 	if (CMAKE_CROSSCOMPILING)
 		string(TOLOWER ${CMAKE_CROSSCOMPILING_TARGET} CMAKE_CROSSCOMPILING_TARGET_LC)
 		set(OUTPUT_DIR 
-			${PROJECT_SOURCE_DIR}/package/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR})
+			${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR})
 	else()
 		set(OUTPUT_DIR 
 			${PROJECT_SOURCE_DIR}/package)
@@ -292,14 +292,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # include_directories is not global so we grab our subdirs property
 # and propagate them through the build tree
-if (BUILD_UMUNDO_CORE)
-	SET(UMUNDOCORE_LIBRARIES)
-	SET(UMUNDOCORE_FILES)
-	SET(UMUNDOCORE_HEADER_FILES)
-	add_subdirectory(core)
-	GET_DIRECTORY_PROPERTY(CORE_INCLUDES DIRECTORY core INCLUDE_DIRECTORIES)
-	include_directories(${CORE_INCLUDES})
-endif()
+SET(UMUNDOCORE_LIBRARIES)
+SET(UMUNDOCORE_FILES)
+SET(UMUNDOCORE_HEADER_FILES)
+add_subdirectory(core)
+GET_DIRECTORY_PROPERTY(CORE_INCLUDES DIRECTORY core INCLUDE_DIRECTORIES)
+include_directories(${CORE_INCLUDES})
 if (BUILD_UMUNDO_S11N)
 	SET(UMUNDOS11N_LIBRARIES)
 	SET(UMUNDOS11N_FILES)
@@ -369,7 +367,6 @@ if (UMUNDOCORESWIG_LOCATION)
 			-Dbuild.dir=${PROJECT_BINARY_DIR} 
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
  			-Djnilib.file=${UMUNDOCORESWIG_LOCATION} 
-			-Denable.build.core=${BUILD_UMUNDO_CORE} 
 			-Denable.build.s11n=${BUILD_UMUNDO_S11N} 
 			-Denable.build.rpc=${BUILD_UMUNDO_RPC} 
 			-Denable.build.util=${BUILD_UMUNDO_UTIL} 
@@ -438,9 +435,7 @@ message(STATUS "Libraries will end up in: " ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 ############################################################
 
 if (NOT CMAKE_CROSSCOMPILING)
-	if (BUILD_UMUNDO_CORE)
-		add_subdirectory(core/test)
-	endif()
+	add_subdirectory(core/test)
 	if (BUILD_UMUNDO_UTIL)
 		add_subdirectory(util/test)
 	endif()
@@ -457,10 +452,8 @@ endif()
 # Installation / Provide package target
 ############################################################
 
-if (DIST_PACKAGE)
-	# see contrib/cmake/CPackUMundoPlatform.cmake
-	include(contrib/cmake/CPackUMundoPlatform.cmake)
+# see contrib/cmake/CPackUMundoPlatform.cmake
+include(contrib/cmake/CPackUMundoPlatform.cmake)
 
-	# This must always be last!
-	include(CPack)
-endif()
+# This must always be last!
+include(CPack)

@@ -26,7 +26,7 @@ public class TypedSubscriber extends Subscriber {
 
 		public void receive(Message msg) {
 			String type = msg.getMeta("type");
-			byte[] data = msg.getData().getBytes();
+			byte[] data = msg.getData();
 			if (TypedSubscriber.this.autoRegisterTypes && !TypedSubscriber.this.autoDeserLoadFailed.containsKey(type) && !TypedSubscriber.this.deserializerMethods.containsKey(type)) {
 				try {
 					Class c = Class.forName(type);

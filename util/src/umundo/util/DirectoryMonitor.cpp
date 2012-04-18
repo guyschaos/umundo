@@ -16,12 +16,12 @@ DirectoryMonitor::DirectoryMonitor(string directory, string channelName) :
 	_directory(directory), _channelName(channelName), _lastChecked(0) {
 	_greeter = new DirectoryMonitor::DirMonGreeter(this);
 	_resender = new DirectoryMonitor::DirMonResender(this);
-  // only connect if we have a channelname set
-  if (_channelName.length() > 0) {
-    _sub = new Subscriber(_channelName, _resender);
-    _pub = new Publisher(_channelName);
-    _pub->setGreeter(_greeter);
-  }
+	// only connect if we have a channelname set
+	if (_channelName.length() > 0) {
+		_sub = new Subscriber(_channelName, _resender);
+		_pub = new Publisher(_channelName);
+		_pub->setGreeter(_greeter);
+	}
 }
 
 set<Publisher*> DirectoryMonitor::getPublishers() {
@@ -193,7 +193,8 @@ void DirectoryMonitor::run() {
 			}
 			closedir(dp);
 #else
-			} while (FindNextFile(hFind, &ffd) != 0);
+			}
+			while (FindNextFile(hFind, &ffd) != 0);
 			FindClose(hFind);
 #endif
 			// are there any known entries we have not seen this time around?

@@ -15,14 +15,14 @@ class ArucoPosePublisher : public Thread {
 public:
 	ArucoPosePublisher(const string&, const string&);
 	virtual ~ArucoPosePublisher();
-	
+
 	void run();
 
 protected:
 	TypedPublisher* _typedPub;
 	Node* _node;
-	
-  Mat _inputImage;
+
+	Mat _inputImage;
 	VideoCapture _videoCapture;
 	MarkerDetector _markerDetector;
 	CameraParameters _camParameters;

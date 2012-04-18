@@ -34,13 +34,13 @@ public:
 
 	Message() : _data(NULL), _size(0) {}
 	Message(const char* data, size_t length) : _size(length) {
-    _data = (char*)malloc(_size);
-    memcpy(_data, data, _size);
-  }
+		_data = (char*)malloc(_size);
+		memcpy(_data, data, _size);
+	}
 	virtual ~Message() {
-    if (_data)
-      free(_data);
-  }
+		if (_data)
+			free(_data);
+	}
 
 	virtual const char* data() const                                    {
 		return _data;
@@ -49,18 +49,18 @@ public:
 		return _size;
 	}
 	virtual void setData(const string& data)                            {
-    if (_data)
-      free(_data);
-    _size = data.size();
-    _data = (char*)malloc(_size);
-    memcpy(_data, data.data(), _size);
+		if (_data)
+			free(_data);
+		_size = data.size();
+		_data = (char*)malloc(_size);
+		memcpy(_data, data.data(), _size);
 	}
 	virtual void setData(const char* data, size_t length)               {
-    if (_data)
-      free(_data);
-    _size = length;
-    _data = (char*)malloc(_size);
-    memcpy(_data, data, _size);
+		if (_data)
+			free(_data);
+		_size = length;
+		_data = (char*)malloc(_size);
+		memcpy(_data, data, _size);
 	}
 	virtual const void setMeta(const string& key, const string& value)  {
 		_meta[key] = value;
@@ -89,7 +89,7 @@ public:
 
 protected:
 	char* _data;
-  size_t _size;
+	size_t _size;
 	map<string, string> _meta;
 	vector<string> _keys;
 };

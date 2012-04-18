@@ -21,16 +21,24 @@ public class TypedPublisher extends Publisher {
 		super(channel);
 	}
 	
-	public void sendObject(MessageLite msg) {
-		sendObject(msg.getClass().getName(), msg);
+	public Message prepareMessage(MessageLite o) {
+			return prepareMessage(o.getClass().getName(), o);
 	}
 	
-	public void sendObject(String type, MessageLite o) {
+  public Message prepareMessage(String type, MessageLite o) {
 		Message msg = new Message();
 		byte[] buffer = o.toByteArray();
 		msg.setData(buffer);
 		msg.setMeta("type", type);		
-		send(msg);
+		return msg;
+	}
+	
+	public void sendObject(MessageLite o) {
+		sendObject(o.getClass().getName(), o);
+	}
+	
+	public void sendObject(String type, MessageLite o) {
+	  send(prepareMessage(type, o));
 	}
 
 }

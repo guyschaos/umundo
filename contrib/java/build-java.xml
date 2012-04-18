@@ -4,6 +4,10 @@
   <mkdir dir="${build.dir}/core/bindings/swig/java-class/" />
 	<javac destdir="${build.dir}/core/bindings/swig/java-class/" debug="true" includeantruntime="false">
       <src path="${build.dir}/core/bindings/swig/java/" />
+      <src path="${src.dir}/s11n/src/umundo-java/" />
+      <classpath>
+          <pathelement location="${src.dir}/contrib/java/lib/protobuf-java-2.4.1.jar"/>
+      </classpath>      
   </javac>
 </target>
 
@@ -18,11 +22,14 @@
 		<echo message="build rpc:          ${enable.build.rpc}"/>
 		<echo message="build util:         ${enable.build.util}"/>
 
-	<jar destfile="${lib.dir}/umundocoreSwigJNI.jar">
+	<jar destfile="${lib.dir}/umundocore.jar">
     <fileset dir="${build.dir}/core/bindings/swig/java-class/" >
       <include name="**/*.class" />
     </fileset>
     <fileset dir="${build.dir}/core/bindings/swig/java/" >
+      <include name="**/*.java" />
+    </fileset>
+    <fileset dir="${src.dir}/s11n/src/umundo-java/" >
       <include name="**/*.java" />
     </fileset>
 	</jar>

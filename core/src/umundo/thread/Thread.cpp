@@ -130,6 +130,24 @@ void Thread::sleepMs(uint32_t ms) {
 #endif
 }
 
+uint64_t Thread::getTimeStampMs() {
+  uint64_t time = 0;
+#ifdef WIN32
+  FILETIME tv;
+  GetSystemTimeAsFileTime(&tv);
+  time = (((uint64_t) tv.dwHighDateTime) << 32) + tv.dwLowDateTime;
+  time /= 10000;
+#endif
+#ifdef UNIX
+  struct timeval tv;
+	gettimeofday(&tv, NULL);
+  time += tv.tv_sec * 1000;
+  time += tv.tv_usec / 1000;
+#endif
+  return time;
+}
+
+  
 Mutex::Mutex() {
 #ifdef THREAD_PTHREAD
 	pthread_mutexattr_t attrib;
@@ -202,6 +220,7 @@ Monitor::Monitor() {
 	assert(err == 0);
 	err = pthread_cond_init(&_cond, NULL);
 	assert(err == 0);
+	(void)err; // avoid unused warning
 	_signaled = false;
 #endif
 #ifdef THREAD_WIN32

@@ -85,6 +85,7 @@ public:
 	static void yield();
 	static void sleepMs(uint32_t ms);
 	static int getThreadId(); ///< integer unique to the current thread
+	static uint64_t getTimeStampMs(); ///< timestamp in ms since 01.01.1970
 
 private:
 	bool _isStarted;

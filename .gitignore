@@ -3,6 +3,7 @@ core/contrib/bindings/android/bin/
 core/contrib/bindings/android/gen/
 core/contrib/bindings/java/bin/
 build/
-build-cli/
-core/docs/html/
-.DS_Store
+build*/
+package/
+docs/html/
+.DS_Store*

@@ -26,14 +26,14 @@ message Orientation {
   required double pitch = 1;
   required double roll = 2;
   required double yaw = 3;
-  optional double timestamp = 4;
+  optional uint64 timestamp = 4;
 }
 
 message Position {
   required double longitude = 1;
   required double latitude = 2;
   required double height = 3;
-  optional double timestamp = 4;
+  optional uint64 timestamp = 4;
   optional bool isWGS84 = 5 [default = true];
 }
 
@@ -41,7 +41,7 @@ message Heading {
   required double x = 1;
   required double y = 2;
   required double z = 3;
-  optional double timestamp = 4;
+  optional uint64 timestamp = 4;
   optional double magneticHeading = 5;
   optional double trueHeading = 6;
 }
@@ -50,5 +50,5 @@ message Pose {
   required Orientation orientation = 1;
   required Position position = 2;
   optional Heading heading = 3;
-  optional double timestamp = 4;
+  optional uint64 timestamp = 4;
 }

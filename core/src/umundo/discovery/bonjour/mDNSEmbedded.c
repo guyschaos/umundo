@@ -21,7 +21,11 @@ const char ProgramName[] = "umundo";
 extern mDNSexport void mDNSPosixGetFDSet(mDNS *m, int *nfds, fd_set *readfds, struct timeval *timeout);
 extern mDNSexport void mDNSPosixProcessFDSet(mDNS *const m, fd_set *readfds);
 
+// promise compiler that these will be there
+mDNSexport int embedded_mDNSmainLoop(struct timeval timeout);
+
 #if WIN32
+mStatus mDNSPoll(DWORD msec);
 static void	embedded_mDNSInit_ReportStatus( int inType, const char *inFormat, ... ) {
 }
 #endif

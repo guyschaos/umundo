@@ -91,6 +91,12 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 			useColors = 0;
 		} else {
 			// even if we want colors, check if terminal supports them
+#ifdef WIN32
+      CONSOLE_SCREEN_BUFFER_INFO sbi;
+      if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &sbi)) {
+        useColors = 1;
+      }
+#else
 			if (isatty(1)) {
 				char* term = getenv("TERM");
 				if ((term != NULL) && (strncmp(term, "xterm", 5) == 0 || strcmp(term, "xterm") == 0)) {
@@ -101,6 +107,7 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 					useColors = 0;
 				}
 			}
+#endif
 		}
 	}
 
@@ -183,8 +190,25 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 #else
 	if (useColors) {
 #ifdef WIN32
+    HANDLE hConsole;
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    int attribute = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+    if (logDomain != NULL && logDomainChanged) {
+			if (strcmp(logDomain, "common") == 0)      attribute |= BACKGROUND_BLUE | BACKGROUND_GREEN;
+			if (strcmp(logDomain, "connection") == 0)  attribute |= BACKGROUND_RED | BACKGROUND_BLUE;
+			if (strcmp(logDomain, "discovery") == 0)   attribute |= BACKGROUND_GREEN | BACKGROUND_RED;
+			if (strcmp(logDomain, "s11n") == 0)        attribute |= BACKGROUND_BLUE;
+		} else {
+			if (lvl == 1) attribute |= FOREGROUND_INTENSITY;
+			if (lvl == 2) attribute |= COMMON_LVB_UNDERSCORE;
+			if (lvl == 3) attribute |= 0;
+		}
+
+    SetConsoleTextAttribute(hConsole, attribute);
+
 		// @todo implement color output on windows
 		printf("%s %02d|%s:%d:%s %s %s\n", timeStr, threadId, filename, line, padding, severity, message);
+
 #else
 
 		int effect = 0;

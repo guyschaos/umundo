@@ -130,6 +130,7 @@ void DirectoryMonitor::run() {
 			// there are changes in the directory
 			_mutex.lock();
 			set<string> currEntries;
+
 #ifndef WIN32
 			DIR *dp;
 			dp = opendir(_directory.c_str());
@@ -153,12 +154,6 @@ void DirectoryMonitor::run() {
 				string dname = ffd.cFileName;
 #endif
 
-				// are we interested in such a file?
-				if (!filter(dname)) {
-					continue;
-				}
-				currEntries.insert(dname);
-
 				// see if the file was changed
 				char* filename;
 				asprintf(&filename, "%s/%s", _directory.c_str(), dname.c_str());
@@ -175,6 +170,13 @@ void DirectoryMonitor::run() {
 					free(filename);
 					continue;
 				}
+
+				// are we interested in such a file?
+				if (!filter(dname)) {
+					free(filename);
+					continue;
+				}
+				currEntries.insert(dname);
 
 				if (_knownEntries.find(dname) != _knownEntries.end()) {
 					// we have seen this entry before
@@ -193,8 +195,7 @@ void DirectoryMonitor::run() {
 			}
 			closedir(dp);
 #else
-			}
-			while (FindNextFile(hFind, &ffd) != 0);
+			} while (FindNextFile(hFind, &ffd) != 0);
 			FindClose(hFind);
 #endif
 			// are there any known entries we have not seen this time around?

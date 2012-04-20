@@ -30,7 +30,7 @@ protected:
 	MarkerDetector _markerDetector;
 	CameraParameters _camParameters;
 	float _markerSize;
-	int _windowSize;
+	unsigned int _windowSize;
 	float _alpha;
 	std::map<string, std::list<Pose*> > _markerHistory;
 };

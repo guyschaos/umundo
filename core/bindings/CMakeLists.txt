@@ -3,6 +3,7 @@
 if (WIN32)
 	LIST(APPEND CMAKE_PROGRAM_PATH "C:/MinGW/msys/1.0/src/swig")
 endif()
+LIST(APPEND CMAKE_PROGRAM_PATH $ENV{SWIG_DIR})
 
 find_package(SWIG)
 if (SWIG_FOUND)

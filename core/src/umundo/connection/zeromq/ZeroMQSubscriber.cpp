@@ -179,7 +179,7 @@ void ZeroMQSubscriber::removed(shared_ptr<PublisherStub> pub) {
 	UMUNDO_LOCK(_mutex);
 	std::stringstream ss;
 	ss << pub->getTransport() << "://" << pub->getIP() << ":" << pub->getPort();
-	_connections.erase(ss.str());
+	//_connections.erase(ss.str());
 	LOG_DEBUG("ZeroMQSubscriber disconnecting from %s", ss.str().c_str());
 	UMUNDO_UNLOCK(_mutex);
 }

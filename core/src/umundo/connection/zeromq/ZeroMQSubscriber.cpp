@@ -50,6 +50,12 @@ void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	LOG_DEBUG("Subscribing to %s", SHORT_UUID(_uuid).c_str());
 	zmq_setsockopt(_socket, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 
+	// reconnection intervals
+	int reconnect_ivl_min = 100;
+	int reconnect_ivl_max = 300;
+	zmq_setsockopt (requester, ZMQ_RECONNECT_IVL, &reconnect_ivl_min, sizeof(int)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+	zmq_setsockopt (requester, ZMQ_RECONNECT_IVL_MAX, &reconnect_ivl_max, sizeof(int)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+
 	// make sure we can close the socket later
 	std::stringstream ss;
 	ss << "inproc://" << _uuid;

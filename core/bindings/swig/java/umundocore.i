@@ -89,6 +89,17 @@ using namespace umundo;
 %rename(equals) operator==(NodeStub* n) const;
 %rename(waitSignal) wait;
 
+//******************************
+// Prevent premature GC
+//******************************
+
+// this is helpful:
+// http://stackoverflow.com/questions/9817516/swig-java-retaining-class-information-of-the-objects-bouncing-from-c
+
+# %typemap(javacode) umundo::Subscriber %{
+#   private Receiver _receiver;
+# %}
+# %typemap(javain, post="    _receiver = $javainput;") umundo::Receiver* "$javainput"
 
 //******************************
 // Beautify Message class

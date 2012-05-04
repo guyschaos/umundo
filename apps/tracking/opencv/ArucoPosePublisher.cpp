@@ -121,15 +121,10 @@ void ArucoPosePublisher::run() {
       roll = fmod(roll, 2 * M_PI);
       yaw = fmod(yaw, 2 * M_PI);
       
-//			std::cout << std::setw(5);
-//			std::cout << "Pitch: " << pitch << " ";
-//			std::cout << "Roll:  " << roll << " ";
-//			std::cout << "Yaw:   " << yaw << " [" << yaw1 << "/" << yaw2 << "]" << std::endl;
-
 			Pose* pose = new Pose();
 			pose->mutable_orientation()->set_pitch(pitch);
 			pose->mutable_orientation()->set_roll(roll);
-			pose->mutable_orientation()->set_yaw(yaw1);
+			pose->mutable_orientation()->set_yaw(yaw);
 
 			// TODO: This is most likely false, but we ignore the position for now anyway
 			pose->mutable_position()->set_iswgs84(false);
@@ -150,9 +145,6 @@ void ArucoPosePublisher::run() {
         _markerHistory[markerId].pop_back();
         delete oldPose;
       }
-
-      // we will use an exponentially weighted moving average to smoothen the values 
-      Pose* smoothPose = new Pose();
       
       // initilize smoothed pose values with oldest pose entry
       double smoothPitch = _markerHistory[markerId].front()->orientation().pitch();
@@ -202,10 +194,17 @@ void ArucoPosePublisher::run() {
         }
         poseIter++;
       }
+//			std::cout << "Pitch: " << std::setw(5) << smoothPitch << " ";
+//			std::cout << "Roll: " << std::setw(5) << smoothRoll << " ";
+//			std::cout << "Yaw: " << std::setw(5) << smoothYaw << std::endl;
+
       // make sure values are between 0-2PI again
       smoothPitch = fmod(smoothPitch, 2 * M_PI);
       smoothRoll = fmod(smoothRoll, 2 * M_PI);
       smoothYaw = fmod(smoothYaw, 2 * M_PI);
+
+      // we will use an exponentially weighted moving average to smoothen the values 
+      Pose* smoothPose = new Pose();
 
       smoothPose->mutable_orientation()->set_pitch(smoothPitch);
       smoothPose->mutable_orientation()->set_roll(smoothRoll);

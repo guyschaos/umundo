@@ -56,10 +56,10 @@ class NBandCache : public SCache {
 public:
 	NBandCache();
 
-	shared_ptr<NBandCachePtr> getPointer();
-	shared_ptr<NBandCachePtr> getPointer(const string& band, int elemId = -1);
-	void insert(NBandCacheItem* item);
-	void remove(NBandCacheItem* item);
+	virtual shared_ptr<NBandCachePtr> getPointer();
+	virtual shared_ptr<NBandCachePtr> getPointer(const string& band, int elemId = -1);
+	virtual void insert(NBandCacheItem* item);
+	virtual void remove(NBandCacheItem* item);
 
 protected:
 	typedef map<string, map<string, NBandCacheItem*> >::iterator BandIter;

@@ -688,6 +688,11 @@ void ZeroMQNode::addSubscriber(shared_ptr<SubscriberImpl> sub) {
 	}
 	assert(validateState());
 	UMUNDO_UNLOCK(_mutex);
+	/** 
+	 * ZeroMQ reconnection timeout is 200ms, we need to wait here
+	 * for ZeroMQ to reestablish connections that already existed.
+	 */
+	Thread::sleepMs(300);
 }
 
 /**

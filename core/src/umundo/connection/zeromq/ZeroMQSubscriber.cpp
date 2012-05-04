@@ -52,7 +52,7 @@ void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 
 	// reconnection intervals
 	int reconnect_ivl_min = 100;
-	int reconnect_ivl_max = 300;
+	int reconnect_ivl_max = 200;
 	zmq_setsockopt (_socket, ZMQ_RECONNECT_IVL, &reconnect_ivl_min, sizeof(int)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 	zmq_setsockopt (_socket, ZMQ_RECONNECT_IVL_MAX, &reconnect_ivl_max, sizeof(int)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 

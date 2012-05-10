@@ -44,6 +44,24 @@ SCacheItem* NBandCachePtr::getItem() {
 	return _item;
 }
 
+const string NBandCachePtr::getBandName() {
+	return _item->_band;
+}
+
+const string NBandCachePtr::getItemName() {
+	return _item->_name;
+}
+
+const int NBandCachePtr::getElementId() {
+	int elemId = 0;
+	NBandCacheItem* curr = _item;
+	while(curr->_left != NULL) {
+		curr = curr->_left;
+		elemId++;
+	}
+	return elemId;
+}
+
 NBandCacheItem* NBandCachePtr::left(bool moveBand) {
 	ScopeLock lock(&_cache->_mutex);
 	if (_item->_left == NULL) {

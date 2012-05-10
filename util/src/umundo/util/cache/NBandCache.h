@@ -49,6 +49,10 @@ public:
 	NBandCacheItem* up();
 	NBandCacheItem* down();
 
+	const string getItemName();
+	const string getBandName();
+	const int getElementId();
+
 	NBandCacheItem* _item;
 };
 

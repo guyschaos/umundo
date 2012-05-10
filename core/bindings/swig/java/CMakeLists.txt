@@ -31,7 +31,12 @@ SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES CPLUSPLUS ON)
 SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}")
 
 SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
-SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARIES})
+foreach(JNI_LIBRARY ${JNI_LIBRARIES})
+	if (NOT ${JNI_LIBRARY} MATCHES ".*jawt.*")
+		message("Linking with ${JNI_LIBRARY}")
+		SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARY})
+	endif()
+endforeach()
 set_target_properties(umundocoreSwig PROPERTIES FOLDER "Bindings")
 
 # I am not sure why we need it twice, but we do at least on android

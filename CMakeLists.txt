@@ -376,6 +376,7 @@ if (UMUNDOCORESWIG_LOCATION)
 		# make sure ant runs after we built the wrappers
 		add_dependencies(ant_build umundocoreSwig)
 		set_target_properties(ant_build PROPERTIES FOLDER "Bindings")
+		add_test(java-tests ${ANT_EXECUTABLE} -f ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java/build-java.xml)
 	else()
 		message(STATUS "Could not find ant binary - will not build jars")
 	endif()

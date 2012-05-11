@@ -723,6 +723,8 @@ void ZeroMQNode::removeSubscriber(shared_ptr<SubscriberImpl> sub) {
 			}
 		}
 	}
+	_localSubs.erase(zSub);
+	
 	assert(validateState());
 	UMUNDO_UNLOCK(_mutex);
 

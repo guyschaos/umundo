@@ -101,6 +101,9 @@ using namespace umundo;
 # %}
 # %typemap(javain, post="    _receiver = $javainput;") umundo::Receiver* "$javainput"
 
+# whenever we return a message, return a copy
+%typemap(javadirectorin) umundo::Message* "(msg == 0) ? null : new Message(new Message(msg, false))"
+
 //******************************
 // Beautify Message class
 //******************************
@@ -120,6 +123,15 @@ import java.util.HashMap;
 
 // provide convinience methods within Message Java class for meta keys
 %typemap(javacode) umundo::Message %{
+	public Message(Message other) {
+		setData(other.getData());
+		HashMap<String, String> meta = other.getMeta();
+		if (meta != null)
+			for (String k : meta.keySet()) {
+				setMeta(k, meta.get(k));
+			}
+	}
+
 	public HashMap<String, String> getMeta() {
 		HashMap<String, String> keys = new HashMap<String, String>();
 		for (int i = 0; i < getKeys().size(); i++) {

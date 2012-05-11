@@ -200,6 +200,7 @@ import java.util.HashMap;
 // provide convinience methods within Message Java class for meta keys
 %typemap(javacode) umundo::Message %{
 	public Message(Message other) {
+		this();
 		setData(other.getData());
 		HashMap<String, String> meta = other.getMeta();
 		if (meta != null)

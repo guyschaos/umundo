@@ -31,6 +31,11 @@
     <fileset dir="${src.dir}/s11n/src/umundo-java/" >
       <include name="**/*.java" />
     </fileset>
+    <fileset dir="${build.dir}/lib/" >
+      <include name="*Swig.jnilib" />
+      <include name="*Swig.so" />
+      <include name="*Swig.dll" />
+    </fileset>
 	</jar>
 </target>
 

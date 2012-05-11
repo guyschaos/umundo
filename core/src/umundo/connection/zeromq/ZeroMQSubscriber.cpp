@@ -158,6 +158,10 @@ void ZeroMQSubscriber::run() {
 			} else {
 				msg->setData((char*)zmq_msg_data(&message), msgSize);
 				zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
+
+				// add our channel name to the meta fields
+				msg->setMeta("channel", _channelName);
+
 				_receiver->receive(msg);
 				break; // last message part
 			}

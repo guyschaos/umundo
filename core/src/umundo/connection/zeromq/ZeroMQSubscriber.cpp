@@ -143,7 +143,7 @@ void ZeroMQSubscriber::run() {
 				// is this the first message with the channelname?
 				if (strlen(key) + 1 == msgSize &&
 				        msg->getMeta().find(key) == msg->getMeta().end()) {
-					msg->setMeta("channelName", key);
+					msg->setMeta("channel", key);
 				} else {
 					assert(strlen(key) + strlen(value) + 2 == msgSize);
 					if (strlen(key) + strlen(value) + 2 != msgSize) {
@@ -158,9 +158,6 @@ void ZeroMQSubscriber::run() {
 			} else {
 				msg->setData((char*)zmq_msg_data(&message), msgSize);
 				zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
-
-				// add our channel name to the meta fields
-				msg->setMeta("channel", _channelName);
 
 				_receiver->receive(msg);
 				break; // last message part

@@ -1,6 +1,6 @@
 # Building from Source
 
-The source code is build using CMake, see the dependencies below and install all the required packages, than see the platform
+The source code is build using CMake, see the dependencies below and install all the required packages, then see the platform
 notes to build uMundo on your platform.
 
 ## Build Dependencies
@@ -15,10 +15,7 @@ notes to build uMundo on your platform.
 		<tr>
 			<td><a href="http://www.swig.org/">SWIG</a><br />optional</td>
 			<td>>=&nbsp;2.0.5</td>
-			<td>Wraps the umundo C/C++ code for Java and other languages. Version 2.0.5 is only in 
-				<a href="https://swig.svn.sourceforge.net/svnroot/swig/">SVN</a> at the moment and earlier versions
-				are missing some features we are using. <a href="http://www.swig.org/Doc2.0/Windows.html">Building for 
-				Win32</a> is not trivial, so let's hope for a 2.0.5 release soon.</td></tr>
+			<td>Wraps the umundo C/C++ code for Java and other languages. Make sure to get version 2.0.5, older ones won't do.</td></tr>
 		<tr>
 			<td><a href="http://code.google.com/p/protobuf/">Protocol&nbsp;Buffers</a><br />required s11n</td>
 			<td>2.4.1 works</td>

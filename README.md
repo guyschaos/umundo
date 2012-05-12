@@ -17,7 +17,7 @@ iOS devices and Android.
 
 ## Components
 
-uMundo is divided into three components with different responsibilities in various stages of maturity:
+uMundo is divided into four components with different responsibilities in various stages of maturity:
 
 <dt><b>umundo.core</b></dt>
 <dd>The responsibility of umundo.core is to deliver messages from publishers to subscribers. A message contains
@@ -34,11 +34,17 @@ uMundo is divided into three components with different responsibilities in vario
 
 <dt><b>umundo.rpc</b></dt>
 <dd>This component provides a service concept for remote procedure calls on top of umundo.s11n. The current implementation only 
-	features synchronous calls with no possibility to specify the node where the service runs (first one found is used).
+	features synchronous with no possibility to specify the node where the service runs (first one found is used).
 	<a href="/tklab-tud/umundo/tree/master/rpc">[more]</a></dd>
+
+<dt><b>umundo.util</b></dt>
+<dd>Implementation of various C++ components for uMundo and some utility classes.
+	<a href="/tklab-tud/umundo/tree/master/util">[more]</a></dd>
+
 ## Contributors
 
 - Stefan Radomski <radomski@tk.informatik.tu-darmstadt.de>
+- Daniel Schreiber <schreiber@tk.informatik.tu-darmstadt.de>
 - Felix Heinrichs <felix.heinrichs@cs.tu-darmstadt.de>
 
 ## Status
@@ -100,16 +106,13 @@ especially with the embedded mDNS server on Android.
 	lib             # Prebuilt libraries of uMundo itself for all supported platforms.
 	rpc             # umundo.rpc implementation.
 	s11n            # umundo.s11n implementation, see README.md within.
+	util            # umundo.util with some umundo components and utility classes.
 
 ## FAQ
 
 <dt><b>Why is the source distribution so large?</b></dt>
 <dd>That's the price of convenience. The distribution contains most of our runtime dependencies prebuilt for every 
-	system / compiler combination and for debug and release builds.</dd>
-
-<dt><b>Why are there no JNI jars for windows?</b></dt>
-<dd>There is some issue either with packaging jars or copying them into the lib directory via CMake on windows (I am not sure). 
-	As you can just take another jar from any other platform it is a rather cosmetic bug.</dd>
+	system / compiler combination and as debug and release builds.</dd>
 
 <dt><b>How many umundo nodes can I realistically start at once?</b></dt>
 <dd>Using the default ZeroMQ implementation and Bonjour discovery on MacOSX, I could start 32 umundo-pingpong instances before

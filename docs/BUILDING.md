@@ -98,9 +98,9 @@ section at the end of the output.
 
 You can test whether everything works by starting one of the sample programs:
 
-	$ ./core/test/umundo-pingpong &
-	$ ./core/test/umundo-pingpong &
-	received ping
+	$ ./bin/umundo-pingpong &
+	$ ./bin/umundo-pingpong &
+	oioioioioi
 	[...]
 	$ killall umundo-pingpong
 	
@@ -113,6 +113,8 @@ You can test whether everything works by starting one of the sample programs:
 	[...]
 	-- Build files have been written to: /somewhere/convenient/umundo/build
 	$ open umundo.xcodeproj
+
+You can of course reuse the same source directory for many build directories.
 
 ### Linux
 

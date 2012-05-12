@@ -132,7 +132,7 @@ Instructions are literally a verbatim copy of building umundo for MacOSX on the 
 	-- Build files have been written to: /somewhere/convenient/umundo/build
 
 Now open Eclipse CDT and import the out-of-source directory as an existing project into workspace, leaving the "Copy projects 
-into workspace" checkbox unchecked. There are some more [detailled instruction](http://www.cmake.org/Wiki/Eclipse_CDT4_Generator) available 
+into workspace" checkbox unchecked. There are some more [detailed instruction](http://www.cmake.org/Wiki/Eclipse_CDT4_Generator) available 
 in the cmake wiki as well.
 
 #### Debian Stable - Complete Walkthrough

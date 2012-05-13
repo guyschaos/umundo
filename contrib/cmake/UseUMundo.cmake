@@ -123,8 +123,9 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
 			add_custom_command(
 				OUTPUT "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.cc"
 				       "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.h"
+				       "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.desc"
 				COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
-				ARGS --cpp_out ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
+				ARGS --include_imports --descriptor_set_out=${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.desc --cpp_out ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
 				DEPENDS ${ABS_FIL}
 				COMMENT "Running C++ protocol buffer compiler on ${FIL}"
 				VERBATIM 
@@ -144,7 +145,7 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
 				OUTPUT "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.cc"
 				       "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.h"
 				COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
-				ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_RPC_EXECUTABLE} --cpp_rpc_out  ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
+				ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_RPC_EXECUTABLE} --cpp_rpc_out ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
 				DEPENDS ${ABS_FIL} ${UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP}
 				COMMENT "Running C++ RPC protocol buffer compiler on ${FIL}"
 				VERBATIM 

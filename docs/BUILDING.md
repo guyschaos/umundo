@@ -144,7 +144,7 @@ add yourself to the <tt>sudo</tt> group or use a root console):
     $ sudo apt-get install cmake g++ avahi-daemon libavahi-client-dev
 
 Then build as described above - this is everything you need to compile a static <tt>libumundocore.a</tt>. If you want to generate 
-the optional Java bindings and are not satisfied with the precompiled ones, you also need:
+the Java bindings, you also need:
 - a JDK 
 - >= SWIG 2.0.5 (it's still in SVN - and prior versions won't do)
 - >= CMake 2.8.6 (Java support was only added in 2.8.6)

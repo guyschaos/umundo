@@ -1,8 +1,10 @@
 #include "umundo/config.h"
 #include "umundo/core.h"
-#include "umundo/core.h"
+#include "umundo/s11n.h"
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
+#include <fstream>
 
 #ifdef WIN32
 #include "XGetopt.h"
@@ -20,6 +22,15 @@
 #error "No discovery implementation choosen"
 #endif
 
+#ifdef S11N_PROTOBUF
+#include "umundo/s11n/TypedSubscriber.h"
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/descriptor.h>
+#else
+#error "No serialization implementation choosen"
+#endif
+
 #ifdef NET_ZEROMQ
 #include "umundo/connection/zeromq/ZeroMQNode.h"
 #include "umundo/connection/zeromq/ZeroMQPublisher.h"
@@ -32,11 +43,18 @@
 #error "No discovery implementation choosen"
 #endif
 
+#ifdef WIN32
+std::string pathSeperator = "\";
+#else
+std::string pathSeperator = "/";
+#endif
+
 using namespace umundo;
 
 char* channel = NULL;
 char* domain = NULL;
 char* file = NULL;
+char* protoPath = NULL;
 bool interactive = false;
 bool verbose = false;
 int minSubs = 0;
@@ -49,7 +67,7 @@ class SubscriberMonitor : public NET_SUB_IMPL {};
 void printUsageAndExit() {
 	printf("umundo-monitor version 0.0.2\n");
 	printf("Usage\n");
-	printf("\tumundo-monitor -c channel [-iv] [-d domain] [-f file]\n");
+	printf("\tumundo-monitor -c channel [-iv] [-d domain] [-f file] [-p dir]\n");
 	printf("\n");
 	printf("Options\n");
 	printf("\t-c <channel>       : use channel\n");
@@ -58,6 +76,8 @@ void printUsageAndExit() {
 	printf("\t-w <number>        : wait for given number of subscribers before publishing\n");
 	printf("\t-i                 : interactive mode (simple chat)\n");
 	printf("\t-v                 : be more verbose\n");
+	printf("\n");
+	printf("\t-p <dir>           : path with .pb.desc files for runtime reflection of protobuf messages\n");
 	exit(1);
 }
 
@@ -67,52 +87,105 @@ class PlainDumpingReceiver : public Receiver {
 	}
 };
 
+class ProtoBufDumpingReceiver : public Receiver {
+public:
+  ProtoBufDumpingReceiver(const string pbPath) {
+    _pbPath = pbPath;
+  }
+	void receive(Message* msg) {
+    string type = msg->getMeta("type");
+    if (type.length() > 0) {
+      if (descriptor_pool.FindMessageTypeByName(type) == NULL) {
+        // no descriptor is known yet, try to read from file
+        string filename = _pbPath;
+        filename.append(pathSeperator);
+        filename.append(type);
+        filename.append(".pb.desc");
+        std::ifstream desc_file(filename.c_str() ,std::ios::in|std::ios::binary);
+        
+        if (desc_file.good()) {
+          google::protobuf::FileDescriptorSet f;
+          f.ParseFromIstream(&desc_file);
+          f.PrintDebugString();
+          std::cout << std::endl;
+
+          for (int i = 0; i < f.file_size(); ++i) {
+            descriptor_pool.BuildFile(f.file(i));
+          }
+        }
+      }
+
+      if (descriptor_pool.FindMessageTypeByName(type) != NULL) {
+        // Using the descriptor get a Message.
+        const google::protobuf::Descriptor* descriptor = descriptor_pool.FindMessageTypeByName(type);
+        google::protobuf::DynamicMessageFactory factory;
+        google::protobuf::Message* protoMsg = factory.GetPrototype(descriptor)->New();
+        
+        // Parse protobuf from umundo message
+        protoMsg->ParseFromString(std::string(msg->data(), msg->size()));
+        
+        // Print out the message
+        protoMsg->PrintDebugString();
+      } else {
+        std::cout << type << ":" << string(msg->data(), msg->size());
+      }
+    }
+		std::cout << std::flush;
+	}
+  
+  google::protobuf::DescriptorPool descriptor_pool;
+  string _pbPath;
+};
+
 int main(int argc, char** argv) {
 	// Factory::registerPrototype("discovery", new DiscoveryMonitor(), NULL);
 	// Factory::registerPrototype("node", new NodeMonitor(), NULL);
 	// Factory::registerPrototype("publisher", new PublisherMonitor(), NULL);
 	// Factory::registerPrototype("subscriber", new SubscriberMonitor(), NULL);
-
+  
 	int option;
-	while ((option = getopt(argc, argv, "ivd:f:c:w:")) != -1) {
+	while ((option = getopt(argc, argv, "ivd:f:c:w:p:")) != -1) {
 		switch(option) {
-		case 'c':
-			channel = optarg;
-			break;
-		case 'd':
-			domain = optarg;
-			break;
-		case 'f':
-			file = optarg;
-			break;
-		case 'w':
-			minSubs = atoi((const char*)optarg);
-			break;
-		case 'i':
-			interactive = true;
-			break;
-		case 'v':
-			interactive = true;
-			break;
-		default:
-			printUsageAndExit();
-			break;
+      case 'c':
+        channel = optarg;
+        break;
+      case 'd':
+        domain = optarg;
+        break;
+      case 'f':
+        file = optarg;
+        break;
+      case 'w':
+        minSubs = atoi((const char*)optarg);
+        break;
+      case 'i':
+        interactive = true;
+        break;
+      case 'v':
+        interactive = true;
+        break;
+      case 'p':
+        protoPath = optarg;
+        break;
+      default:
+        printUsageAndExit();
+        break;
 		}
 	}
-
+  
 	if (!channel)
 		printUsageAndExit();
-
+  
 	Node* node = NULL;
 	Publisher* pub = NULL;
 	Subscriber* sub = NULL;
-
+  
 	if (domain) {
 		node = new Node(domain);
 	} else {
 		node = new Node();
 	}
-
+  
 	/**
 	 * Send file content
 	 */
@@ -122,31 +195,31 @@ int main(int argc, char** argv) {
 			node->addPublisher(pub);
 			pub->waitForSubscribers(minSubs);
 		}
-
+    
 		FILE *fp;
 		fp = fopen(file, "r");
 		if (fp == NULL) {
 			printf("Failed to open file %s: %s\n", file, strerror(errno));
 			return EXIT_FAILURE;
 		}
-
+    
 		int read = 0;
 		int lastread = 0;
 		char* readBuffer = (char*) malloc(1000);
 		while(true) {
 			lastread = fread(readBuffer, 1, 1000, fp);
-
+      
 			if(ferror(fp)) {
 				printf("Failed to read from file %s: %s", file, strerror(errno));
 				return EXIT_FAILURE;
 			}
-
+      
 			if (lastread <= 0)
 				break;
-
+      
 			pub->send(readBuffer, lastread);
 			read += lastread;
-
+      
 			if (feof(fp))
 				break;
 		}
@@ -155,12 +228,16 @@ int main(int argc, char** argv) {
 		if (!interactive)
 			exit(0);
 	}
-
+  
 	if (sub == NULL) {
-		sub = new Subscriber(channel, new PlainDumpingReceiver());
+    if (protoPath != NULL) {
+      sub = new Subscriber(channel, new ProtoBufDumpingReceiver(protoPath));    
+    } else {
+      sub = new Subscriber(channel, new PlainDumpingReceiver());
+    }
 		node->addSubscriber(sub);
 	}
-
+  
 	if (interactive) {
 		/**
 		 * Enter interactive mode
@@ -183,6 +260,6 @@ int main(int argc, char** argv) {
 		while (true)
 			Thread::sleepMs(500);
 	}
-
+  
 }
 

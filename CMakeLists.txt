@@ -436,6 +436,8 @@ message(STATUS "Libraries will end up in: " ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 ############################################################
 
 if (NOT CMAKE_CROSSCOMPILING)
+	# tools moved down here as some depend on s11n (move to apps?)
+	add_subdirectory(core/tools)
 	add_subdirectory(core/test)
 	if (BUILD_UMUNDO_UTIL)
 		add_subdirectory(util/test)

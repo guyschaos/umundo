@@ -112,9 +112,6 @@ LIST(APPEND UMUNDOCORE_LIBRARIES umundocore)
 ############################################################
 
 add_subdirectory(bindings)    
-if (NOT CMAKE_CROSSCOMPILING)
-	add_subdirectory(tools)         # command-line tools
-endif()
 
 ############################################################
 # setup umundocore library

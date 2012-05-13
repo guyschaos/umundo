@@ -4,7 +4,7 @@ if (WIN32)
 else()
 	add_executable(umundo-monitor umundo-monitor.cpp)
 endif()
-target_link_libraries(umundo-monitor ${UMUNDOCORE_LIBRARIES})
+target_link_libraries(umundo-monitor ${UMUNDOCORE_LIBRARIES} ${UMUNDOS11N_LIBRARIES})
 set_target_properties(umundo-monitor PROPERTIES FOLDER "Tools")
 
 INSTALL_EXECUTABLE(

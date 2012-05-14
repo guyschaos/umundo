@@ -32,8 +32,10 @@ uMundo applications.
 	</tr>
 	<tr>
 		<td rowspan="1">Windows&nbsp;7</td>
-		<td><a href="http://support.apple.com/kb/DL999?viewlocale=en_US">Bonjour</a></td>
-		<td>We need a mDNS implementation for discovery and Bonjour is available through an iTunes installation or the somewhat obscure "Bonjour Print Services for Windows".</td>
+		<td>None</td>
+		<td>We include an embedded mDNS implementation. It is, however, preferred to install bonjour as a service available through an 
+			iTunes installation or the somewhat obscure "<a href="http://support.apple.com/kb/DL999?viewlocale=en_US">Bonjour Print Services 
+			for Windows</a>". You will have to recompile uMundo with <tt>DISC_BONJOUR_EMBED=OFF</tt> to use the system-wide service.</td>
 	</tr>
 	<tr>
 		<td rowspan="1">Linux</td>
@@ -64,8 +66,12 @@ one pair of nodes within the same domain.
 
 ### Using Java Bindings
 
-For umundo.core there is a [sample Eclipse project](https://github.com/tklab-tud/umundo/tree/master/core/contrib/bindings/java). You
-can add it to your Eclipse workspace as follows:
+For umundo.core there is a [sample Eclipse project](https://github.com/tklab-tud/umundo/tree/master/contrib/samples/java). The API
+is the same as in C++, but there are some caveats:
+
+1. You have to subclass <tt>org.core.umundo.Receiver</tt> and override receive(Message msg) to receive messages from a Subscriber.
+2. SWIG can not generate Interaces and Java does not support multiple inheritance so the API is a little cumbersome at times.
+3. You have to explicitly hold references to every Receiver and eventual Greeters as they are garbage collected otherwise.
 
 #### Maven Repository
 

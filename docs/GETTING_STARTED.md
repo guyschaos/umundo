@@ -67,22 +67,25 @@ one pair of nodes within the same domain.
 For umundo.core there is a [sample Eclipse project](https://github.com/tklab-tud/umundo/tree/master/core/contrib/bindings/java). You
 can add it to your Eclipse workspace as follows:
 
-<b>outdated<b>
+#### Maven Repository
 
-1. In Eclipse choose <tt>File->New->Java Project</tt>.
-2. Choose any project name.
-3. Uncheck the <tt>Use default location</tt> checkbox and navigate to <tt>core/contrib/bindings/java</tt>.
-4. Click <tt>Next</tt> and verify that <tt>umundocoreSwigJNI.jar</tt> is referenced as a library. Do not mind the 
-<tt>darwin-i386</tt> in the relative path, the jar is platform independent.
-5. Click <tt>Finish</tt> and open the <a href="https://github.com/tklab-tud/umundo/blob/master/core/contrib/bindings/java/src/org/mundo/samples/TestPubSub.java"><tt>org.mundo.samples.TestPubSub</tt></a> java class.
-	- If you are not on Mac OSX, adapt the path to the native library within the <tt>System.setProperty()</tt> call.
-	- If you have installed the native libraries or the jars somewhere else, make sure to adapt the paths.
-6. Start the program and see the message being transferred from the publisher to the subscriber.
+We maintain a Maven Repository for the umundocore JAR files with everything included for MacOSX, Linux 32-Bit and Windows. In your 
+<tt>pom.xml</tt> add a new repository and include the umundocore dependency:
 
-If you did not checkout the source, you can still get everything you need by grabbing the prebuilt <tt>umundocoreSwig.[so|dll|jnilib]</tt>
-from the library folder of your respective platform.
+    <repositories>
+      ...
+      <repository>
+        <id>tu.darmstadt.umundo</id>
+        <name>uMundo at TK</name>
+        <url>http://umundo.tk.informatik.tu-darmstadt.de/maven2/</url>
+      </repository>
+    </repositories>
 
-- Get your JNI umundo.core library for [Windows](https://github.com/tklab-tud/umundo/blob/master/lib/windows-x86/msvc/Release/umundocoreSwig.dll),
-[Linux](https://github.com/tklab-tud/umundo/blob/master/lib/linux-i686/gnu/Release/libumundocoreSwig.so) or
-[MacOSX](https://github.com/tklab-tud/umundo/blob/master/lib/darwin-i386/gnu/Release/libumundocoreSwig.jnilib)
-- Download the [corresponding jar] (https://github.com/tklab-tud/umundo/blob/master/lib/darwin-i386/gnu/Release/umundocoreSwigJNI.jar) with the java classes.
+    <dependencies>
+      ...
+      <dependency>
+        <groupId>org.umundo</groupId>
+        <artifactId>umundocore</artifactId>
+        <version>0.0.3</version>
+      </dependency>
+    </dependencies>

@@ -238,9 +238,8 @@ void ZeroMQNode::run() {
 				memcpy(remoteId, zmq_msg_data(&message), 36);
 				remoteId[36] = 0;
 
-			} else if (msgSize >= 2) {
+			} else if (msgSize >= 2 && remoteId != NULL) {
 				// every envelope starts with the remote uuid we read above
-				assert(remoteId != NULL);
 				assert(strlen(remoteId) == 36);
 
 				// first two bytes are type of message

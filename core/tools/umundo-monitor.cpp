@@ -93,21 +93,30 @@ public:
     _pbPath = pbPath;
   }
 	void receive(Message* msg) {
+		// dump meta fields in any case
+		std::map<std::string, std::string>::const_iterator metaIter = msg->getMeta().begin();
+		std::cout << "Meta Fields:" << std::endl;
+		while(metaIter != msg->getMeta().end()) {
+			std::cout << "  " << metaIter->first << ": " << metaIter->second << std::endl;
+			metaIter++;
+		}
+		
     string type = msg->getMeta("type");
     if (type.length() > 0) {
+			// the following code is adapted from http://www.mail-archive.com/protobuf@googlegroups.com/msg04058.html
       if (descriptor_pool.FindMessageTypeByName(type) == NULL) {
         // no descriptor is known yet, try to read from file
         string filename = _pbPath;
         filename.append(pathSeperator);
-        filename.append(type);
+        filename.append(type); // This will fail if we only receive contained types
         filename.append(".pb.desc");
         std::ifstream desc_file(filename.c_str() ,std::ios::in|std::ios::binary);
         
         if (desc_file.good()) {
           google::protobuf::FileDescriptorSet f;
           f.ParseFromIstream(&desc_file);
-          f.PrintDebugString();
-          std::cout << std::endl;
+          // f.PrintDebugString();
+          // std::cout << std::endl;
 
           for (int i = 0; i < f.file_size(); ++i) {
             descriptor_pool.BuildFile(f.file(i));
@@ -116,7 +125,8 @@ public:
       }
 
       if (descriptor_pool.FindMessageTypeByName(type) != NULL) {
-        // Using the descriptor get a Message.
+				std::cout << "Protobuf Object:" << std::endl;
+        // Using the descriptor to get a Message.
         const google::protobuf::Descriptor* descriptor = descriptor_pool.FindMessageTypeByName(type);
         google::protobuf::DynamicMessageFactory factory;
         google::protobuf::Message* protoMsg = factory.GetPrototype(descriptor)->New();
@@ -127,7 +137,7 @@ public:
         // Print out the message
         protoMsg->PrintDebugString();
       } else {
-        std::cout << type << ":" << string(msg->data(), msg->size());
+        std::cout << "Raw " << type << ":" << string(msg->data(), msg->size()) << std::endl;
       }
     }
 		std::cout << std::flush;

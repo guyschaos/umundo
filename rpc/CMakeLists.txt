@@ -31,6 +31,10 @@ if (RPC_PROTOBUF)
 		file(GLOB_RECURSE RPC_PROTOBUF_FILES src/umundo/protoc-rpc/*.cpp)
 		add_executable(protoc-umundo-rpc ${RPC_PROTOBUF_FILES})
 		target_link_libraries(protoc-umundo-rpc ${PROTOBUF_PROTOC_LIBRARIES} ${PROTOBUF_LIBRARIES})
+		# this is weird - on debian 64bit we need to link against pthread for 'pthread_once'
+		if (THREAD_PTHREAD AND 64BIT_HOST) 
+			target_link_libraries(protoc-umundo-rpc pthread)
+		endif()
 		set_target_properties(protoc-umundo-rpc PROPERTIES FOLDER "Tools")
 
 		install(
@@ -43,7 +47,7 @@ if (RPC_PROTOBUF)
 	
 	# process .proto files
 	if (NOT PROTOBUF_PROTOC_EXECUTABLE)
-		message(FATAL_ERROR "Protobuf required for remote procedure calls")
+		message(FATAL_ERROR "protoc binary required for serialization")
 	endif()
 
 	file(GLOB_RECURSE PROTOBUF_INTERFACES services/protobuf/*.proto)

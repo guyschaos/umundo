@@ -3,7 +3,7 @@
 uMundo tries to make usage for a developer as convenient as is reasonable. All the libraries we rely upon are available
 as precompiled, static libraries and are directly included in the uMundo libraries. 
 
-To get started, download an [installer](https://github.com/tklab-tud/umundo/tree/master/installer) for your platform and run two 
+To get started, download an [installer](http://umundo.tk.informatik.tu-darmstadt.de/installer/) for your platform and run two 
 instances of <tt>umundo-pingpong</tt> from the console or from within your installation directory. If you see some *io* on both 
 ends, your system is setup correctly to run umundo programs.
 
@@ -73,10 +73,21 @@ is the same as in C++, but there are some caveats:
 2. SWIG can not generate Interaces and Java does not support multiple inheritance so the API is a little cumbersome at times.
 3. You have to explicitly hold references to every Receiver and eventual Greeters as they are garbage collected otherwise.
 
+#### Java Archive
+
+The JAR file in the installers and in the maven repository uses a static initializer method to automatically load its 
+platform-specific JNI library from the JAR itself. If this fails, you can still load the JNI library per <tt>System.load()</tt>. 
+The JAR built for android only contains the native JNI code for the android platform and can not be used on desktop installations.
+There are three reasons for seperating the android and the desktop jar: 1) The library name is the same for android and linux, 2)
+the android jar can be smaller and 3) renaming the android jar with CMake is a hassle.
+
+The automatic loading of the JNI libraries contained in the Jar is only performed when uMundo is built with <tt>DIST_PREPARE</tt>
+to allow custom builds to load the debug JNI library.
+
 #### Maven Repository
 
-We maintain a Maven Repository for the umundocore JAR files with everything included for MacOSX, Linux 32-Bit and Windows. In your 
-<tt>pom.xml</tt> add a new repository and include the umundocore dependency:
+We maintain a maven repository for the desktop umundocore JAR file with everything included for MacOSX, Linux 32/64-Bit and Windows. 
+In your <tt>pom.xml</tt> add a new repository and include the umundocore dependency:
 
     <repositories>
       ...

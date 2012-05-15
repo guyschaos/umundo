@@ -12,16 +12,26 @@
 </target>
 
 <target name="jar" depends="compile" description="Create a bundle of the source code">
-		<echo message="library output dir: ${lib.dir}"/>
-		<echo message="source dir:         ${src.dir}"/>
-		<echo message="build dir:          ${build.dir}"/>
-		<echo message="build type:         ${build.type}"/>
-		<echo message="jni library:        ${jnilib.file}"/>
-		<echo message="build s11n:         ${enable.build.s11n}"/>
-		<echo message="build rpc:          ${enable.build.rpc}"/>
-		<echo message="build util:         ${enable.build.util}"/>
+
+	<echo message="library output dir: ${lib.dir}"/>
+	<echo message="source dir:         ${src.dir}"/>
+	<echo message="build dir:          ${build.dir}"/>
+	<echo message="build type:         ${build.type}"/>
+	<echo message="jni library:        ${jnilib.file}"/>
+	<echo message="build s11n:         ${enable.build.s11n}"/>
+	<echo message="build rpc:          ${enable.build.rpc}"/>
+	<echo message="build util:         ${enable.build.util}"/>
+	<echo message="fat jar:            ${fat.jar}"/>
+
+	<!-- only include JNI libraries in distribution builds -->
+	<condition property="include.all.jni">
+		<equals arg1="${fat.jar}" arg2="ON"/>
+	</condition>
 
 	<jar destfile="${lib.dir}/umundocore.jar">
+    <fileset dir="${lib.dir}/" >
+      <include name="${jnilib.file}" />
+    </fileset>
     <fileset dir="${build.dir}/core/bindings/swig/java-class/" >
       <include name="**/*.class" />
     </fileset>
@@ -31,10 +41,10 @@
     <fileset dir="${src.dir}/s11n/src/umundo-java/" >
       <include name="**/*.java" />
     </fileset>
-    <fileset dir="${build.dir}/lib/" >
-      <include name="*Swig.jnilib" />
-      <include name="*Swig.so" />
-      <include name="*Swig.dll" />
+    <fileset dir="${lib.dir}/">
+      <include name="*Swig*.jnilib" if="${include.all.jni}"/>
+      <include name="*Swig*.so" if="${include.all.jni}"/>
+      <include name="*Swig*.dll" if="${include.all.jni}"/>
     </fileset>
 	</jar>
 </target>

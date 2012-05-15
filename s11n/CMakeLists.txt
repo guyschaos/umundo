@@ -31,7 +31,7 @@ if (S11N_PROTOBUF)
 	list(APPEND UMUNDOS11N_FILES  ${S11N_PROTOBUF_FILES})
 
 	if (NOT PROTOBUF_PROTOC_EXECUTABLE)
-		message(FATAL_ERROR "Protobuf required for serialization")
+		message(FATAL_ERROR "protoc binary required for serialization")
 	endif()
 
 	# process .proto files

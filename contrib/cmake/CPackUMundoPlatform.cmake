@@ -4,49 +4,49 @@
 # gather libraries for package
 ########################################
 
-file(GLOB_RECURSE PLATFORM_LIBS 
-	${PROJECT_SOURCE_DIR}/package/lib/*.a
-	${PROJECT_SOURCE_DIR}/package/lib/*.so
-	${PROJECT_SOURCE_DIR}/package/lib/*.lib
-	${PROJECT_SOURCE_DIR}/package/lib/*.jar
-	${PROJECT_SOURCE_DIR}/package/lib/*.dylib
-	${PROJECT_SOURCE_DIR}/package/lib/*.dll
-	${PROJECT_SOURCE_DIR}/package/lib/*.pdb
-	${PROJECT_SOURCE_DIR}/package/lib/*.exp
-	${PROJECT_SOURCE_DIR}/package/lib/*.ilk
-	${PROJECT_SOURCE_DIR}/package/lib/*.jnilib
-)
-
-# platform dependant libraries
-foreach(PLATFORM_LIB ${PLATFORM_LIBS})
-#	message("PLATFORM_LIB: ${PLATFORM_LIB}")
-	if (PLATFORM_LIB MATCHES ".*umundocore.wig.*" OR PLATFORM_LIB MATCHES "umundocore.jar")
-		install(FILES ${PLATFORM_LIB} DESTINATION share/umundo/java COMPONENT librarySwig)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
-#		message(STATUS "PACKAGE RELEASE SWIG ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundoserial.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-#		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundocore.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-#		message(STATUS "PACKAGE RELEASE CORE ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundorpc.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-#		message(STATUS "PACKAGE RELEASE RPC ${PLATFORM_LIB}")
-	elseif (PLATFORM_LIB MATCHES ".*umundoutil.*")
-		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-#		message(STATUS "PACKAGE RELEASE UTIL ${PLATFORM_LIB}")
-	else()
-		message(STATUS "PACKAGE RELEASE UNK ${PLATFORM_LIB} - not packaging")	
-	endif()
-endforeach()
+# file(GLOB_RECURSE PLATFORM_LIBS 
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.a
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.so
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.lib
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.jar
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.dylib
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.dll
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.pdb
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.exp
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.ilk
+# 	${PROJECT_SOURCE_DIR}/package/lib/*.jnilib
+# )
+# 
+# # platform dependant libraries
+# foreach(PLATFORM_LIB ${PLATFORM_LIBS})
+# #	message("PLATFORM_LIB: ${PLATFORM_LIB}")
+# 	if (PLATFORM_LIB MATCHES ".*umundocore.wig.*" OR PLATFORM_LIB MATCHES "umundocore.jar")
+# 		install(FILES ${PLATFORM_LIB} DESTINATION share/umundo/java COMPONENT librarySwig)
+# 		list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
+# #		message(STATUS "PACKAGE RELEASE SWIG ${PLATFORM_LIB}")
+# 	elseif (PLATFORM_LIB MATCHES ".*umundoserial.*")
+# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+# #		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
+# 	elseif (PLATFORM_LIB MATCHES ".*umundocore.*")
+# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+# #		message(STATUS "PACKAGE RELEASE CORE ${PLATFORM_LIB}")
+# 	elseif (PLATFORM_LIB MATCHES ".*umundorpc.*")
+# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+# #		message(STATUS "PACKAGE RELEASE RPC ${PLATFORM_LIB}")
+# 	elseif (PLATFORM_LIB MATCHES ".*umundoutil.*")
+# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+# #		message(STATUS "PACKAGE RELEASE UTIL ${PLATFORM_LIB}")
+# 	else()
+# #		message(STATUS "PACKAGE RELEASE UNK ${PLATFORM_LIB} - not packaging")	
+# 	endif()
+# endforeach()
 
 ########################################
-# Pre-built platform libraries
+# Pre-built libraries for host platform
 ########################################
 
 file(GLOB_RECURSE PREBUILT_LIBS 
@@ -58,10 +58,11 @@ file(GLOB_RECURSE PREBUILT_LIBS
 	${UMUNDO_PREBUILT_LIBRARY_PATH}/lib/*.pdb
 )
 foreach(PREBUILT_LIB ${PREBUILT_LIBS})
-#	message("PREBUILT_LIB: ${PREBUILT_LIB}")
-	string(REGEX MATCH "prebuilt/[^//]+/[^//]+" CURR_PLATFORM ${PREBUILT_LIB})
-#	message("CURR_PLATFORM: ${CURR_PLATFORM}")
-	install(FILES ${PREBUILT_LIB} DESTINATION share/umundo/${CURR_PLATFORM} COMPONENT libraryPrebuilt)
+	# message("PREBUILT_LIB: ${PREBUILT_LIB}")
+	# string(REGEX MATCH "prebuilt/[^//]+/[^//]+" CURR_PLATFORM ${PREBUILT_LIB})
+	# message("CURR_PLATFORM: ${CURR_PLATFORM}")
+	# install(FILES ${PREBUILT_LIB} DESTINATION share/umundo/${CURR_PLATFORM} COMPONENT libraryPrebuilt)
+	install(FILES ${PREBUILT_LIB} DESTINATION share/umundo/prebuilt COMPONENT libraryPrebuilt)
 	list (APPEND UMUNDO_CPACK_COMPONENTS "libraryPrebuilt")
 endforeach()
 
@@ -79,6 +80,14 @@ foreach(HTML_DOC ${HTML_DOCS})
 #	message(STATUS ${HTML_PATH})
 endforeach()
 
+########################################
+# The umundo.core Jar
+########################################
+
+if (UMUNDOCORESWIG_LOCATION)
+	install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/umundocore.jar DESTINATION share/umundo/lib COMPONENT librarySwig)
+	list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
+endif()
 
 ########################################
 # Support for cross compiling

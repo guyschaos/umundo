@@ -36,6 +36,6 @@ rm -rf ${DEST_DIR}/share
 rm -rf ${DEST_DIR}/lib/pkgconfig
 mv ${DEST_DIR}/lib/* ${DEST_DIR}
 rm -rf ${DEST_DIR}/lib
-mkdir -p ${DEST_DIR}/../../../include/zeromq
+#mkdir -p ${DEST_DIR}/../../../include/zeromq
 #mv ${DEST_DIR}/include/* ${DEST_DIR}/../../../include/zeromq
 rm -rf ${DEST_DIR}/include

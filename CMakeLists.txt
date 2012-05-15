@@ -42,6 +42,8 @@ endif()
 # is this a 64Bit host?
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(64BIT_HOST ON)
+	set(64BIT_LIB_POSTFIX 64)
+	# additional library paths to be searched
 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/lib64")
 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/lib64")
 	if(CMAKE_COMPILER_IS_GNUCXX)
@@ -57,7 +59,7 @@ if(CMAKE_CROSSCOMPILING)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY")
 		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/ios/${CMAKE_SYSTEM_VERSION}")
 	elseif (ANDROID)
-		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "BOTH") # we need both to find jni
+		SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "ONLY") # we need both to find jni
 		SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
 		SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
 		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_NDK_ABI_EXT}")
@@ -67,8 +69,10 @@ else ()
 	SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
 endif()
 
+# prepend prebuilt library path
+SET(CMAKE_FIND_ROOT_PATH "${UMUNDO_PREBUILT_LIBRARY_PATH};${CMAKE_FIND_ROOT_PATH}")
 LIST(APPEND CMAKE_FIND_ROOT_PATH ${UMUNDO_PREBUILT_LIBRARY_PATH})
-
+message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 ############################################################
 # General setup
 ############################################################
@@ -158,10 +162,10 @@ SET_PROPERTY(CACHE LOGLEVEL_S11N PROPERTY STRINGS 0 1 2 3)
 # postfixes for all built targets depending on build type
 ############################################################
 
-SET(CMAKE_DEBUG_POSTFIX "_d")
-SET(CMAKE_RELEASE_POSTFIX "")
-SET(CMAKE_RELWITHDEBINFO_POSTFIX "_rd")
-SET(CMAKE_MINSIZEREL_POSTFIX "_s")
+SET(CMAKE_DEBUG_POSTFIX "${64BIT_LIB_POSTFIX}_d")
+SET(CMAKE_RELEASE_POSTFIX "${64BIT_LIB_POSTFIX}")
+SET(CMAKE_RELWITHDEBINFO_POSTFIX "${64BIT_LIB_POSTFIX}_rd")
+SET(CMAKE_MINSIZEREL_POSTFIX "${64BIT_LIB_POSTFIX}_s")
 
 ############################################################
 # Select implementations depending on build target
@@ -358,6 +362,23 @@ endif()
 # only run ant if we actually build the java bindings
 GET_TARGET_PROPERTY(UMUNDOCORESWIG_LOCATION umundocoreSwig LOCATION)
 if (UMUNDOCORESWIG_LOCATION)
+
+	# include all the JNI libraries prepared from DIST_PREPARE builds on the various desktop platforms
+	if (NOT CMAKE_CROSSCOMPILING AND DIST_PREPARE)
+		SET(BUILD_FAT_JAR ON)
+	else()
+		SET(BUILD_FAT_JAR OFF)
+	endif()
+	
+	# do not include any library in the jar to allow loading debug builds
+	if (NOT DIST_PREPARE)
+		SET (JNI_FILE "")
+	else()
+		# make sure to include at least the host JNI library
+		STRING(REGEX REPLACE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libumundocoreSwig" "" JNI_FILE ${UMUNDOCORESWIG_LOCATION})
+		SET (JNI_FILE "libumundocoreSwig${CMAKE_RELEASE_POSTFIX}${JNI_FILE}")
+	endif()
+	
 	FIND_PROGRAM(ANT_EXECUTABLE ant PATHS $ENV{ANT_HOME} ENV PATH )
 	if (ANT_EXECUTABLE)
 		ADD_CUSTOM_TARGET(ant_build ALL
@@ -366,10 +387,11 @@ if (UMUNDOCORESWIG_LOCATION)
 			-Dsrc.dir=${PROJECT_SOURCE_DIR} 
 			-Dbuild.dir=${PROJECT_BINARY_DIR} 
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
- 			-Djnilib.file=${UMUNDOCORESWIG_LOCATION} 
+ 			-Djnilib.file=${JNI_FILE} 
 			-Denable.build.s11n=${BUILD_UMUNDO_S11N} 
 			-Denable.build.rpc=${BUILD_UMUNDO_RPC} 
 			-Denable.build.util=${BUILD_UMUNDO_UTIL} 
+			-Dfat.jar=${BUILD_FAT_JAR}
 			-f build-java.xml
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Running Ant ...")

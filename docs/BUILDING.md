@@ -146,7 +146,7 @@ add yourself to the <tt>sudo</tt> group or use a root console):
 Then build as described above - this is everything you need to compile a static <tt>libumundocore.a</tt>. If you want to generate 
 the Java bindings, you also need:
 - a JDK 
-- >= SWIG 2.0.5 (it's still in SVN - and prior versions won't do)
+- >= SWIG 2.0.5 (prior versions lacked some typemaps for directors in Java)
 - >= CMake 2.8.6 (Java support was only added in 2.8.6)
 
 I had some mixed experiences with GCJ in the past, so I went ahead, enabled *non-free* in <tt>/etc/apt/sources.list</tt> 
@@ -156,28 +156,27 @@ and installed SUNs Java implementation:
 
 To generate the wrappers for JNI, checkout and build the current SWIG distribution:
 
-    $ sudo apt-get install subversion autoconf libpcre3-dev bison
-    $ svn co https://swig.svn.sourceforge.net/svnroot/swig trunk
-    $ cd trunk
-    $ ./autogen.sh
+    $ sudo apt-get install subversion autoconf libpcre3-dev bison wget
+    $ wget http://prdownloads.sourceforge.net/swig/swig-2.0.6.tar.gz
+    $ tar xvzf swig-2.0.6.tar.gz
+    $ cd swig-2.0.6/
     $ ./configure
     $ make
     $ sudo make install
-    $ swig --version
+    $ swig -version
 
-This ought to yield version 2.0.5 and is what's required to build the Java wrappers for Debian GNU/Linux 6.0.4 stable. Now all we
-need is a current CMake version:
+This ought to yield version 2.0.5 or higher. Now all we need is a current CMake version:
 
-    $ sudo apt-get install wget
     $ sudo apt-get remove cmake cmake-data
-    $ wget http://www.cmake.org/files/v2.8/cmake-2.8.7.tar.gz
-    $ cd cmake-2.8.7/
+    $ wget http://www.cmake.org/files/v2.8/cmake-2.8.8.tar.gz
+    $ tar xvzf cmake-2.8.8.tar.gz
+    $ cd cmake-2.8.8/
     $ ./configure
     $ make
     $ sudo make install
     $ cmake --version
 
-This should say <tt>cmake version 2.8.7</tt>. If you get the bash complaining about not finding cmake, logout and login again. Now
+This should say <tt>cmake version 2.8.8</tt>. If you get the bash complaining about not finding cmake, logout and login again. Now
 you got everything needed to compile Java wrappers. 
 
 ### Windows

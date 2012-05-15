@@ -44,7 +44,7 @@
 #endif
 
 #ifdef WIN32
-std::string pathSeperator = "\";
+std::string pathSeperator = "\\";
 #else
 std::string pathSeperator = "/";
 #endif

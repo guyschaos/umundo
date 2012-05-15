@@ -192,7 +192,7 @@ I can say for sure that MinGW won't work for now, as we do not have prebuilt lib
 	2. CMake will also complain about protobuf, but the source distribution from Google contains a solution file for Visual Studio
 	so you could build it easily. Just point CMake to the directory where you built protobuf by setting the
 	<tt>PROTOBUF_SRC_ROOT_FOLDER</tt> field and be done.
-5. If you did not <a href="http://www.swig.org/Doc2.0/Windows.html">built SWIG via MinGW</a> you will not get any Java bindings.
+5. Get Swig 2.0.6 or later and make sure it swig.exe is in the %PATH.
 6. Press "Configure" some more until no fields are marked red, then press "Generate".
 7. Navigate to the directory where you told CMake-GUI to build the libraries and find a umundo solution file for MS Visual Studio
 there.
@@ -200,4 +200,4 @@ there.
 
 ## Build process
 
-Throughout the uMundo directories, there are <tt>CMakeLists.txt</tt> files describing the build process.
+Throughout the uMundo directories, there are <tt>CMakeLists.txt</tt> files describing the build process. TODO: Elaborate ...

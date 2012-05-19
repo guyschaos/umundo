@@ -251,26 +251,26 @@ to set some variables related to the build:
 
 #### Implementations
 
-<dt><pre>DISC_AVAHI</pre></dt>
+<dt><b>DISC_AVAHI</b></dt>
 <dd>Use the Avahi ZeroConf implementation with umundocore found on modern Linux distributions.</dd>
 
-<dt><pre>DISC_BONJOUR</pre></dt>
+<dt><b>DISC_BONJOUR</b></dt>
 <dd>Use the Bonjour ZeroConf implementation found on every MacOSX installation and every iOS device.</dd>
 
-<dt><pre>DISC_BONJOUR_EMBED</pre></dt>
+<dt><b>DISC_BONJOUR_EMBED</b></dt>
 <dd>Embed the Bonjour ZeroConf implementation into umundocore. This is the default for Android and Windows.</dd>
 
-<dt><pre>NET_ZEROMQ</pre></dt>
+<dt><b>NET_ZEROMQ</b></dt>
 <dd>Use ZeroMQ to connect nodes to each other and publishers to subscribers.</dd>
 
-<dt><pre>NET_ZEROMQ_RCV_HWM, NET_ZEROMQ_SND_HWM</pre></dt>
+<dt><b>NET_ZEROMQ_RCV_HWM, NET_ZEROMQ_SND_HWM</b></dt>
 <dd>High water mark for ZeroMQ queues in messages. One uMundo message represents multiple ZeroMQ messages, one per meta filed and 
 	one for the actual data.</dd>
 
-<dt><pre>S11N_PROTOBUF</pre></dt>
+<dt><b>S11N_PROTOBUF</b></dt>
 <dd>Use Google's ProtoBuf to serialize objects.</dd>
 
-<dt><pre>RPC_PROTOBUF</pre></dt>
+<dt><b>RPC_PROTOBUF</b></dt>
 <dd>Use Google's ProtoBuf to call remote methods.</dd>
 
 ### CMake files

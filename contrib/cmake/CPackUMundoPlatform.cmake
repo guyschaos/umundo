@@ -4,46 +4,45 @@
 # gather libraries for package
 ########################################
 
-# file(GLOB_RECURSE PLATFORM_LIBS 
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.a
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.so
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.lib
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.jar
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.dylib
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.dll
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.pdb
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.exp
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.ilk
-# 	${PROJECT_SOURCE_DIR}/package/lib/*.jnilib
-# )
-# 
-# # platform dependant libraries
-# foreach(PLATFORM_LIB ${PLATFORM_LIBS})
-# #	message("PLATFORM_LIB: ${PLATFORM_LIB}")
-# 	if (PLATFORM_LIB MATCHES ".*umundocore.wig.*" OR PLATFORM_LIB MATCHES "umundocore.jar")
-# 		install(FILES ${PLATFORM_LIB} DESTINATION share/umundo/java COMPONENT librarySwig)
-# 		list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
-# #		message(STATUS "PACKAGE RELEASE SWIG ${PLATFORM_LIB}")
-# 	elseif (PLATFORM_LIB MATCHES ".*umundoserial.*")
-# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-# #		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
-# 	elseif (PLATFORM_LIB MATCHES ".*umundocore.*")
-# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-# #		message(STATUS "PACKAGE RELEASE CORE ${PLATFORM_LIB}")
-# 	elseif (PLATFORM_LIB MATCHES ".*umundorpc.*")
-# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-# #		message(STATUS "PACKAGE RELEASE RPC ${PLATFORM_LIB}")
-# 	elseif (PLATFORM_LIB MATCHES ".*umundoutil.*")
-# 		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
-# 		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
-# #		message(STATUS "PACKAGE RELEASE UTIL ${PLATFORM_LIB}")
-# 	else()
-# #		message(STATUS "PACKAGE RELEASE UNK ${PLATFORM_LIB} - not packaging")	
-# 	endif()
-# endforeach()
+file(GLOB_RECURSE PLATFORM_LIBS 
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.a
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.so
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.lib
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.dylib
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.jnilib
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.dll
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.pdb
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.exp
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.ilk
+)
+
+# platform dependant libraries
+foreach(PLATFORM_LIB ${PLATFORM_LIBS})
+#	message("PLATFORM_LIB: ${PLATFORM_LIB}")
+	if (PLATFORM_LIB MATCHES ".*Swig.*")
+		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT librarySwig)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "librarySwig")
+#		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
+	elseif (PLATFORM_LIB MATCHES ".*umundoserial.*")
+		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+#		message(STATUS "PACKAGE RELEASE SERIAL ${PLATFORM_LIB}")
+	elseif (PLATFORM_LIB MATCHES ".*umundocore.*")
+		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+#		message(STATUS "PACKAGE RELEASE CORE ${PLATFORM_LIB}")
+	elseif (PLATFORM_LIB MATCHES ".*umundorpc.*")
+		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+#		message(STATUS "PACKAGE RELEASE RPC ${PLATFORM_LIB}")
+	elseif (PLATFORM_LIB MATCHES ".*umundoutil.*")
+		install(FILES ${PLATFORM_LIB} DESTINATION lib COMPONENT library)
+		list (APPEND UMUNDO_CPACK_COMPONENTS "library")
+#		message(STATUS "PACKAGE RELEASE UTIL ${PLATFORM_LIB}")
+	else()
+#		message(STATUS "PACKAGE RELEASE UNK ${PLATFORM_LIB} - not packaging")	
+	endif()
+endforeach()
 
 ########################################
 # Pre-built libraries for host platform
@@ -165,7 +164,6 @@ endif()
 list (REMOVE_DUPLICATES UMUNDO_CPACK_COMPONENTS ${UMUNDO_CPACK_COMPONENTS})
 #message("UMUNDO_CPACK_COMPONENTS: ${UMUNDO_CPACK_COMPONENTS}")
 
-
 ########################################
 # Configure packagers
 ########################################
@@ -183,17 +181,23 @@ if (WIN32)
 	set(CPACK_PACKAGE_INSTALL_DIRECTORY "uMundo")
 endif()
 
-set(CPACK_PACKAGE_NAME "uMundo")
+set(CPACK_PACKAGE_NAME "umundo")
 set(CPACK_PACKAGE_VENDOR "Telecooperation Group - TU Darmstadt")
 set(CPACK_PACKAGE_CONTACT "radomski@tk.informatik.tu-darmstadt.de")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "uMundo - publish/subscribe since 2012")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/installer/description.txt")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/installer/license.txt")
 
-set(CPACK_PACKAGE_VERSION "0.0.3")
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "3")
+set(CPACK_PACKAGE_VERSION "${UMUNDO_VERSION_MAJOR}.${UMUNDO_VERSION_MINOR}.${UMUNDO_VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION_MAJOR ${UMUNDO_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${UMUNDO_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${UMUNDO_VERSION_PATCH})
+
+if (64BIT_HOST AND WIN32)
+	set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64-${CPACK_PACKAGE_VERSION}")
+else()
+	set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}-${CPACK_PACKAGE_VERSION}")
+endif()
 
 ###
 # Configuration for NSIS installer on Win32

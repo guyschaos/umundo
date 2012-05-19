@@ -4,6 +4,11 @@
 #
 cmake_minimum_required(VERSION 2.8.5)
 
+# specify umundo version
+SET(UMUNDO_VERSION_MAJOR "0")
+SET(UMUNDO_VERSION_MINOR "0")
+SET(UMUNDO_VERSION_PATCH "4")
+
 # build type has to be set before the project definition
 SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
 IF(DEFINED CMAKE_BUILD_TYPE)
@@ -66,13 +71,17 @@ if(CMAKE_CROSSCOMPILING)
 		LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/bin" "/") # this is needed to find swig
 	endif ()
 else ()
-	SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
+	if (WIN32 AND 64BIT_HOST)
+		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}_64/${CMAKE_CXX_COMPILER_ID_LC}")
+	else()
+		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC}")
+	endif()
 endif()
 
 # prepend prebuilt library path
 SET(CMAKE_FIND_ROOT_PATH "${UMUNDO_PREBUILT_LIBRARY_PATH};${CMAKE_FIND_ROOT_PATH}")
 LIST(APPEND CMAKE_FIND_ROOT_PATH ${UMUNDO_PREBUILT_LIBRARY_PATH})
-message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
+# message("CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 ############################################################
 # General setup
 ############################################################
@@ -248,7 +257,7 @@ if (DIST_PREPARE)
 			${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION}/${CMAKE_SYSTEM_PROCESSOR})
 	else()
 		set(OUTPUT_DIR 
-			${PROJECT_SOURCE_DIR}/package)
+			${PROJECT_SOURCE_DIR}/package/${CMAKE_SYSTEM_NAME_LC}-${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_CXX_COMPILER_ID_LC})
 	endif()
 else()
 	set(OUTPUT_DIR ${PROJECT_BINARY_DIR})
@@ -372,7 +381,7 @@ if (UMUNDOCORESWIG_LOCATION)
 	
 	# do not include any library in the jar to allow loading debug builds
 	if (NOT DIST_PREPARE)
-		SET (JNI_FILE "")
+		SET (JNI_FILE "OFF")
 	else()
 		# make sure to include at least the host JNI library
 		STRING(REGEX REPLACE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libumundocoreSwig" "" JNI_FILE ${UMUNDOCORESWIG_LOCATION})
@@ -388,10 +397,8 @@ if (UMUNDOCORESWIG_LOCATION)
 			-Dbuild.dir=${PROJECT_BINARY_DIR} 
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
  			-Djnilib.file=${JNI_FILE} 
-			-Denable.build.s11n=${BUILD_UMUNDO_S11N} 
-			-Denable.build.rpc=${BUILD_UMUNDO_RPC} 
-			-Denable.build.util=${BUILD_UMUNDO_UTIL} 
 			-Dfat.jar=${BUILD_FAT_JAR}
+			-Ddist.dir=${PROJECT_SOURCE_DIR}/package
 			-f build-java.xml
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Running Ant ...")

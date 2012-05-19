@@ -103,6 +103,6 @@ In your <tt>pom.xml</tt> add a new repository and include the umundocore depende
       <dependency>
         <groupId>org.umundo</groupId>
         <artifactId>umundocore</artifactId>
-        <version>0.0.3</version>
+        <version>0.0.4</version>
       </dependency>
     </dependencies>

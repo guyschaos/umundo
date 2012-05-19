@@ -17,6 +17,14 @@ notes to build uMundo on your platform.
 			<td>>=&nbsp;2.0.5</td>
 			<td>Wraps the umundo C/C++ code for Java and other languages. Make sure to get version 2.0.5, older ones won't do.</td></tr>
 		<tr>
+			<td><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java Developer Kit</a><br />optional</td>
+			<td>>=&nbsp;>= 5</td>
+			<td>The JDK is required for the JNI wrappers and the Java bindings.</td></tr>
+		<tr>
+			<td><a href="http://ant.apache.org/bindownload.cgi">Ant</a><br />optional</td>
+			<td>>=&nbsp;>= 1.8.x</td>
+			<td>Build system used for the Java bindings.</td></tr>
+		<tr>
 			<td><a href="http://code.google.com/p/protobuf/">Protocol&nbsp;Buffers</a><br />required s11n</td>
 			<td>2.4.1 works</td>
 			<td>Object serializer currently used.</td></tr>
@@ -27,7 +35,7 @@ notes to build uMundo on your platform.
 		<tr>
 			<td><a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a><br />optional</td>
 			<td></td>
-			<td>Used by <tt>make docs</tt> to generate documentation from source comments.</td>
+			<td>Used by <tt>make docs</tt> to generate documentation from source comments.</td></tr>
 	</tr>
 	<tr>
 		<td rowspan="2">Mac OSX</td>
@@ -46,9 +54,12 @@ notes to build uMundo on your platform.
 		<td>v10 pro works</td>
 		<td>As a student, you can get your version through MSAA.</td></tr>
 	<tr>
-		<td><a href="https://developer.apple.com/downloads/index.action?q=bonjour%20sdk%20for%20windows">Bonjour SDK</a><br />optional</td>
-		<td>>=&nbsp;2.0.4</td>
-		<td>Only available to registered MacOSX or iOS developers, but we distribute an embedded library for your convenience.</td></tr>
+		<td>
+			<a href="http://support.apple.com/kb/DL999">Bonjour Print Wizard</a> or 
+			<a href="http://www.apple.com/itunes/download/">iTunes</a><br />optional</td>
+		<td></td>
+		<td>If you plan to use the system wide Bonjour service, you will need a mDNSResponder daemon contained in both distributions.
+			The uMundo libraries from the installers contain an embedded mDNS implementation.</td></tr>
 	</tr>
 	<tr>
 	<td rowspan="3">Linux</td>
@@ -186,7 +197,7 @@ Building from source on windows is somewhat more involved and instructions are n
 1. Use git to checkout the source from <tt>git@github.com:tklab-tud/umundo.git</tt> into any convenient directory.
 2. Start the CMake-GUI and enter the checkout directory in the "Where is the source code" text field.
 3. Choose any convenient directory to build the binaries in.
-4. Hit "Configure" and choose your toolchain and compiler - I only tested with Visual Studio 10 (not the IA64 or Win64 variants).
+4. Hit "Configure" and choose your toolchain and compiler - I only tested with Visual Studio 10.
 I can say for sure that MinGW won't work for now, as we do not have prebuilt libraries for the the MinGW compiler yet.
 	1. CMake will complain about missing SWIG executable (see above for building a current SWIG on windows)
 	2. CMake will also complain about protobuf, but the source distribution from Google contains a solution file for Visual Studio
@@ -200,4 +211,95 @@ there.
 
 ## Build process
 
-Throughout the uMundo directories, there are <tt>CMakeLists.txt</tt> files describing the build process. TODO: Elaborate ...
+We are using CMake to build uMundo for every platform. When <tt>cmake</tt> is invoked, it will look for a <tt>CMakeLists.txt</tt>
+file in the given directory and prepare a build in the current directory. CMake itself can be considered as a meta build-system as
+it will only generate the artifacts required for an actual build-system. The default is to generate files for <tt>make</tt> on 
+unices and files for <tt>nmake</tt> on windows. If you invoke <tt>ccmake</tt> instead of <tt>cmake</tt>, you get an user interfaces
+to set some variables related to the build:
+
+#### What to build
+
+<dt><pre>CMAKE_BUILD_TYPE</pre></dt>
+<dd>Only <tt>Debug</tt> and <tt>Release</tt> are actually supported. In debug builds, all asserts are stripped and the default
+	log-level is decreased.</dd>
+
+<dt><pre>BUILD_PREFER_STATIC_LIBRARIES</pre></dt>
+<dd>Prefer static libraries in <tt>contrib/prebuilt/</tt> or system supplied libraries as found by CMake.</dd>
+
+<dt><pre>BUILD_STATIC_LIBRARIES</pre></dt>
+<dd>Create the uMundo libraries as static libraries. This does not apply to the JNI library which needs to be a shared library for
+	Java.</dd>
+
+<dt><pre>BUILD_TESTING</pre></dt>
+<dd>Build the test executables.</dd>
+
+<dt><pre>BUILD_UMUNDO_APPS</pre></dt>
+<dd>Include the <tt>apps/</tt> directory when building.</dd>
+
+<dt><pre>BUILD_UMUNDO_RPC</pre></dt>
+<dd>Build the <tt>umundorpc</tt> library for remote procedure calls via uMundo.</dd>
+
+<dt><pre>BUILD_UMUNDO_S11N</pre></dt>
+<dd>Build the <tt>umundos11n</tt> library for object serialization. Only Googles ProtoBuf is supported as o now.</dd>
+
+<dt><pre>BUILD_UMUNDO_UTIL</pre></dt>
+<dd>Build <tt>umundoutil</tt> with some growing set of convenience services.</dd>
+
+<dt><pre>DIST_PREPARE</pre></dt>
+<dd>Put all libraries and binaries into SOURCE_DIR/package/ to prepare a release. We need access to all artifacts from other 
+	platforms to create the installers with platform independent JARs and cross-compiled mobile platforms.</dd>
+
+#### Implementations
+
+<dt><pre>DISC_AVAHI</pre></dt>
+<dd>Use the Avahi ZeroConf implementation with umundocore found on modern Linux distributions.</dd>
+
+<dt><pre>DISC_BONJOUR</pre></dt>
+<dd>Use the Bonjour ZeroConf implementation found on every MacOSX installation and every iOS device.</dd>
+
+<dt><pre>DISC_BONJOUR_EMBED</pre></dt>
+<dd>Embed the Bonjour ZeroConf implementation into umundocore. This is the default for Android and Windows.</dd>
+
+<dt><pre>NET_ZEROMQ</pre></dt>
+<dd>Use ZeroMQ to connect nodes to each other and publishers to subscribers.</dd>
+
+<dt><pre>NET_ZEROMQ_RCV_HWM, NET_ZEROMQ_SND_HWM</pre></dt>
+<dd>High water mark for ZeroMQ queues in messages. One uMundo message represents multiple ZeroMQ messages, one per meta filed and 
+	one for the actual data.</dd>
+
+<dt><pre>S11N_PROTOBUF</pre></dt>
+<dd>Use Google's ProtoBuf to serialize objects.</dd>
+
+<dt><pre>RPC_PROTOBUF</pre></dt>
+<dd>Use Google's ProtoBuf to call remote methods.</dd>
+
+### CMake files
+
+Throughout the source, there are <tt>CMakeLists.txt</tt> build files for CMake. The topmost build file will call the build files
+from the directories directly contained via <tt>add_directory</tt>, which in turn call build files further down the directory 
+structure.
+
+    uMundo
+     |-CMakeLists.txt 
+     |          Uppermost CMakeLists.txt to setup the project with all variables listed above.
+     |          Includes contrib/cmake/ as the module path for CMake modules.
+     |          Defines where built files will end up.
+     |          Configures additional search paths for libraries and executables.
+     |          Sets global compiler flags.
+     |          Uses ant to build the JAR for Java.
+     |
+     |-apps/CMakeLists.txt
+     |          Invokes CMakeLists.txt in the sub-directories to build all apps if their dependencies are met. 
+     |
+     |-core/CMakeLists.txt
+     |-s11n/CMakeLists.txt
+     |-rpc/CMakeLists.txt
+     |          Gather all source files for the respective component into a library.
+     |          Find and link all required libraries either as prebuilts or system supplied libraries.
+     |          Call INSTALL* CMake macros to register files for install and package targets.
+     |
+     |-core/bindings/CMakeLists.txt
+     |          Find SWIG to build the bindings.
+     |
+     |-core/bindings/java/CMakeLists.txt
+     |          Find the JNI libraries and use SWIG to build the Java wrappers.

@@ -219,33 +219,33 @@ to set some variables related to the build:
 
 #### What to build
 
-<dt><pre>CMAKE_BUILD_TYPE</pre></dt>
+<dt><b>CMAKE_BUILD_TYPE</b></dt>
 <dd>Only <tt>Debug</tt> and <tt>Release</tt> are actually supported. In debug builds, all asserts are stripped and the default
 	log-level is decreased.</dd>
 
-<dt><pre>BUILD_PREFER_STATIC_LIBRARIES</pre></dt>
+<dt><b>BUILD_PREFER_STATIC_LIBRARIES</b></dt>
 <dd>Prefer static libraries in <tt>contrib/prebuilt/</tt> or system supplied libraries as found by CMake.</dd>
 
-<dt><pre>BUILD_STATIC_LIBRARIES</pre></dt>
+<dt><b>BUILD_STATIC_LIBRARIES</b></dt>
 <dd>Create the uMundo libraries as static libraries. This does not apply to the JNI library which needs to be a shared library for
 	Java.</dd>
 
-<dt><pre>BUILD_TESTING</pre></dt>
+<dt><b>BUILD_TESTING</b></dt>
 <dd>Build the test executables.</dd>
 
-<dt><pre>BUILD_UMUNDO_APPS</pre></dt>
+<dt><b>BUILD_UMUNDO_APPS</b></dt>
 <dd>Include the <tt>apps/</tt> directory when building.</dd>
 
-<dt><pre>BUILD_UMUNDO_RPC</pre></dt>
+<dt><b>BUILD_UMUNDO_RPC</b></dt>
 <dd>Build the <tt>umundorpc</tt> library for remote procedure calls via uMundo.</dd>
 
-<dt><pre>BUILD_UMUNDO_S11N</pre></dt>
+<dt><b>BUILD_UMUNDO_S11N</b></dt>
 <dd>Build the <tt>umundos11n</tt> library for object serialization. Only Googles ProtoBuf is supported as o now.</dd>
 
-<dt><pre>BUILD_UMUNDO_UTIL</pre></dt>
+<dt><b>BUILD_UMUNDO_UTIL</b></dt>
 <dd>Build <tt>umundoutil</tt> with some growing set of convenience services.</dd>
 
-<dt><pre>DIST_PREPARE</pre></dt>
+<dt><b>DIST_PREPARE</b></dt>
 <dd>Put all libraries and binaries into SOURCE_DIR/package/ to prepare a release. We need access to all artifacts from other 
 	platforms to create the installers with platform independent JARs and cross-compiled mobile platforms.</dd>
 

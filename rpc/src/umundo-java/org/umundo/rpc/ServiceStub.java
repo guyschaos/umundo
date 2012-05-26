@@ -63,9 +63,11 @@ public class ServiceStub extends Connectable implements ITypedReceiver {
 		rpcReqMsg.setMeta("methodName", name);
 		rpcReqMsg.setMeta("outType", outType);
 		_requests.put(reqId, new Object());
-		_rpcPub.send(rpcReqMsg);
 		synchronized (_requests.get(reqId)) {
+			//System.out.println("Waiting");
+			_rpcPub.send(rpcReqMsg);
 			_requests.get(reqId).wait();
+			//System.out.println("Continuing");
 		}
 		_requests.remove(reqId);
 		Object out = _responses.get(reqId);

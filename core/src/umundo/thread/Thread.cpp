@@ -282,7 +282,7 @@ void Monitor::signal() {
 
 bool Monitor::wait(uint32_t ms) {
 #ifdef THREAD_PTHREAD
-	int rv;
+	int rv = 0;
 	pthread_mutex_lock(&_mutex);
 	if (_signaled) {
 		//LOG_DEBUG("Signaled prior to waiting");

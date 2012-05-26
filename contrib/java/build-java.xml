@@ -95,12 +95,18 @@
     </fileset>
 	</jar>
 	<delete dir="${lib.dir}/jni" />
-	
-	<!-- Test whether the jar can be used -->
+</target>
+
+<target name="test" description="Test the uMundo Java wrappers">
+	<echo message="library dir:        ${lib.dir}"/>
+	<echo message="source dir:         ${src.dir}"/>
+	<echo message="build dir:          ${build.dir}"/>
+	<echo message="build type:         ${build.type}"/>
+
+	<echo message="Test loading JAR and JNI library"/>
 	<javac classpath="${lib.dir}/umundocore.jar" srcdir="test/" includeantruntime="false" />
 	<java classpath="${lib.dir}/umundocore.jar:test" classname="TestJNILoad" />
 	<delete file="test/TestJNILoad.class" />
-
 </target>
 
 </project>

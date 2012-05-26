@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
   Node* node1 = new Node();
   Node* node2 = new Node();
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 2; i++) {
     EchoServiceImpl* localEchoService = new EchoServiceImpl();
     PingServiceImpl* localPingService = new PingServiceImpl();
     
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     delete pingRep;
 
     // test rpc throughput with the echo service
-    int iterations = 15;
+    int iterations = 3;
     int sends = 0;
 
     ServiceFilter* echoSvcFilter = new ServiceFilter("EchoService");

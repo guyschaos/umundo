@@ -150,13 +150,13 @@ public:
 	bool wait(uint32_t ms);
 
 private:
+	int _waiters;
 #ifdef THREAD_PTHREAD
 	pthread_mutex_t _mutex;
 	pthread_cond_t _cond;
 	bool _signaled;
 #endif
 #ifdef THREAD_WIN32
-	int _waiters;
 	Mutex _monitorLock;
 	HANDLE _monitor;
 #endif

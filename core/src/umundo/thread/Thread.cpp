@@ -215,6 +215,7 @@ ScopeLock::~ScopeLock() {
 
 Monitor::Monitor() {
 #ifdef THREAD_PTHREAD
+	_waiters = 0;
 	int err;
 	err = pthread_mutex_init(&_mutex, NULL);
 	assert(err == 0);
@@ -292,9 +293,12 @@ bool Monitor::wait(uint32_t ms) {
 	}
 	// wait indefinitely
 	if (ms == 0) {
+		_waiters++;
     while(!_signaled)
       rv = pthread_cond_wait(&_cond, &_mutex);
-		if (rv == 0)
+		_waiters--;
+		// only reset signal if all threads have passed
+		if (rv == 0 && !_waiters)
 			_signaled = false;
 		pthread_mutex_unlock(&_mutex);
 		return rv == 0;

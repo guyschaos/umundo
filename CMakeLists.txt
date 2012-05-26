@@ -421,7 +421,15 @@ if (UMUNDOCORESWIG_LOCATION)
 		add_dependencies(java_build_jar java_protoc_rpc)
 		add_dependencies(java_build_jar umundocoreSwig)
 		set_target_properties(java_build_jar PROPERTIES FOLDER "Bindings")
-		add_test(java-tests ${ANT_EXECUTABLE} -f ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java/build-java.xml)
+
+		add_test(java-tests 
+			${ANT_EXECUTABLE} 
+			-Dlib.dir=${JAR_JNI_ROOT_PATH} 
+			-Dsrc.dir=${PROJECT_SOURCE_DIR} 
+			-Dbuild.dir=${PROJECT_BINARY_DIR} 
+			-Dbuild.type=${CMAKE_BUILD_TYPE} 
+			-f ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java/build-java.xml 
+			test)
 	else()
 		message(STATUS "Could not find ant binary - will not build jars")
 	endif()

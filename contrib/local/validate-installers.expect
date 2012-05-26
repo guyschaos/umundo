@@ -32,7 +32,7 @@ eval spawn /bin/bash
 #############################
 log_user 0
 set reqFilesMac {
-	"/usr/local/bin/protoc-umundo-rpc"
+	"/usr/local/bin/protoc-umundo-cpp-rpc"
 	"/usr/local/bin/umundo-pingpong"
 	"/usr/local/bin/umundo-monitor"
 	
@@ -74,7 +74,7 @@ expect -re $local_prompt
 
 log_user 0
 set reqFilesLinux32 {
-	"/usr/local/bin/protoc-umundo-rpc"
+	"/usr/local/bin/protoc-umundo-cpp-rpc"
 	"/usr/local/bin/umundo-pingpong"
 	"/usr/local/bin/umundo-monitor"
 	
@@ -116,7 +116,7 @@ expect -re $local_prompt
 
 log_user 0
 set reqFilesLinux64 {
-	"/usr/local/bin/protoc-umundo-rpc"
+	"/usr/local/bin/protoc-umundo-cpp-rpc"
 	"/usr/local/bin/umundo-pingpong"
 	"/usr/local/bin/umundo-monitor"
 	
@@ -158,7 +158,7 @@ expect -re $local_prompt
 
 log_user 0
 set reqFilesWin32 {
-	"/bin/protoc-umundo-rpc.exe"
+	"/bin/protoc-umundo-cpp-rpc.exe"
 	"/bin/umundo-pingpong.exe"
 	"/bin/umundo-monitor.exe"
 	

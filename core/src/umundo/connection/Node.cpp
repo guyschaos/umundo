@@ -69,6 +69,7 @@ void Node::connect(Connectable* conn) {
 		_impl->addPublisher((*pubIter)->_impl);
 		pubIter++;
 	}
+  conn->addedToNode(this);
 }
 
 void Node::disconnect(Connectable* conn) {
@@ -84,6 +85,7 @@ void Node::disconnect(Connectable* conn) {
 		_impl->removeSubscriber((*subIter)->_impl);
 		subIter++;
 	}
+  conn->removedFromNode(this);
 }
 
 void Node::suspend() {

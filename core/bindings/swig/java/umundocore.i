@@ -59,9 +59,7 @@ using boost::shared_ptr;
 using namespace umundo;
 %}
 
-#ifdef DIST_PREPARE
 %include "autoloadJNI.i"
-#endif
 
 //*************************************************/
 
@@ -129,6 +127,7 @@ using namespace umundo;
 
 // ignore ugly std::map return
 %ignore umundo::Message::getMeta();
+//%ignore umundo::Message::Message(const Message&);
 %ignore umundo::Message::setData(string const &);
 %ignore umundo::Message::Message(string);
 %ignore umundo::Message::Message(string);
@@ -140,8 +139,7 @@ using namespace umundo;
 import java.util.HashMap; 
 %}
 
-// provide convinience methods within Message Java class for meta keys
-%typemap(javacode) umundo::Message %{
+#if 0
 	public Message(Message other) {
 		this(); // call actual constructor from SWIG
 		setData(other.getData());
@@ -151,6 +149,10 @@ import java.util.HashMap;
 				setMeta(k, meta.get(k));
 			}
 	}
+#endif
+
+// provide convinience methods within Message Java class for meta keys
+%typemap(javacode) umundo::Message %{
 
 	public HashMap<String, String> getMeta() {
 		HashMap<String, String> keys = new HashMap<String, String>();

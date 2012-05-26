@@ -15,6 +15,7 @@ import java.io.InputStream;
   static {
 		String fullLibName = "";
 		String osPrefix = "";
+		String debugPrefix = "";
 		String libName = "umundocoreSwig";
 		String bitWidth = "";
 
@@ -24,6 +25,10 @@ import java.io.InputStream;
 		// is this a 64bit host?
 		if (System.getProperty("os.arch").indexOf("64") > 0) {
 			bitWidth = "64";
+		}
+		// do we want the debug build?
+		if (System.getProperty("umundo.debug") != null) {
+			debugPrefix = "_d";
 		}
 
 		// dispatch os.type for filename
@@ -50,16 +55,20 @@ import java.io.InputStream;
 			// jars are just zip files, get the input stream for the lib
 			ZipFile zf = new ZipFile(location.getPath());
 			
-			fullLibName = osPrefix + libName + bitWidth + osSuffix;
+			fullLibName = osPrefix + libName + bitWidth + debugPrefix + osSuffix;
 			System.out.println("Trying to load " + fullLibName);
 			InputStream in = null;
 			try {
 				in = zf.getInputStream(zf.getEntry(fullLibName));
 			} catch (Exception e) {
-				// release build not found, try the debug build
-				fullLibName = osPrefix + libName + bitWidth + "_d" + osSuffix;
-				System.out.println("Trying to load " + fullLibName);
-				in = zf.getInputStream(zf.getEntry(fullLibName));
+				// release build not found, try the debug build if not used already
+				if (debugPrefix.length() == 0) {
+					fullLibName = osPrefix + libName + bitWidth + "_d" + osSuffix;
+					System.out.println("Trying to load " + fullLibName);
+					in = zf.getInputStream(zf.getEntry(fullLibName));
+				} else {
+					throw(e);
+				}
 			}
 			
 			// create a temp file and an input stream for it

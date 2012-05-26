@@ -7,31 +7,34 @@
 
 namespace umundo {
 
-class ServiceManager : public Receiver {
+class ServiceManager : public Receiver, public Connectable {
 public:
-	ServiceManager(Node* node);
+	ServiceManager();
 	virtual ~ServiceManager();
 
-	void registerService(Service*);
+	void addService(Service*);
+	void addService(Service*, ServiceDescription*);
 	void removeService(Service*);
-	Service* getPrototype(const string&);
-	Node* getNode() {
-		return _node;
-	}
+
+  // Connectable interface
+  std::set<umundo::Publisher*> getPublishers();
+	std::set<umundo::Subscriber*> getSubscribers();
+  void addedToNode(Node* node);
+  void removedFromNode(Node* node);
 
 	void receive(Message* msg);
 
-	const string find(const string&);
+  ServiceDescription* find(ServiceFilter*);
 
 	map<string, Monitor> _findRequests;
-	map<string, string> _findResponses;
-	map<string, Service*> _services;
+	map<string, Message*> _findResponses;
+	map<intptr_t, Service*> _svc;
+	map<intptr_t, ServiceDescription*> _svcDesc;
 
-	Node* _node;
+	std::set<Node*> _nodes;
 	Publisher* _svcPub;   ///< publish service queries
 	Subscriber* _svcSub;  ///< subscribe to service queries
-	Publisher* _reqPub;   ///<
-	Subscriber* _respSub;
+  Mutex _mutex;
 };
 
 }

@@ -39,9 +39,6 @@ public class TypedSubscriber extends Subscriber {
 				} catch (SecurityException e) {
 					TypedSubscriber.this.autoDeserLoadFailed.put(type, null);
 					TypedSubscriber.this.deserializerMethods.remove(type);
-				} catch (NoSuchMethodException e) {
-					TypedSubscriber.this.autoDeserLoadFailed.put(type, null);
-					TypedSubscriber.this.deserializerMethods.remove(type);
 				}
 			}
 			
@@ -82,10 +79,15 @@ public class TypedSubscriber extends Subscriber {
 		this.autoRegisterTypes = auto;
 	}
 	
-	public void registerType(Class<? extends GeneratedMessage> type) throws SecurityException, NoSuchMethodException {
-		String n = type.getName();
-		Method m = type.getMethod("parseFrom", byte[].class);
-		deserializerMethods.put(n, m);
+	public void registerType(Class<? extends GeneratedMessage> type) throws SecurityException {
+		String n = type.getSimpleName();
+		try {
+			Method m = type.getMethod("parseFrom", byte[].class);
+			deserializerMethods.put(n, m);
+		} catch (NoSuchMethodException e) {
+			System.err.println("GeneratedMessage in protobuf no longer has a parseFrom method?");
+			e.printStackTrace();
+		}
 	}
 	
 	

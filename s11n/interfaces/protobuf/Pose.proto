@@ -22,6 +22,9 @@
   {@author	Stefan Radomski <radomski@tk.informatik.tu-darmstadt.de>}
 */
 
+option java_package = "org.umundo.protobuf.spatial";
+option java_outer_classname = "Spatial";
+
 message Orientation {  
   required double pitch = 1;
   required double roll = 2;

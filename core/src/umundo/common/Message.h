@@ -33,11 +33,23 @@ public:
 	}
 
 	Message() : _data(NULL), _size(0) {}
-	Message(const char* data, size_t length) : _size(length) {
-		_data = (char*)malloc(_size);
-		memcpy(_data, data, _size);
+	Message(const char* data, size_t length) : _data(NULL), _size(length) {
+    if (_size > 0) {
+      _data = (char*)malloc(_size);
+      memcpy(_data, data, _size);
+    }
 	}
-	virtual ~Message() {
+  
+  Message(const Message& other) : _data(NULL), _size(other.size()) {
+    if (_size > 0) {
+      _data = (char*)malloc(_size);
+      memcpy(_data, other.data(), _size);
+    }
+    // STL containers will copy themselves
+    _meta = other._meta;
+  }
+	
+  virtual ~Message() {
 		if (_data)
 			free(_data);
 	}
@@ -71,14 +83,16 @@ public:
 	virtual const string& getMeta(const string& key)                    {
 		return _meta[key];
 	}
+	
 	/// Simplified access to keyset for Java, namespace qualifiers required for swig!
-	virtual const std::vector<std::string>& getKeys() {
-		map<string, string>::const_iterator metaIter;
-		_keys.clear();
-		for (metaIter = _meta.begin(); metaIter != _meta.end(); metaIter++) {
-			_keys.push_back(metaIter->first);
+	virtual const std::vector<std::string> getKeys() {
+		vector<string> keys;
+		map<string, string>::const_iterator metaIter = _meta.begin();
+		while (metaIter != _meta.end()) {
+			keys.push_back(metaIter->first);
+			metaIter++;
 		}
-		return _keys;
+		return keys;
 	}
 
 	static Message* toSubscriber(const string& uuid) {
@@ -91,7 +105,6 @@ protected:
 	char* _data;
 	size_t _size;
 	map<string, string> _meta;
-	vector<string> _keys;
 };
 }
 

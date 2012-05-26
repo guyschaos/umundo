@@ -26,34 +26,58 @@
 #
 # Defines the following variables:
 #
-# UMUNDO_PROTOBUF_RPC_EXECUTABLE           The path to the umundo protoc plugin
-# UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP       The name of the target which builds the umundo protoc plugin
+# UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE           The path to the umundo protoc plugin for CPP
+# UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP       The name of the target which builds the umundo protoc plugin
+# UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE          The path to the umundo protoc plugin for Java
+# UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP      The name of the target which builds the umundo protoc plugin
 #
 
-# try hard to find protoc-umundo-rpc
-set(UMUNDO_PROTOBUF_RPC_EXECUTABLE)
-set(UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP)
+# try hard to find the protoc rpc plugins
+set(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE)
+set(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP)
+set(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE)
+set(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP)
 
 if (NOT CMAKE_CROSSCOMPILING AND CMAKE_PROJECT_NAME MATCHES "umundo")
 	if (WIN32)
-		set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/protoc-umundo-rpc.exe")
+		set(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/protoc-umundo-cpp-rpc.exe")
+		set(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/protoc-umundo-java-rpc.exe")
 	else()
-		set(UMUNDO_PROTOBUF_RPC_EXECUTABLE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/protoc-umundo-rpc")
+		set(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/protoc-umundo-cpp-rpc")
+		set(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/protoc-umundo-java-rpc")
 	endif()
-	set(UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP "protoc-umundo-rpc")
+	set(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP "protoc-umundo-cpp-rpc")
+	set(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP "protoc-umundo-java-rpc")
 endif()
 
-if (NOT UMUNDO_PROTOBUF_RPC_EXECUTABLE)
-	find_program(UMUNDO_PROTOBUF_RPC_EXECUTABLE 
-		NAMES protoc-umundo-rpc protoc-umundo-rpc.exe
+if (NOT UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE)
+	find_program(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE 
+		NAMES protoc-umundo-cpp-rpc protoc-umundo-cpp-rpc.exe
 		PATHS 
 			/usr/local/bin 
 			/opt/local/bin
 			/usr/bin
 			C:\\Program\ Files\ \(x86\)\\uMundo\\bin
-		ENV UMUNDO_PROTOBUF_RPC_EXECUTABLE
+		ENV UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE
 	)
 endif()
+
+if (NOT UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE)
+	find_program(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE 
+		NAMES protoc-umundo-java-rpc protoc-umundo-java-rpc.exe
+		PATHS 
+			/usr/local/bin 
+			/opt/local/bin
+			/usr/bin
+			C:\\Program\ Files\ \(x86\)\\uMundo\\bin
+		ENV UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE
+	)
+endif()
+
+set(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE ${UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE} PARENT_SCOPE)
+set(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE ${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE} PARENT_SCOPE)
+set(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP ${UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP} PARENT_SCOPE)
+set(UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP ${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP} PARENT_SCOPE)
 
 #########################################################################
 # Redefine PROTOBUF_GENERATE_CPP macro to allow subdirectories and objc
@@ -136,8 +160,8 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
 		endif()
 
 		if (RPC_OR_S11N MATCHES "RPC")
-			if (NOT UMUNDO_PROTOBUF_RPC_EXECUTABLE)
-				message(FATAL_ERROR "Could not find protoc-umundo-rpc")
+			if (NOT UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE)
+				message(FATAL_ERROR "Could not find protoc-umundo-cpp-rpc")
 				RETURN()
 			endif()
 
@@ -145,8 +169,8 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
 				OUTPUT "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.cc"
 				       "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.rpc.pb.h"
 				COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
-				ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_RPC_EXECUTABLE} --cpp_rpc_out ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
-				DEPENDS ${ABS_FIL} ${UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP}
+				ARGS --plugin=protoc-gen-cpp_rpc=${UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE} --cpp_rpc_out ${CMAKE_BINARY_DIR}/protobuf/generated ${_protobuf_include_path} ${ABS_FIL}
+				DEPENDS ${ABS_FIL} ${UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP}
 				COMMENT "Running C++ RPC protocol buffer compiler on ${FIL}"
 				VERBATIM 
 			)
@@ -162,5 +186,5 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
 
 endfunction()
 
-MARK_AS_ADVANCED(UMUNDO_PROTOBUF_RPC_EXECUTABLE_DEP)
+MARK_AS_ADVANCED(UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP)
 

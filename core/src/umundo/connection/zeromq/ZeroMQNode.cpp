@@ -336,10 +336,18 @@ void ZeroMQNode::processPubSub(const char* remoteId, zmq_msg_t message, bool sub
 		UMUNDO_UNLOCK(_mutex);
 		return;
 	}
-
+	shared_ptr<ZeroMQPublisher> pub;
 	// This is somwheat messy, but we want to remove empty subscriptions
-	shared_ptr<ZeroMQPublisher> pub = _localPubs[port];
-	assert(pub.get() != NULL);
+  if (_localPubs.find(port) == _localPubs.end()) {
+    if (subscribe) {
+      LOG_WARN("Subscribing to unkown publisher");
+    } else {
+      LOG_WARN("Unsubscribing from unkown publisher");    
+    }
+    goto unknown_subscription;
+  }
+  
+	pub = _localPubs[port];
 	if (subscribe) {
 		// remember remote node subscription to local pub
 		if (_remoteSubs[remoteId].find(port) == _remoteSubs[remoteId].end())
@@ -738,8 +746,9 @@ void ZeroMQNode::addPublisher(shared_ptr<PublisherImpl> pub) {
 
 	UMUNDO_LOCK(_mutex);
 	// do we already now this publisher?
+  LOG_DEBUG("Publisher added %s at %d", zPub->getChannelName().c_str(), zPub->getPort());
+  
 	if (_localPubs.find(zPub->getPort()) == _localPubs.end()) {
-		LOG_DEBUG("Publisher added %s", zPub->getChannelName().c_str());
 		_localPubs[zPub->getPort()] = zPub;
 
 		map<string, void*>::iterator sockIter;
@@ -757,6 +766,8 @@ void ZeroMQNode::addPublisher(shared_ptr<PublisherImpl> pub) {
 		}
 
 	} else {
+    LOG_DEBUG("Publisher %s at %d already exists", zPub->getChannelName().c_str(), zPub->getPort());
+    assert(_localPubs[zPub->getPort()].get() != NULL);
 		assert(zPub->getChannelName().compare(_localPubs[zPub->getPort()]->getChannelName()) == 0);
 	}
 
@@ -774,7 +785,7 @@ void ZeroMQNode::removePublisher(shared_ptr<PublisherImpl> pub) {
 	UMUNDO_LOCK(_mutex);
 
 	if (_localPubs.find(zPub->getPort()) != _localPubs.end()) {
-		LOG_DEBUG("Publisher removed %s", zPub->getChannelName().c_str());
+		LOG_DEBUG("Publisher removed %s at %d", zPub->getChannelName().c_str(), zPub->getPort());
 		map<string, void*>::iterator sockIter;
 		for (sockIter = _sockets.begin(); sockIter != _sockets.end(); sockIter++) {
 			zmq_msg_t msg;
@@ -784,12 +795,15 @@ void ZeroMQNode::removePublisher(shared_ptr<PublisherImpl> pub) {
 			*(uint16_t*)(buffer) = htons(Message::PUB_REMOVED);
 			writePubInfo(buffer + 2, zPub);
 
-			LOG_DEBUG("Informing %s", sockIter->first.c_str());
+			LOG_DEBUG("Informing %s", SHORT_UUID(sockIter->first).c_str());
 			zmq_sendmsg(sockIter->second, &msg, 0) >= 0 || LOG_WARN("zmq_sendmsg: %s",zmq_strerror(errno));
 			zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 		}
 		_localPubs.erase(zPub->getPort());
-	}
+    assert(_localPubs.find(zPub->getPort()) == _localPubs.end());
+	} else {
+    assert(false);
+  }
 
 	assert(validateState());
 	UMUNDO_UNLOCK(_mutex);

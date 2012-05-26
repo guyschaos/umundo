@@ -11,6 +11,13 @@
 #   include_directories(${UMUNDO_INCLUDE_DIR})
 #
 
+# is this a 64Bit host?
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(64BIT_LIB_POSTFIX 64)
+else()
+	set(64BIT_LIB_POSTFIX "")
+endif()
+
 ###################################################
 # where to search for umundo headers and libraries
 ###################################################
@@ -49,7 +56,7 @@ FIND_PATH(UMUNDO_INCLUDE_DIR umundo/core.h
 SET(UMUNDO_LIBRARIES)
 foreach (_UMUNDO_COMPONENT ${_UMUNDO_COMPONENTS_TO_PROCESS})
 	SET(_CURR_COMPONENT "UMUNDO_${_UMUNDO_COMPONENT}_LIBRARY")
-	STRING(TOLOWER ${_UMUNDO_COMPONENT} _UMUNDO_COMPONENT_LC)
+	STRING(TOLOWER ${_UMUNDO_COMPONENT}${64BIT_LIB_POSTFIX} _UMUNDO_COMPONENT_LC)
 
 	# prefer MinSizeRel libraries
 	FIND_LIBRARY(${_CURR_COMPONENT} 

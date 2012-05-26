@@ -28,21 +28,35 @@ if (RPC_PROTOBUF)
 	include_directories(${PROTOBUF_INCLUDE_DIRS})
 
  	if (NOT CMAKE_CROSSCOMPILING)
-		file(GLOB_RECURSE RPC_PROTOBUF_FILES src/umundo/protoc-rpc/*.cpp)
-		add_executable(protoc-umundo-rpc ${RPC_PROTOBUF_FILES})
-		target_link_libraries(protoc-umundo-rpc ${PROTOBUF_PROTOC_LIBRARIES} ${PROTOBUF_LIBRARIES})
+		add_executable(protoc-umundo-cpp-rpc src/umundo/protoc-rpc/ServiceGeneratorCPP.cpp)
+		target_link_libraries(protoc-umundo-cpp-rpc ${PROTOBUF_PROTOC_LIBRARIES} ${PROTOBUF_LIBRARIES})
 		# this is weird - on debian 64bit we need to link against pthread for 'pthread_once'
 		if (THREAD_PTHREAD AND 64BIT_HOST) 
-			target_link_libraries(protoc-umundo-rpc pthread)
+			target_link_libraries(protoc-umundo-cpp-rpc pthread)
 		endif()
-		set_target_properties(protoc-umundo-rpc PROPERTIES FOLDER "Tools")
+		set_target_properties(protoc-umundo-cpp-rpc PROPERTIES FOLDER "Tools")
 
 		install(
-			TARGETS protoc-umundo-rpc
+			TARGETS protoc-umundo-cpp-rpc
 			DESTINATION bin
 			PERMISSIONS WORLD_EXECUTE OWNER_EXECUTE GROUP_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
 			COMPONENT tools 
 		)
+
+		add_executable(protoc-umundo-java-rpc src/umundo/protoc-rpc/ServiceGeneratorJava.cpp)
+		target_link_libraries(protoc-umundo-java-rpc ${PROTOBUF_PROTOC_LIBRARIES} ${PROTOBUF_LIBRARIES})
+		if (THREAD_PTHREAD AND 64BIT_HOST) 
+			target_link_libraries(protoc-umundo-cpp-rpc pthread)
+		endif()
+		set_target_properties(protoc-umundo-java-rpc PROPERTIES FOLDER "Tools")
+
+		install(
+			TARGETS protoc-umundo-java-rpc
+			DESTINATION bin
+			PERMISSIONS WORLD_EXECUTE OWNER_EXECUTE GROUP_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+			COMPONENT tools 
+		)
+
 	endif()
 	
 	# process .proto files

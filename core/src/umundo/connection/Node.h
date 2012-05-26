@@ -14,6 +14,7 @@ class PublisherImpl;
 class Subscriber;
 class SubscriberImpl;
 class NodeStub;
+class Node;
 class Connectable;
 
 /**
@@ -29,6 +30,14 @@ public:
 	virtual std::set<umundo::Subscriber*> getSubscribers() {
 		return set<Subscriber*>();
 	}
+  
+  // notify connectable that it has been added to a node
+  virtual void addedToNode(Node* node) {
+  }
+
+  // notify connectable that it has been removed from a node
+  virtual void removedFromNode(Node* node) {
+  }
 };
 
 /**

@@ -18,10 +18,10 @@ public:
 		UMUNDO_SIGNAL(monitor);
 	}
 	void removed(shared_ptr<NodeStub> node) {
-
+    
 	}
 	void changed(shared_ptr<NodeStub> node) {
-
+    
 	}
 };
 
@@ -39,4 +39,31 @@ int main(int argc, char** argv, char** envp) {
 	Discovery::add(testDiscoverable);
 	while(receives < 1)
 		UMUNDO_WAIT(monitor);
+  
+  setenv("UMUNDO_LOGLEVEL_DISC", "1", 1);
+  
+  // test node / publisher / subscriber churn
+  for (int i = 0; i < 2; i++) {  
+    Node* node1 = new Node();
+    Node* node2 = new Node();
+    for (int j = 0; j < 2; j++) {
+      Subscriber* sub = new Subscriber("foo", NULL);
+      Publisher* pub = new Publisher("foo");
+
+      node1->addPublisher(pub);
+      node2->addSubscriber(sub);
+      
+      int subs = pub->waitForSubscribers(1);
+      if (subs != 1)
+        abort();
+      
+      node2->removeSubscriber(sub);
+      node1->removePublisher(pub);
+      
+      delete sub;
+      delete pub;
+    }
+    delete node1;
+    delete node2;
+  }
 }

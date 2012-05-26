@@ -22,7 +22,7 @@ public class TypedPublisher extends Publisher {
 	}
 	
 	public Message prepareMessage(MessageLite o) {
-			return prepareMessage(o.getClass().getName(), o);
+			return prepareMessage(o.getClass().getSimpleName(), o);
 	}
 	
   public Message prepareMessage(String type, MessageLite o) {

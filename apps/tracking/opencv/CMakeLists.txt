@@ -19,6 +19,8 @@ if (OpenCV_LIBS AND ARUCO_LIBS AND S11N_PROTOBUF)
 		${UMUNDOS11N_LIBRARIES}
 		${ARUCO_LIBS}
 	)
+	set_target_properties(pose-publisher PROPERTIES FOLDER "Apps")
+
 else()
 	message(STATUS "Not building ArucoPosePublisher - missing libraries:")
 	message(STATUS "\tOpenCV: ${OpenCV_LIBS}")

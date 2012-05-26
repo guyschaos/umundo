@@ -292,7 +292,8 @@ bool Monitor::wait(uint32_t ms) {
 	}
 	// wait indefinitely
 	if (ms == 0) {
-		rv = pthread_cond_wait(&_cond, &_mutex);
+    while(!_signaled)
+      rv = pthread_cond_wait(&_cond, &_mutex);
 		if (rv == 0)
 			_signaled = false;
 		pthread_mutex_unlock(&_mutex);

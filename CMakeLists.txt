@@ -305,32 +305,20 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # include_directories is not global so we grab our subdirs property
 # and propagate them through the build tree
-SET(UMUNDOCORE_LIBRARIES)
-SET(UMUNDOCORE_FILES)
-SET(UMUNDOCORE_HEADER_FILES)
 add_subdirectory(core)
 GET_DIRECTORY_PROPERTY(CORE_INCLUDES DIRECTORY core INCLUDE_DIRECTORIES)
 include_directories(${CORE_INCLUDES})
 if (BUILD_UMUNDO_S11N)
-	SET(UMUNDOS11N_LIBRARIES)
-	SET(UMUNDOS11N_FILES)
-	SET(UMUNDOS11N_HEADER_FILES)
 	add_subdirectory(s11n)
 	GET_DIRECTORY_PROPERTY(S11N_INCLUDES DIRECTORY s11n INCLUDE_DIRECTORIES)
 	include_directories(${S11N_INCLUDES})
 endif()
 if (BUILD_UMUNDO_RPC)
-	SET(UMUNDORPC_LIBRARIES)
-	SET(UMUNDORPC_FILES)
-	SET(UMUNDORPC_HEADER_FILES)
 	add_subdirectory(rpc)
 	GET_DIRECTORY_PROPERTY(RPC_INCLUDES DIRECTORY rpc INCLUDE_DIRECTORIES)
 	include_directories(${RPC_INCLUDES})
 endif()
 if (BUILD_UMUNDO_UTIL)
-	SET(UMUNDOUTIL_LIBRARIES)
-	SET(UMUNDOUTIL_FILES)
-	SET(UMUNDOUTIL_HEADER_FILES)
 	add_subdirectory(util)
 	GET_DIRECTORY_PROPERTY(UTIL_INCLUDES DIRECTORY util INCLUDE_DIRECTORIES)
 	include_directories(${UTIL_INCLUDES})
@@ -355,7 +343,6 @@ endif()
 # INSTALL_LIBRARY(TARGETS umundo COMPONENT libraryCore)
 # set_target_properties(umundo PROPERTIES FOLDER "Libraries")
 
-
 if (NOT CMAKE_CROSSCOMPILING)
 	add_subdirectory(docs)
 endif()
@@ -365,46 +352,75 @@ if (CMAKE_TOOLCHAIN_FILE)
 endif()
 
 ############################################################
-# Run ant to package the jar and setup some tests
+# Run ant to invoke protoc, package the jar and setup some tests
 ############################################################
 
 # only run ant if we actually build the java bindings
 GET_TARGET_PROPERTY(UMUNDOCORESWIG_LOCATION umundocoreSwig LOCATION)
 if (UMUNDOCORESWIG_LOCATION)
 
-	# include all the JNI libraries prepared from DIST_PREPARE builds on the various desktop platforms
-	if (NOT CMAKE_CROSSCOMPILING AND DIST_PREPARE)
-		SET(BUILD_FAT_JAR ON)
-	else()
-		SET(BUILD_FAT_JAR OFF)
-	endif()
+	set(JAR_EXCLUDE_DEBUG OFF)
 	
-	# do not include any library in the jar to allow loading debug builds
-	if (NOT DIST_PREPARE)
-		SET (JNI_FILE "OFF")
+	# include all the JNI libraries prepared from DIST_PREPARE builds on the various desktop platforms
+	if (CMAKE_CROSSCOMPILING)
+		SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC})
 	else()
-		# make sure to include at least the host JNI library
-		STRING(REGEX REPLACE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libumundocoreSwig" "" JNI_FILE ${UMUNDOCORESWIG_LOCATION})
-		SET (JNI_FILE "libumundocoreSwig${CMAKE_RELEASE_POSTFIX}${JNI_FILE}")
+		if (DIST_PREPARE)
+			SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package)
+		else()
+			SET(JAR_JNI_ROOT_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+		endif()
 	endif()
 	
 	FIND_PROGRAM(ANT_EXECUTABLE ant PATHS $ENV{ANT_HOME} ENV PATH )
 	if (ANT_EXECUTABLE)
-		ADD_CUSTOM_TARGET(ant_build ALL
+		# run protoc for java
+		ADD_CUSTOM_TARGET(java_protoc_s11n ALL
 			COMMAND ${ANT_EXECUTABLE} 
-			-Dlib.dir=${CMAKE_LIBRARY_OUTPUT_DIRECTORY} 
 			-Dsrc.dir=${PROJECT_SOURCE_DIR} 
 			-Dbuild.dir=${PROJECT_BINARY_DIR} 
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
- 			-Djnilib.file=${JNI_FILE} 
-			-Dfat.jar=${BUILD_FAT_JAR}
-			-Ddist.dir=${PROJECT_SOURCE_DIR}/package
+			-Dprotoc.src.dir=${PROJECT_SOURCE_DIR}/s11n/interfaces/protobuf/
+			-Dprotoc.plugin=${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE}
+			-f build-java.xml protoc
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
+			COMMENT "Creating ProtoBuf messages for Java ...")
+		add_dependencies(java_protoc_s11n umundocoreSwig)
+
+		ADD_CUSTOM_TARGET(java_protoc_rpc ALL
+			COMMAND ${ANT_EXECUTABLE} 
+			-Dsrc.dir=${PROJECT_SOURCE_DIR} 
+			-Dbuild.dir=${PROJECT_BINARY_DIR} 
+			-Dbuild.type=${CMAKE_BUILD_TYPE} 
+			-Dprotoc.src.dir=${PROJECT_SOURCE_DIR}/rpc/services/protobuf/
+			-Dprotoc.plugin=${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE}
+			-f build-java.xml protoc
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
+			COMMENT "Creating ProtoBuf services for Java ...")
+		add_dependencies(java_protoc_rpc umundocoreSwig)
+
+		# we need to build the protoc plugin first
+		if (UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP)
+			add_dependencies(java_protoc_s11n ${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP})
+			add_dependencies(java_protoc_rpc ${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP})
+		endif()
+
+		# package everything into a jar
+		ADD_CUSTOM_TARGET(java_build_jar ALL
+			COMMAND ${ANT_EXECUTABLE} 
+			-Dlib.dir=${JAR_JNI_ROOT_PATH} 
+			-Dsrc.dir=${PROJECT_SOURCE_DIR} 
+			-Dbuild.dir=${PROJECT_BINARY_DIR} 
+			-Dbuild.type=${CMAKE_BUILD_TYPE} 
+			-Dexclude.debug=${JAR_EXCLUDE_DEBUG}
 			-f build-java.xml
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
-			COMMENT "Running Ant ...")
+			COMMENT "Creating the jar ...")
 		# make sure ant runs after we built the wrappers
-		add_dependencies(ant_build umundocoreSwig)
-		set_target_properties(ant_build PROPERTIES FOLDER "Bindings")
+		add_dependencies(java_build_jar java_protoc_s11n)
+		add_dependencies(java_build_jar java_protoc_rpc)
+		add_dependencies(java_build_jar umundocoreSwig)
+		set_target_properties(java_build_jar PROPERTIES FOLDER "Bindings")
 		add_test(java-tests ${ANT_EXECUTABLE} -f ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java/build-java.xml)
 	else()
 		message(STATUS "Could not find ant binary - will not build jars")

@@ -68,8 +68,8 @@ if(CMAKE_CROSSCOMPILING)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM "BOTH")
 		SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
 		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_NDK_ABI_EXT}")
-		LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/bin" "/") # this is needed to find swig
-		LIST(APPEND CMAKE_FIND_ROOT_PATH "/opt/local/bin" "/") # this is needed to find protoc
+		LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/bin") # this is needed to find swig
+		LIST(APPEND CMAKE_FIND_ROOT_PATH "/opt/local/bin") # this is needed to find protoc
 	endif ()
 else ()
 	if (WIN32 AND 64BIT_HOST)
@@ -365,6 +365,10 @@ if (UMUNDOCORESWIG_LOCATION)
 	# include all the JNI libraries prepared from DIST_PREPARE builds on the various desktop platforms
 	if (CMAKE_CROSSCOMPILING)
 		SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC})
+		if (ANDROID)
+			# we do not build CPP s11n but need this nevertheless
+			find_package(Protobuf REQUIRED)
+		endif()
 	else()
 		if (DIST_PREPARE)
 			SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package)

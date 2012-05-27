@@ -209,6 +209,15 @@ I can say for sure that MinGW won't work for now, as we do not have prebuilt lib
 there.
 8. Open the solution with MS Visual Studio. Only <tt>Debug</tt> and <tt>Release</tt> builds are supported for now.
 
+### Cross Compiling
+
+Cross compiling for Android and iOS is best done with the <tt>build-umundo-*</tt> scripts in <tt>contrib</tt>. You have to make 
+sure that CMake can find <tt>protoc-umundo-cpp-rpc</tt> and <tt>protoc-umundo-java-rpc</tt> on your system, both can be build
+and installed with a host-native (non cross-compiled) installation first.
+
+Cross Compiling for Android on Windows is possible but the process is not wrapped in a script yet. Have a look at the unix shell 
+scripts to see what's needed.
+
 ## Build process
 
 We are using CMake to build uMundo for every platform. When <tt>cmake</tt> is invoked, it will look for a <tt>CMakeLists.txt</tt>

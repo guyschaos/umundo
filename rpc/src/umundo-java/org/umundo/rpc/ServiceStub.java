@@ -9,7 +9,6 @@ import org.umundo.core.Message;
 import org.umundo.core.Node;
 import org.umundo.core.PublisherSet;
 import org.umundo.core.SubcriberSet;
-import org.umundo.protobuf.tests.TestServices.EchoReply;
 import org.umundo.s11n.ITypedReceiver;
 import org.umundo.s11n.TypedPublisher;
 import org.umundo.s11n.TypedSubscriber;

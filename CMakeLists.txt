@@ -366,8 +366,9 @@ if (UMUNDOCORESWIG_LOCATION)
 	if (CMAKE_CROSSCOMPILING)
 		SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC})
 		if (ANDROID)
-			# we do not build CPP s11n but need this nevertheless
-			find_package(Protobuf REQUIRED)
+			# Find UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE
+			include("${CMAKE_MODULE_PATH}/UseUMundo.cmake")
+			find_program(PROTOBUF_PROTOC_EXECUTABLE NAMES protoc protoc.exe)
 		endif()
 	else()
 		if (DIST_PREPARE)

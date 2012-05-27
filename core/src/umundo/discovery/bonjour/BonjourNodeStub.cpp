@@ -30,9 +30,16 @@ BonjourNodeStub::~BonjourNodeStub() {
 }
 
 const string& BonjourNodeStub::getIP() const {
-	// just return the first ip address
+	// just return the first ip address that is not empty
 	assert(_interfacesIPv4.size() > 0);
-	return (_interfacesIPv4.begin())->second;
+	map<int, string>::const_iterator ifIter = _interfacesIPv4.begin();
+	while(ifIter != _interfacesIPv4.end()) {
+		if (ifIter->second.length() > 0)
+			return ifIter->second;
+		ifIter++;
+	}
+	LOG_ERR("We did not found a valid address yet.");
+	return _interfacesIPv4.begin()->second;
 }
 
 std::ostream& operator<<(std::ostream &out, const BonjourNodeStub* n) {

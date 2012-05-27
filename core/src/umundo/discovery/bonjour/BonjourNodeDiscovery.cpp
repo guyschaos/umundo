@@ -776,10 +776,15 @@ void DNSSD_API BonjourNodeDiscovery::addrInfoReply(
 	}
 	// is this node sufficiently resolved?
 	if (node->_interfacesIPv4.begin() != node->_interfacesIPv4.end()) {
+		map<int, string>::const_iterator ifIter = node->_interfacesIPv4.begin();
+		while(ifIter != node->_interfacesIPv4.end()) {
+			if (ifIter->second.length() > 0)
+				query->found(boost::static_pointer_cast<NodeStub>(node));
+			ifIter++;
+		}
 //      node->_interfaceIndices.size() == node->_interfacesIPv6.size()) {
 		// we resolved all interfaces
 		//LOG_DEBUG("%p sufficiently resolved node %s", query.get(), SHORT_UUID(node->getUUID()).c_str());
-		query->found(boost::static_pointer_cast<NodeStub>(node));
 	}
 
 	assert(getInstance()->validateState());

@@ -69,6 +69,7 @@ if(CMAKE_CROSSCOMPILING)
 		SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE "BOTH")
 		SET(UMUNDO_PREBUILT_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/contrib/prebuilt/android/${ANDROID_NDK_ABI_EXT}")
 		LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/local/bin" "/") # this is needed to find swig
+		LIST(APPEND CMAKE_FIND_ROOT_PATH "/opt/local/bin" "/") # this is needed to find protoc
 	endif ()
 else ()
 	if (WIN32 AND 64BIT_HOST)

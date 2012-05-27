@@ -382,6 +382,7 @@ if (UMUNDOCORESWIG_LOCATION)
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
 			-Dprotoc.src.dir=${PROJECT_SOURCE_DIR}/s11n/interfaces/protobuf/
 			-Dprotoc.plugin=${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE}
+			-Dprotoc.bin=${PROTOBUF_PROTOC_EXECUTABLE}
 			-f build-java.xml protoc
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Creating ProtoBuf messages for Java ...")
@@ -394,6 +395,7 @@ if (UMUNDOCORESWIG_LOCATION)
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
 			-Dprotoc.src.dir=${PROJECT_SOURCE_DIR}/rpc/services/protobuf/
 			-Dprotoc.plugin=${UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE}
+			-Dprotoc.bin=${PROTOBUF_PROTOC_EXECUTABLE}
 			-f build-java.xml protoc
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Creating ProtoBuf services for Java ...")

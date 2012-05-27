@@ -23,11 +23,12 @@
 	<echo message="source dir:         ${src.dir}"/>
 	<echo message="build dir:          ${build.dir}"/>
 	<echo message="protoc source dir:  ${protoc.src.dir}"/>
+	<echo message="protoc binary:      ${protoc.bin}"/>
 	<echo message="protoc plugin:      ${protoc.plugin}"/>
 
 	<mkdir dir="${build.dir}/protobuf/generated" />
 
-	<apply executable="protoc">
+	<apply executable="${protoc.bin}">
 		<arg value="--java_out=${build.dir}/protobuf/generated" /> 
 		<arg value="--java_rpc_out=${build.dir}/protobuf/generated" /> 
 		<arg value="--proto_path=${protoc.src.dir}" /> 

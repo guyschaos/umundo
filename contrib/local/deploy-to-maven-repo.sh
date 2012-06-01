@@ -2,7 +2,7 @@
 #
 # Deploy umundocore.jar into maven repository
 #
-mvn2 deploy:deploy-file -DgroupId=org.umundo -DartifactId=umundocore -Dversion=0.0.4 \
+mvn2 deploy:deploy-file -DgroupId=org.umundo -DartifactId=umundocore -Dversion=0.0.5 \
   -DgeneratePom=true \
   -Dpackaging=jar \
   -Dfile=umundocore.jar \

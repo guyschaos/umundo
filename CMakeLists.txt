@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 2.8.5)
 # specify umundo version
 SET(UMUNDO_VERSION_MAJOR "0")
 SET(UMUNDO_VERSION_MINOR "0")
-SET(UMUNDO_VERSION_PATCH "4")
+SET(UMUNDO_VERSION_PATCH "5")
 
 # build type has to be set before the project definition
 SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
@@ -359,6 +359,8 @@ endif()
 # only run ant if we actually build the java bindings
 GET_TARGET_PROPERTY(UMUNDOCORESWIG_LOCATION umundocoreSwig LOCATION)
 if (UMUNDOCORESWIG_LOCATION)
+	# Find UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE
+	include("${CMAKE_MODULE_PATH}/UseUMundo.cmake")
 
 	set(JAR_EXCLUDE_DEBUG OFF)
 	
@@ -366,8 +368,6 @@ if (UMUNDOCORESWIG_LOCATION)
 	if (CMAKE_CROSSCOMPILING)
 		SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC})
 		if (ANDROID)
-			# Find UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE
-			include("${CMAKE_MODULE_PATH}/UseUMundo.cmake")
 			find_program(PROTOBUF_PROTOC_EXECUTABLE NAMES protoc protoc.exe)
 		endif()
 	else()

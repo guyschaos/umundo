@@ -273,7 +273,7 @@ to set some variables related to the build:
 <dd>Use ZeroMQ to connect nodes to each other and publishers to subscribers.</dd>
 
 <dt><b>NET_ZEROMQ_RCV_HWM, NET_ZEROMQ_SND_HWM</b></dt>
-<dd>High water mark for ZeroMQ queues in messages. One uMundo message represents multiple ZeroMQ messages, one per meta filed and 
+<dd>High water mark for ZeroMQ queues in messages. One uMundo message represents multiple ZeroMQ messages, one per meta field and 
 	one for the actual data.</dd>
 
 <dt><b>S11N_PROTOBUF</b></dt>

@@ -40,6 +40,7 @@ TERM=xterm expect build-windows.expect
 
 echo == BUILDING UMUNDO FOR IOS =========================================================
 ${DIR}/../build-umundo-ios.sh
+
 echo == BUILDING UMUNDO FOR Android =========================================================
 ${DIR}/../build-umundo-android.sh
 

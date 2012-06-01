@@ -224,11 +224,13 @@ void Service::receive(void* obj, Message* msg) {
 		string outType = msg->getMeta("outType");
 		void* out = NULL;
 		callMethod(methodName, obj, inType, out, outType);
-		Message* rpcReplMsg = _rpcPub->prepareMsg(outType, out);
-		rpcReplMsg->setMeta("respId", msg->getMeta("reqId"));
-		_rpcPub->send(rpcReplMsg);
+		if (out != NULL) {
+			Message* rpcReplMsg = _rpcPub->prepareMsg(outType, out);
+			rpcReplMsg->setMeta("respId", msg->getMeta("reqId"));
+			_rpcPub->send(rpcReplMsg);
+			delete rpcReplMsg;
+		}
 		cleanUpObjects(methodName, obj, out);
-		delete rpcReplMsg;
 	}
 }
 

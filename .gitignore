@@ -5,5 +5,6 @@ core/contrib/bindings/java/bin/
 build/
 build*/
 package/
+installer/umundo-*
 docs/html/
 .DS_Store*

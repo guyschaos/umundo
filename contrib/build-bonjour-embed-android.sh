@@ -22,7 +22,7 @@ mkdir -p ${DEST_DIR} &> /dev/null
 if [ -f ispatched ]; then
 	rm ./ispatched
 else
-	patch -p1 < ../mDNSResponder-333.10.android.patch
+	patch -p1 < ../mDNSResponder-333.10.umundo.patch
 fi
 
 # #ifdef TARGET_OS_ANDROID

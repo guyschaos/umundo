@@ -214,19 +214,19 @@ ScopeLock::~ScopeLock() {
 }
 
 Monitor::Monitor() {
-#ifdef THREAD_PTHREAD
 	_waiters = 0;
+	_signaled = 0;
+#ifdef THREAD_PTHREAD
 	int err;
 	err = pthread_mutex_init(&_mutex, NULL);
 	assert(err == 0);
 	err = pthread_cond_init(&_cond, NULL);
 	assert(err == 0);
 	(void)err; // avoid unused warning
-	_signaled = false;
 #endif
 #ifdef THREAD_WIN32
-	_waiters = 0;
-	_monitor = CreateEvent(NULL, TRUE, FALSE, NULL);
+	// auto resetting event
+	_monitor = CreateEvent(NULL, FALSE, FALSE, NULL);
 #endif
 }
 
@@ -265,79 +265,86 @@ failed_mutex_destroy:
 }
 
 void Monitor::signal() {
+	signal(1);
+}
+
+void Monitor::broadcast() {
+	signal(_waiters);
+}
+
+void Monitor::signal(int nrThreads) {
+	_signaled = (nrThreads > _waiters ? _waiters : nrThreads);
 #ifdef THREAD_PTHREAD
 	pthread_mutex_lock(&_mutex);
-	_signaled = true;
 	pthread_cond_broadcast(&_cond);
 	pthread_mutex_unlock(&_mutex);
 #endif
 #ifdef THREAD_WIN32
 	_monitorLock.lock();
-	bool somonesWaiting = _waiters > 0;
-	_monitorLock.unlock();
-
-	if (somonesWaiting)
+	while(_signaled > 0) {
 		SetEvent(_monitor);
+		_signaled--;
+	}
+	_monitorLock.unlock();
 #endif
+	assert(_waiters >= 0);
+	assert(_signaled >= 0);
 }
 
 bool Monitor::wait(uint32_t ms) {
 #ifdef THREAD_PTHREAD
 	int rv = 0;
 	pthread_mutex_lock(&_mutex);
-	if (_signaled) {
-		//LOG_DEBUG("Signaled prior to waiting");
-		_signaled = false;
-		pthread_mutex_unlock(&_mutex);
-		return true;
-	}
+	_waiters++;
 	// wait indefinitely
 	if (ms == 0) {
-		_waiters++;
-    while(!_signaled)
+    while(!_signaled) // are there enough signals for this thread to pass?
       rv = pthread_cond_wait(&_cond, &_mutex);
+		assert(_waiters && _signaled);
+		_signaled--;
 		_waiters--;
-		// only reset signal if all threads have passed
-		if (rv == 0 && !_waiters)
-			_signaled = false;
+		pthread_mutex_unlock(&_mutex);
+		return rv == 0;
+	} else {
+		// get endtime for waiting
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		tv.tv_usec += (ms % 1000) * 1000;
+		tv.tv_sec += (ms / 1000) + (tv.tv_usec / 1000000);
+		tv.tv_usec %= 1000000;
+		struct timespec ts;
+		ts.tv_sec = tv.tv_sec;
+		ts.tv_nsec = tv.tv_usec * 1000;
+
+		// were we signaled or timed out?
+    while(!_signaled && rv != ETIMEDOUT)
+			rv = pthread_cond_timedwait(&_cond, &_mutex, &ts);
+		// decrease number of signals if we awoke due to signal
+		if (rv != ETIMEDOUT) {
+			assert(_signaled);
+			_signaled--;
+		}
+		// in any case we won't be a waiter anymore
+		_waiters--;
 		pthread_mutex_unlock(&_mutex);
 		return rv == 0;
 	}
-
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	tv.tv_usec += (ms % 1000) * 1000;
-	tv.tv_sec += (ms / 1000) + (tv.tv_usec / 1000000);
-	tv.tv_usec %= 1000000;
-	struct timespec ts;
-	ts.tv_sec = tv.tv_sec;
-	ts.tv_nsec = tv.tv_usec * 1000;
-
-	rv = pthread_cond_timedwait(&_cond, &_mutex, &ts);
-	if (rv == 0)
-		_signaled = false;
-	pthread_mutex_unlock(&_mutex);
-	if (rv != 0 && rv != ETIMEDOUT)
-		assert(false);
-	return rv == 0;
 #endif
 #ifdef THREAD_WIN32
 	_monitorLock.lock();
 	_waiters++;
-	_monitorLock.unlock();
 	if (ms == 0)
 		ms = INFINITE;
+	_monitorLock.unlock();
 	int result = WaitForSingleObject(_monitor, ms);
 	_monitorLock.lock();
 	_waiters--;
-	int last_waiter =
-	    result == WAIT_OBJECT_0 && _waiters == 0;
 	_monitorLock.unlock();
-
-	if (last_waiter)
-		ResetEvent (_monitor);
+	
 	return result == WAIT_OBJECT_0;
 #endif
+	assert(_waiters >= 0);
+	assert(_signaled >= 0);
 }
 
 #ifdef THREAD_PTHREAD

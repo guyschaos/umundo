@@ -46,6 +46,15 @@ void ServiceManager::removedFromNode(Node* node) {
   _nodes.erase(node);
 }
 
+void ServiceManager::startQuery(ServiceFilter* filter, ResultSet<ServiceDescription>* listener) {
+	_svcQueries[filter] = listener;
+}
+
+void ServiceManager::stopQuery(ServiceFilter* filter) {
+	if (_svcQueries.find(filter) != _svcQueries.end())
+		_svcQueries.erase(filter);
+}
+
 ServiceDescription* ServiceManager::find(ServiceFilter* svcFilter) {
 	Message* findMsg = svcFilter->toMessage();
 	string reqId = UUID::getUUID();

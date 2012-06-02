@@ -25,11 +25,14 @@ public:
 	void receive(Message* msg);
 
   ServiceDescription* find(ServiceFilter*);
+	void startQuery(ServiceFilter*, ResultSet<ServiceDescription>*);
+	void stopQuery(ServiceFilter*);
 
 	map<string, Monitor> _findRequests;
 	map<string, Message*> _findResponses;
 	map<intptr_t, Service*> _svc;
 	map<intptr_t, ServiceDescription*> _svcDesc;
+	map<ServiceFilter*, ResultSet<ServiceDescription>*> _svcQueries;
 
 	std::set<Node*> _nodes;
 	Publisher* _svcPub;   ///< publish service queries

@@ -51,9 +51,18 @@ LOG_DEBUG("Waiting at monitor %p", &monitor); \
 monitor.wait(); \
 LOG_DEBUG("Signaled at monitor %p", &monitor);
 
+#define UMUNDO_WAIT(monitor, ms) \
+LOG_DEBUG("Waiting for %dms at monitor %p", ms, &monitor); \
+monitor.wait(ms); \
+LOG_DEBUG("Awaken at monitor %p", &monitor);
+
 #define UMUNDO_SIGNAL(monitor) \
 LOG_DEBUG("Signaling monitor %p", &monitor); \
 monitor.signal();
+
+#define UMUNDO_BROADCAST(monitor) \
+LOG_DEBUG("Signaling all monitor %p", &monitor); \
+monitor.broadcast();
 #endif
 
 #ifndef DEBUG_THREADS
@@ -63,6 +72,7 @@ monitor.signal();
 #define UMUNDO_UNLOCK(mutex) mutex.unlock();
 #define UMUNDO_WAIT(monitor) monitor.wait();
 #define UMUNDO_SIGNAL(monitor) monitor.signal();
+#define UMUNDO_BROADCAST(monitor) monitor.broadcast();
 #endif
 
 namespace umundo {
@@ -144,6 +154,8 @@ public:
 	virtual ~Monitor();
 
 	void signal();
+	void signal(int nrThreads);
+	void broadcast();
 	bool wait() {
 		return wait(0);
 	}
@@ -151,10 +163,10 @@ public:
 
 private:
 	int _waiters;
+	int _signaled;
 #ifdef THREAD_PTHREAD
 	pthread_mutex_t _mutex;
 	pthread_cond_t _cond;
-	bool _signaled;
 #endif
 #ifdef THREAD_WIN32
 	Mutex _monitorLock;

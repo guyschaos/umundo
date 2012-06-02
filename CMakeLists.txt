@@ -224,9 +224,13 @@ OPTION(NET_ZEROMQ "Use 0MQ for networking" ON)
 OPTION(S11N_PROTOBUF "Use protobuf object serialization" ON) 
 OPTION(RPC_PROTOBUF "Use protobuf remote procedure calls" ON) 
 
-if (S11N_PROTOBUF)
+if (S11N_PROTOBUF AND WIN32)
 	# take a guess at PROTOBUF_SRC_ROOT_FOLDER
-	set(PROTOBUF_SRC_ROOT_FOLDER "${PROJECT_BINARY_DIR}/../protobuf-2.4.1")
+	if(EXISTS "${PROJECT_BINARY_DIR}/../protobuf-2.4.1/")
+		set(PROTOBUF_SRC_ROOT_FOLDER "${PROJECT_BINARY_DIR}/../protobuf-2.4.1")
+	elseif(EXISTS "${PROJECT_BINARY_DIR}/../../protobuf-2.4.1/")
+		set(PROTOBUF_SRC_ROOT_FOLDER "${PROJECT_BINARY_DIR}/../../protobuf-2.4.1")
+	endif()
 endif()
 
 if (NET_ZEROMQ)

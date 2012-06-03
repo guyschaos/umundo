@@ -55,6 +55,7 @@ public:
 	virtual void setUUID(string uuid)           {
 		_uuid = uuid;
 	}
+	
 	//@}
 
 	inline bool operator==(NodeStub* n) const {

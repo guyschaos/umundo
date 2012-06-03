@@ -26,6 +26,10 @@ zmq_msg_init(&msg) && LOG_WARN("zmq_msg_init: %s", zmq_strerror(errno)); \
 zmq_msg_init_size (&msg, size + 1) && LOG_WARN("zmq_msg_init_size: %s",zmq_strerror(errno)); \
 memcpy(zmq_msg_data(&msg), data, size + 1);
 
+/// Size of a publisher info on wire
+#define PUB_INFO_SIZE(pub) \
+pub->getChannelName().length() + 1 + pub->getUUID().length() + 1 + 2
+
 namespace umundo {
 
 class PublisherStub;
@@ -64,6 +68,12 @@ public:
 	void changed(shared_ptr<NodeStub>);  ///< Never happens.
 	//@}
 
+	/** @name uMundo deployment object model */
+	//@{
+//	set<NodeStub*> getAllNodes();
+	//@}
+
+
 	static void* getZeroMQContext();
 
 protected:
@@ -100,27 +110,30 @@ private:
 		return *this;
 	}
 
-	void processPubSub(const char*, zmq_msg_t, bool); ///< notify local publishers about subscriptions
+	void processSubscription(const char*, zmq_msg_t, bool); ///< notify local publishers about subscriptions
 	bool validateState(); ///< check the nodes state
 
 	static char* writePubInfo(char*, shared_ptr<PublisherStub>); ///< write publisher info into given byte array
-	static char* readPubInfo(char*, uint16_t&, char*&); ///< read publisher from  given byte array
+	static char* readPubInfo(char*, uint16_t&, char*&, char*&); ///< read publisher from given byte array
 	static char* writeSubInfo(char*, shared_ptr<ZeroMQSubscriber>); ///< write subscriber info into given byte array
 	static char* readSubInfo(char*, char*&); ///< read subscriber from given byte array
 
 	static void* _zmqContext; ///< global 0MQ context.
 	void* _responder; ///< 0MQ node socket for administrative messages.
-	Mutex _mutex;
 	shared_ptr<NodeQuery> _nodeQuery; ///< the NodeQuery which we registered at the Discovery sub-system.
+	Mutex _mutex;
 
-	map<string, shared_ptr<NodeStub> > _nodes;                                    ///< UUIDs to NodeStub%s.
+	map<string, shared_ptr<NodeStub> > _nodes;                                    ///< UUIDs to remote NodeStub%s.
 	map<string, void*> _sockets;                                                  ///< UUIDs to ZeroMQ Node Sockets.
-	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _remotePubs;          ///< UUIDs to ports to remote publishers.
-	map<string, map<uint16_t, int > > _remoteSubs;                                ///< UUIDs to local publisher ports to number of subscribers.
-	map<string, map<uint16_t, shared_ptr<PublisherStub> > > _pendingPubAdditions; ///< publishers of yet undiscovered nodes.
-	map<uint16_t, shared_ptr<ZeroMQPublisher> > _localPubs;                       ///< Local ports to local publishers.
-	map<uint16_t, shared_ptr<ZeroMQPublisher> > _suspendedLocalPubs;              ///< suspended publishers to be resumed.
+
+	map<string, map<string, shared_ptr<PublisherStub> > > _remotePubs;            ///< remote node UUIDs to remote publisher UUIDs.
+	map<string, map<string, shared_ptr<PublisherStub> > > _pendingRemotePubs;     ///< publishers of yet undiscovered nodes.
+	map<string, map<string, set<string> > > _subscriptions;                       ///< remote node UUIDs to local publisher UUID to remote subscriber UUIDs.
+	
+	map<string, shared_ptr<ZeroMQPublisher> > _localPubs;                         ///< UUIDS to local publishers.
 	set<shared_ptr<ZeroMQSubscriber> > _localSubs;                                ///< Local subscribers.
+	map<string, shared_ptr<ZeroMQPublisher> > _suspendedLocalPubs;                ///< suspended publishers to be resumed.
+
 	shared_ptr<NodeConfig> _config;
 
 	static shared_ptr<ZeroMQNode> _instance; ///< Singleton instance.

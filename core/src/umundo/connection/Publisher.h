@@ -59,7 +59,13 @@ public:
 		return _domain;
 	}
 	virtual void setDomain(string domain)             {
-		domain = _domain;
+		_domain = domain;
+	}
+	virtual const string& getUUID() const           {
+		return _uuid;
+	}
+	virtual void setUUID(string uuid)             {
+		_uuid = uuid;
 	}
 	//@}
 
@@ -67,6 +73,7 @@ protected:
 	string _channelName;
 	string _host;
 	string _domain;
+	string _uuid;
 };
 
 /**
@@ -78,12 +85,6 @@ public:
 	virtual ~PublisherImpl();
 
 	virtual void send(Message* msg) = 0;
-	virtual const string& getUUID()                  {
-		return _uuid;
-	}
-	virtual void setUUID(string uuid)                {
-		_uuid = uuid;
-	}
 
 	/** @name Optional subscriber awareness */
 	//@{
@@ -98,16 +99,15 @@ public:
 protected:
 	/** @name Optional subscriber awareness */
 	//@{
-	virtual void addedSubscriber(const string, const string) {
+	virtual void addedSubscriber(const string, const string)   {
 		/* Ignore or overwrite */
 	}
-	virtual void removedSubscriber()                         {
+	virtual void removedSubscriber(const string, const string) {
 		/* Ignore or overwrite */
 	}
 	//@}
 
 	Greeter* _greeter;
-	string _uuid;
 	friend class Publisher;
 };
 
@@ -185,11 +185,11 @@ public:
 	//@{
 
 protected:
-	void addedSubscriber(const string nodeId, const string subId)  {
+	void addedSubscriber(const string nodeId, const string subId)   {
 		_impl->addedSubscriber(nodeId, subId);
 	}
-	void removedSubscriber()     {
-		_impl->removedSubscriber();
+	void removedSubscriber(const string nodeId, const string subId) {
+		_impl->removedSubscriber(nodeId, subId);
 	}
 	shared_ptr<PublisherImpl> _impl;
 	shared_ptr<PublisherConfig> _config;

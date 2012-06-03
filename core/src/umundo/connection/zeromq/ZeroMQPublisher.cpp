@@ -104,7 +104,7 @@ void ZeroMQPublisher::addedSubscriber(const string remoteId, const string subId)
 		_greeter->welcome((Publisher*)_facade, remoteId, subId);
 }
 
-void ZeroMQPublisher::removedSubscriber() {
+void ZeroMQPublisher::removedSubscriber(const string remoteId, const string subId) {
 	_pubCount--;
 	UMUNDO_SIGNAL(_pubLock);
 }

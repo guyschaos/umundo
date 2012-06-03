@@ -31,7 +31,7 @@ protected:
 	*/
 	ZeroMQPublisher();
 	void addedSubscriber(const string, const string);
-	void removedSubscriber();
+	void removedSubscriber(const string, const string);
 
 private:
 	// ZeroMQPublisher(const ZeroMQPublisher &other) {}

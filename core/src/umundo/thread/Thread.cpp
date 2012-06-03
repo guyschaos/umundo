@@ -273,7 +273,12 @@ void Monitor::broadcast() {
 }
 
 void Monitor::signal(int nrThreads) {
-	_signaled = (nrThreads > _waiters ? _waiters : nrThreads);
+	// if we are signalled prior to waiting, allow the first thread to pass
+	if (_waiters > 0) {
+		_signaled = (nrThreads > _waiters ? _waiters : nrThreads);
+	} else {
+		_signaled = 1;
+	}
 #ifdef THREAD_PTHREAD
 	pthread_mutex_lock(&_mutex);
 	pthread_cond_broadcast(&_cond);
@@ -292,6 +297,11 @@ void Monitor::signal(int nrThreads) {
 }
 
 bool Monitor::wait(uint32_t ms) {
+	// signaled prior to waiting
+	if (_signaled > 0) {
+		_signaled--;
+		return true;
+	}
 #ifdef THREAD_PTHREAD
 	int rv = 0;
 	pthread_mutex_lock(&_mutex);

@@ -53,6 +53,7 @@ int main(int argc, char** argv, char** envp) {
       node1->addPublisher(pub);
       node2->addSubscriber(sub);
       
+			Thread::sleepMs(10);
       int subs = pub->waitForSubscribers(1);
       if (subs != 1)
         abort();

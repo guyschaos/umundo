@@ -171,6 +171,22 @@ bool testTimedMonitors() {
 		Thread::sleepMs(5);
 		assert(passedTimedMonitor == 3);
 		assert(!thread1.isStarted() && !thread2.isStarted() && !thread3.isStarted());
+
+		// test signalling prior to waiting
+		passedTimedMonitor = 0;
+		testTimedMonitor.signal();
+		thread1.start();
+		Thread::sleepMs(5);
+		thread2.start();
+		Thread::sleepMs(5);
+		assert(passedTimedMonitor == 1);
+		assert(!thread1.isStarted());
+		assert(thread2.isStarted());
+		testTimedMonitor.signal();
+		Thread::sleepMs(5);
+		assert(passedTimedMonitor == 2);
+		assert(!thread2.isStarted());
+		
 	}	
 	return true;
 }

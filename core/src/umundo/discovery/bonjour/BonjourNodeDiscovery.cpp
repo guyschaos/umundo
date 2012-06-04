@@ -7,6 +7,7 @@
 #include "umundo/discovery/bonjour/BonjourNodeDiscovery.h"
 
 #include <errno.h>
+#include <unistd.h>
 
 #if (defined UNIX || defined IOS || defined ANDROID)
 #include <arpa/inet.h>
@@ -512,6 +513,17 @@ void DNSSD_API BonjourNodeDiscovery::browseReply(
 			node->_uuid = replyName;
 			node->_domain = replyDomain;
 			node->_regType = replyType;
+			node->_isInProcess = false;
+			node->_isRemote = true;
+
+			// is this a "in-process" node?
+			map<intptr_t, shared_ptr<NodeImpl> >::iterator localNodeIter = getInstance()->_localNodes.begin();
+			while(localNodeIter != getInstance()->_localNodes.end()) {
+				if (localNodeIter->second->getUUID().compare(replyName) == 0) {
+					node->setInProcess(true);
+				}
+				localNodeIter++;
+			}
 
 			// remember node
 			assert(getInstance()->_queryToNodes[query].find(replyName) == getInstance()->_queryToNodes[query].end());
@@ -624,6 +636,15 @@ void DNSSD_API BonjourNodeDiscovery::serviceResolveReply(
 
 		node->_fullname = fullname;
 		node->_host = hosttarget;
+
+		// is this the local host?
+		char hostname[1024];
+		hostname[1023] = '\0';
+		gethostname(hostname, 1023);
+
+		if (strncmp(hosttarget, hostname, strlen(hostname)) == 0) {
+			node->setRemote(false);
+		}
 		node->_port = ntohs(opaqueport);
 
 		const char* domainStart = strstr(fullname, node->_regType.c_str());

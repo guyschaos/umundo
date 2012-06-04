@@ -40,18 +40,25 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 	int hwm = NET_ZEROMQ_SND_HWM;
 	zmq_setsockopt(_socket, ZMQ_SNDHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 
+	std::stringstream ssIpc;
+	ssIpc << "ipc:///tmp/" << _uuid;
+	zmq_bind(_socket, ssIpc.str().c_str()) && LOG_WARN("zmq_bind: %s",zmq_strerror(errno));
+
+	std::stringstream ssInProc;
+	ssInProc << "inproc://" << _uuid;
+	zmq_bind(_socket, ssInProc.str().c_str()) && LOG_WARN("zmq_bind: %s",zmq_strerror(errno));
+
 	uint16_t port = 4242;
+	std::stringstream ssNet;
+	ssNet << _transport << "://*:" << port;
 
-	std::stringstream ss;
-	ss << _transport << "://*:" << port;
-
-	while(zmq_bind(_socket, ss.str().c_str()) < 0) {
+	while(zmq_bind(_socket, ssNet.str().c_str()) < 0) {
 		switch(errno) {
 		case EADDRINUSE:
 			port++;
-			ss.clear();             // clear error bits
-			ss.str(string());  // reset string
-			ss << _transport << "://*:" << port;
+			ssNet.clear();             // clear error bits
+			ssNet.str(string());  // reset string
+			ssNet << _transport << "://*:" << port;
 			break;
 		default:
 			LOG_WARN("zmq_bind: %s",zmq_strerror(errno));
@@ -60,7 +67,9 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 	}
 	_port = port;
 
-	LOG_DEBUG("ZeroMQPublisher bound to %s", ss.str().c_str());
+	LOG_DEBUG("ZeroMQPublisher bound to %s", ssNet.str().c_str());
+	LOG_DEBUG("ZeroMQPublisher bound to %s", ssIpc.str().c_str());
+	LOG_DEBUG("ZeroMQPublisher bound to %s", ssInProc.str().c_str());
 }
 
 ZeroMQPublisher::ZeroMQPublisher() {
@@ -68,6 +77,11 @@ ZeroMQPublisher::ZeroMQPublisher() {
 
 ZeroMQPublisher::~ZeroMQPublisher() {
 	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
+
+	std::stringstream ssIpc;
+	ssIpc << "/tmp/" << _uuid;
+
+	remove(ssIpc.str().c_str());
 	//zmq_term(_zeroMQCtx) && LOG_WARN("zmq_term: %s",zmq_strerror(errno));
 }
 
@@ -107,6 +121,8 @@ void ZeroMQPublisher::addedSubscriber(const string remoteId, const string subId)
 void ZeroMQPublisher::removedSubscriber(const string remoteId, const string subId) {
 	_pubCount--;
 	UMUNDO_SIGNAL(_pubLock);
+	if (_greeter != NULL)
+		_greeter->farewell((Publisher*)_facade, remoteId, subId);
 }
 
 void ZeroMQPublisher::send(Message* msg) {

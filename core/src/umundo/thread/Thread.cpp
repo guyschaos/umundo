@@ -279,6 +279,7 @@ void Monitor::signal(int nrThreads) {
 	} else {
 		_signaled = 1;
 	}
+//	LOG_ERR("W:%d - N:%d - S:%d", _waiters, nrThreads, _signaled);
 #ifdef THREAD_PTHREAD
 	pthread_mutex_lock(&_mutex);
 	pthread_cond_broadcast(&_cond);
@@ -297,14 +298,18 @@ void Monitor::signal(int nrThreads) {
 }
 
 bool Monitor::wait(uint32_t ms) {
-	// signaled prior to waiting
-	if (_signaled > 0) {
-		_signaled--;
-		return true;
-	}
 #ifdef THREAD_PTHREAD
 	int rv = 0;
 	pthread_mutex_lock(&_mutex);
+//	LOG_ERR("W:%d - S:%d", _waiters, _signaled);
+
+	// signaled prior to waiting
+	if (_signaled > 0) {
+		_signaled--;
+		pthread_mutex_unlock(&_mutex);
+		return true;
+	}
+
 	_waiters++;
 	// wait indefinitely
 	if (ms == 0) {
@@ -342,6 +347,14 @@ bool Monitor::wait(uint32_t ms) {
 #endif
 #ifdef THREAD_WIN32
 	_monitorLock.lock();
+	
+	// signaled prior to waiting
+	if (_signaled > 0) {
+		_signaled--;
+		_monitorLock.unlock();
+		return true;
+	}
+
 	_waiters++;
 	if (ms == 0)
 		ms = INFINITE;

@@ -151,7 +151,8 @@ ServiceStub::ServiceStub(const string& channelName) {
   _channelName = channelName;
 	_rpcPub = new TypedPublisher(_channelName);
 	_rpcSub = new TypedSubscriber(_channelName, this);
-//	_rpcPub->waitForSubscribers(1);
+	_rpcPub->waitForSubscribers(1);
+
 }
 
 ServiceStub::~ServiceStub() {

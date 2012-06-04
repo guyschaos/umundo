@@ -397,6 +397,7 @@ if (UMUNDOCORESWIG_LOCATION)
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Creating ProtoBuf messages for Java ...")
 		add_dependencies(java_protoc_s11n umundocoreSwig)
+		set_target_properties(java_protoc_s11n PROPERTIES FOLDER "Bindings")
 
 		ADD_CUSTOM_TARGET(java_protoc_rpc ALL
 			COMMAND ${ANT_EXECUTABLE} 
@@ -410,6 +411,7 @@ if (UMUNDOCORESWIG_LOCATION)
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Creating ProtoBuf services for Java ...")
 		add_dependencies(java_protoc_rpc umundocoreSwig)
+		set_target_properties(java_protoc_rpc PROPERTIES FOLDER "Bindings")
 
 		# we need to build the protoc plugin first
 		if (UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE_DEP)

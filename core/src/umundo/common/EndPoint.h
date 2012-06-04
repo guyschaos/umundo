@@ -35,6 +35,12 @@ public:
 	virtual void setRemote(bool isRemote)         {
 		_isRemote = isRemote;
 	}
+	virtual bool isInProcess() const              {
+		return _isInProcess;
+	}
+	virtual void setInProcess(bool isInProcess) {
+		_isInProcess = _isInProcess;
+	}
 	virtual const string& getHost() const         {
 		return _host;
 	}
@@ -53,6 +59,7 @@ protected:
 	string _transport;
 	uint16_t _port;
 	bool _isRemote;
+	bool _isInProcess;
 	string _host;
 	string _domain;
 

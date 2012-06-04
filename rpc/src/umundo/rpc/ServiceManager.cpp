@@ -61,11 +61,14 @@ ServiceDescription* ServiceManager::find(ServiceFilter* svcFilter) {
 	findMsg->setMeta("type", "serviceDisc");
 	findMsg->setMeta("reqId", reqId.c_str());
 	_svcPub->waitForSubscribers(1);
+	Thread::sleepMs(1000);
+	_findRequests[reqId] = Monitor();
+
 	_svcPub->send(findMsg);
 	delete findMsg;
 
-	_findRequests[reqId] = Monitor();
   _findRequests[reqId].wait();
+	_findRequests.erase(reqId);
 
 	if (_findResponses.find(reqId) != _findResponses.end()) {
 		Message* foundMsg = _findResponses[reqId];
@@ -87,7 +90,6 @@ void ServiceManager::receive(Message* msg) {
 		if (_findRequests.find(respId) != _findRequests.end()) {
 			_findResponses[respId] = new Message(*msg);
 			_findRequests[respId].signal();
-			_findRequests.erase(respId);
 		}
 	}
 

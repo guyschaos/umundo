@@ -622,6 +622,16 @@ void ZeroMQNode::addRemotePubToLocalSubs(const char* remoteId, shared_ptr<Publis
 			pubIter->second->setTransport(_nodes[remoteId]->getTransport());
 			pubIter->second->setIP(_nodes[remoteId]->getIP());
 
+			// is this a publisher from this process?
+			if (_nodes[remoteId]->isInProcess()) {
+				pubIter->second->setInProcess(true);
+			}
+
+			// is this a publisher from a local node?
+			if (!_nodes[remoteId]->isRemote()) {
+				pubIter->second->setRemote(false);
+			}
+			
 			// see if we have a local subscriber interested in the publisher's channel
 			for (subIter = _localSubs.begin(); subIter != _localSubs.end(); subIter++) {
 

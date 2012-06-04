@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     delete pingRep;
 
     // test rpc throughput with the echo service
-    int iterations = 3;
+    int iterations = 5;
     int sends = 0;
 
     ServiceFilter* echoSvcFilter = new ServiceFilter("EchoService");

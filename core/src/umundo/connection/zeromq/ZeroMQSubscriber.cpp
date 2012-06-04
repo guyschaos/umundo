@@ -171,7 +171,13 @@ void ZeroMQSubscriber::run() {
 void ZeroMQSubscriber::added(shared_ptr<PublisherStub> pub) {
 	UMUNDO_LOCK(_mutex);
 	std::stringstream ss;
-	ss << pub->getTransport() << "://" << pub->getIP() << ":" << pub->getPort();
+	if (pub->isInProcess() && false) {
+		ss << "inproc://" << pub->getUUID();
+	} else if (!pub->isRemote()) {
+		ss << "ipc:///tmp/" << pub->getUUID();
+	} else {
+		ss << pub->getTransport() << "://" << pub->getIP() << ":" << pub->getPort();
+	}
 	if (_connections.find(ss.str()) != _connections.end()) {
 		LOG_INFO("ZeroMQSubscriber relying on auto-reconnect for %s", ss.str().c_str());
 	} else {

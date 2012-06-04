@@ -20,7 +20,8 @@ class Publisher;
 class Greeter {
 public:
 	virtual ~Greeter() {};
-	virtual void welcome(Publisher*, const string nodeId, const string subId) = 0;
+	virtual void welcome(Publisher*, const string nodeId, const string subId) {};
+	virtual void farewell(Publisher*, const string nodeId, const string subId) {};
 };
 
 class PublisherConfig : public Configuration {

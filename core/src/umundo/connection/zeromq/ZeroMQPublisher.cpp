@@ -158,7 +158,9 @@ void ZeroMQPublisher::addedSubscriber(const string remoteId, const string subId)
 
   // ZeroMQPublisher::run calls us without a remoteId
   if (remoteId.length() != 0) {
-    assert(_pendingSubscriptions.find(subId) == _pendingSubscriptions.end());
+    // we already know about this subscription
+    if (_pendingSubscriptions.find(subId) != _pendingSubscriptions.end())
+      return;
     _pendingSubscriptions[subId] = remoteId;
   }
   

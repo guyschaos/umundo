@@ -44,11 +44,11 @@ void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	assert(_channelName.size() > 0);
 	int hwm = NET_ZEROMQ_RCV_HWM;
 	zmq_setsockopt(_socket, ZMQ_RCVHWM, &hwm, sizeof(hwm)) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+	zmq_setsockopt(_socket, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, _channelName.c_str(), _channelName.size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 	LOG_DEBUG("Subscribing to %s", _channelName.c_str());
-	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, SHORT_UUID(_uuid).c_str(), SHORT_UUID(_uuid).size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
+	zmq_setsockopt(_socket, ZMQ_SUBSCRIBE, _uuid.c_str(), _uuid.size()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 	LOG_DEBUG("Subscribing to %s", SHORT_UUID(_uuid).c_str());
-	zmq_setsockopt(_socket, ZMQ_IDENTITY, _uuid.c_str(), _uuid.length()) && LOG_WARN("zmq_setsockopt: %s",zmq_strerror(errno));
 
 	// reconnection intervals
 	int reconnect_ivl_min = 100;
@@ -59,7 +59,7 @@ void ZeroMQSubscriber::init(shared_ptr<Configuration> config) {
 	// make sure we can close the socket later
 	std::stringstream ss;
 	ss << "inproc://" << _uuid;
-	zmq_bind(_closer, ss.str().c_str()) && LOG_WARN("zmq_connect: %s",zmq_strerror(errno));
+	zmq_bind(_closer, ss.str().c_str()) && LOG_WARN("zmq_bind: %s",zmq_strerror(errno));
 	zmq_connect(_socket, ss.str().c_str()) && LOG_WARN("zmq_connect: %s",zmq_strerror(errno));
 
 	start();
@@ -173,8 +173,6 @@ void ZeroMQSubscriber::added(shared_ptr<PublisherStub> pub) {
 	std::stringstream ss;
 	if (pub->isInProcess() && false) {
 		ss << "inproc://" << pub->getUUID();
-	} else if (!pub->isRemote()) {
-		ss << "ipc:///tmp/" << pub->getUUID();
 	} else {
 		ss << pub->getTransport() << "://" << pub->getIP() << ":" << pub->getPort();
 	}

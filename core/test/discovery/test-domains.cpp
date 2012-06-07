@@ -85,8 +85,8 @@ void testDomainReception() {
 		buffer[i] = (char)i%255;
 	}
 
-	pub->waitForSubscribers(2);
-	assert(pub->waitForSubscribers(2) >= 2);
+	pub->waitForSubscribers(1);
+	assert(pub->waitForSubscribers(1) >= 1);
 	Thread::sleepMs(100);
 
 	int iterations = 100; // this has to be less or equal to the high water mark / 3

@@ -16,39 +16,65 @@ class TestReceiver : public Receiver {
 		// std::cout << "md5: '" << msg->getMeta("md5") << "'" << std::endl;
 		// std::cout << "md5: '" << md5(msg->data(), msg->size()) << "'" << std::endl;
 		// std::cout << "equals: " << msg->getMeta("md5").compare(md5(msg->data(), msg->size())) << std::endl;
-		assert(msg->getMeta("md5").compare(md5(msg->data(), msg->size())) == 0);
+    if (msg->size() > 0)
+      assert(msg->getMeta("md5").compare(md5(msg->data(), msg->size())) == 0);
 		nrReceptions++;
 		bytesRecvd += msg->size();
 	}
 };
 
 int main(int argc, char** argv, char** envp) {
-	Node* pubNode = new Node("foo");
-	Publisher* pub = new Publisher("foo");
-	pubNode->addPublisher(pub);
+  for (int i = 0; i < 2; i++) {
+    nrReceptions = 0;
+    bytesRecvd = 0;
+    
+    Node* pubNode = new Node("foo");
+    Publisher* pub = new Publisher("foo");
+    pubNode->addPublisher(pub);
 
-	Node* subNode = new Node("foo");
-	Subscriber* sub = new Subscriber("foo", new TestReceiver());
-	subNode->addSubscriber(sub);
+    Node* subNode = new Node("foo");
+    Subscriber* sub = new Subscriber("foo", new TestReceiver());
+    subNode->addSubscriber(sub);
 
-	pub->waitForSubscribers(1);
-	Thread::sleepMs(200);
+    pub->waitForSubscribers(1);
 
-	char* buffer = (char*)malloc(BUFFER_SIZE);
-	memset(buffer, 40, BUFFER_SIZE);
+    char* buffer = (char*)malloc(BUFFER_SIZE);
+    memset(buffer, 40, BUFFER_SIZE);
 
+    for (int i = 0; i < 100; i++) {
+      Message* msg = new Message(Message(buffer, BUFFER_SIZE));
+      msg->setMeta("md5", md5(buffer, BUFFER_SIZE));
+      pub->send(msg);
+      delete msg;
+    }
+    
+    Thread::sleepMs(100);
+    std::cout << "expected 100 messages, received " << nrReceptions << std::endl;
+    assert(nrReceptions == 100);
+    assert(bytesRecvd == nrReceptions * BUFFER_SIZE);
 
-	for (int i = 0; i < 100; i++) {
-		Message* msg = new Message(Message(buffer, BUFFER_SIZE));
-		msg->setMeta("md5", md5(buffer, BUFFER_SIZE));
-		pub->send(msg);
-	}
-
-	Thread::sleepMs(50);
-
-	std::cout << "expected 100 messages, received " << nrReceptions << std::endl;
-	assert(nrReceptions == 100);
-	assert(bytesRecvd == nrReceptions * BUFFER_SIZE);
-
+    int iterations = 5;
+    while(iterations-- > 0) {
+      nrReceptions = 0;
+      unsigned long now = Thread::getTimeStampMs();
+      while (now > Thread::getTimeStampMs() - 10) {
+        Message* msg2 = new Message();
+        pub->send(msg2);
+        Thread::yield();
+        delete msg2;
+      }
+      Thread::sleepMs(100);
+      std::cout << nrReceptions * 100 << " messages per second" << std::endl;
+    }
+    
+    pubNode->removePublisher(pub);
+    subNode->removeSubscriber(sub);
+    
+    delete subNode;
+    delete pubNode;
+    delete pub;
+    delete sub;
+    
+  }
 	return EXIT_SUCCESS;
 }

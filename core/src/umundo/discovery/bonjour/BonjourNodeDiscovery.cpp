@@ -7,11 +7,11 @@
 #include "umundo/discovery/bonjour/BonjourNodeDiscovery.h"
 
 #include <errno.h>
-#include <unistd.h>
 
 #if (defined UNIX || defined IOS || defined ANDROID)
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <unistd.h> // gethostname
 #include <stdio.h>
 #include <string.h>
 #endif
@@ -411,17 +411,19 @@ void BonjourNodeDiscovery::unbrowse(shared_ptr<NodeQuery> query) {
 	/**
 	 * Remove all nodes we found for the query
 	 */
-	map<intptr_t, shared_ptr<NodeQuery> >::iterator nodeToQueryIter;
-	for (nodeToQueryIter = _nodeToQuery.begin(); nodeToQueryIter != _nodeToQuery.end(); nodeToQueryIter++) {
-		if (nodeToQueryIter->second == query)
-			_nodeToQuery.erase(nodeToQueryIter);
+	map<intptr_t, shared_ptr<NodeQuery> >::iterator nodeToQueryIter = _nodeToQuery.begin();
+	while (nodeToQueryIter != _nodeToQuery.end()) {
+		if (nodeToQueryIter->second == query) {
+			_nodeToQuery.erase(nodeToQueryIter++);
+		} else {
+			nodeToQueryIter++;
+		}
 	}
 	map<string, shared_ptr<BonjourNodeStub> >::iterator queryNodeIter;
 	for (queryNodeIter = _queryToNodes[query].begin(); queryNodeIter != _queryToNodes[query].end(); queryNodeIter++) {
 		// for every node found for the query, remove all bonjour queries
 		shared_ptr<BonjourNodeStub> node = queryNodeIter->second;
 		getInstance()->forgetRemoteNodesFDs(node);
-
 	}
 
 	_queryToNodes.erase(query);

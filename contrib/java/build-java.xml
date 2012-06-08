@@ -47,9 +47,14 @@
 	<echo message="build dir:          ${build.dir}"/>
 	<echo message="build type:         ${build.type}"/>
 	<echo message="exclude debug:      ${exclude.debug}"/>
+	<echo message="exclude jni:        ${exclude.jni}"/>
 
 	<condition property="exclude.debug.jar">
 		<equals arg1="${exclude.debug}" arg2="ON"/>
+	</condition>
+
+	<condition property="exclude.jni.jar">
+		<equals arg1="${exclude.jni}" arg2="ON"/>
 	</condition>
 
 	<!-- flatten all JNI libraries for inclusion into the fat JAR -->
@@ -93,6 +98,7 @@
 		<!-- The JNI libraries -->
     <fileset dir="${lib.dir}/jni" >
       <include name="**/*" />
+			<exclude name="**/*" if="${exclude.jni.jar}" />
     </fileset>
 	</jar>
 	<delete dir="${lib.dir}/jni" />

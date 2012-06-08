@@ -28,7 +28,7 @@ public class UMundoAndroidActivity extends Activity {
 		public void run() {
 			String message = "This is foo from android";
 			while (testPublishing != null) {
-				fooPub.send(message, message.length());
+				fooPub.send(message.getBytes());
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -47,14 +47,17 @@ public class UMundoAndroidActivity extends Activity {
 	public class TestReceiver extends Receiver {
 		@Override
 		public void receive(Message msg) {
+
+			for (String key : msg.getMeta().keySet()) {
+				Log.i("umundo", key + ": " + msg.getMeta(key));
+			}
 			UMundoAndroidActivity.this.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					tv.setText(tv.getText() + "i");
+						tv.setText(tv.getText() + "i");
 				}
 			});
 		}
-
 	}
 
 	/** Called when the activity is first created. */
@@ -75,7 +78,7 @@ public class UMundoAndroidActivity extends Activity {
 			Log.v("android-umundo", "Cannot get WifiManager");
 		}
 
-		System.loadLibrary("umundocoreSwig_d");
+		System.loadLibrary("umundocoreJava_d");
 
 		node = new Node();
 		fooPub = new Publisher("pingpong");

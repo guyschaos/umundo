@@ -16,7 +16,7 @@ import java.io.InputStream;
 		String fullLibName = "";
 		String osPrefix = "";
 		String debugPrefix = "";
-		String libName = "umundocoreSwig";
+		String libName = "umundocoreJava";
 		String bitWidth = "";
 
 		System.err.println("os.arch: " + System.getProperty("os.arch"));
@@ -49,7 +49,7 @@ import java.io.InputStream;
 		}
     try {
 			// get the class object for this class, and get the location of it
-			final Class c = umundocoreCPPJNI.class;
+			final Class c = umundocoreJavaJNI.class;
 			final URL location = c.getProtectionDomain().getCodeSource().getLocation();
 
 			// jars are just zip files, get the input stream for the lib

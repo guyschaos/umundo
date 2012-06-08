@@ -89,7 +89,7 @@ void testDomainReception() {
 	assert(pub->waitForSubscribers(1) >= 1);
 	Thread::sleepMs(100);
 
-	int iterations = 100; // this has to be less or equal to the high water mark / 3
+	int iterations = 10; // this has to be less or equal to the high water mark / 3
 	receives = 0;
 	for (int i = 0; i < iterations; i++) {
 		Message* msg = new Message();

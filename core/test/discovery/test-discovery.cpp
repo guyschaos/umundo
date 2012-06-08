@@ -44,7 +44,7 @@ int main(int argc, char** argv, char** envp) {
 		UMUNDO_WAIT(monitor);
 
 	// test node / publisher / subscriber churn
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 4; i++) {
 		Node* node1 = new Node();
 		Node* node2 = new Node();
 		for (int j = 0; j < 2; j++) {

@@ -30,16 +30,16 @@ SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES SWIG_FLAGS "-package;${UMUND
 SET_SOURCE_FILES_PROPERTIES(umundocore.i PROPERTIES CPLUSPLUS ON)
 SET(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${UMUNDO_JAVA_DIR}")
 
-SWIG_ADD_MODULE(umundocoreSwig java umundocore.i)
+SWIG_ADD_MODULE(umundocoreJava java umundocore.i)
 foreach(JNI_LIBRARY ${JNI_LIBRARIES})
 	if (NOT ${JNI_LIBRARY} MATCHES ".*jawt.*")
-		SWIG_LINK_LIBRARIES(umundocoreSwig ${JNI_LIBRARY})
+		SWIG_LINK_LIBRARIES(umundocoreJava ${JNI_LIBRARY})
 	endif()
 endforeach()
-set_target_properties(umundocoreSwig PROPERTIES FOLDER "Bindings")
+set_target_properties(umundocoreJava PROPERTIES FOLDER "Bindings")
 
 # I am not sure why we need it twice, but we do at least on android
-SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
-SWIG_LINK_LIBRARIES(umundocoreSwig ${UMUNDOCORE_LIBRARIES})
+SWIG_LINK_LIBRARIES(umundocoreJava ${UMUNDOCORE_LIBRARIES})
+SWIG_LINK_LIBRARIES(umundocoreJava ${UMUNDOCORE_LIBRARIES})
 
-INSTALL_LIBRARY(TARGETS umundocoreSwig COMPONENT librarySwig)
+INSTALL_LIBRARY(TARGETS umundocoreJava COMPONENT librarySwig)

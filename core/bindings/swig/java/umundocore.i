@@ -1,4 +1,4 @@
-%module(directors="1", allprotected="1") umundocoreCPP
+%module(directors="1", allprotected="1") umundocoreJava
 // import swig typemaps
 %include <arrays_java.i>
 %include <stl.i>
@@ -59,7 +59,10 @@ using boost::shared_ptr;
 using namespace umundo;
 %}
 
+#ifndef ANDROID
+// auto loading does not work on android as the jar may not contain JNI code
 %include "autoloadJNI.i"
+#endif
 
 //*************************************************/
 
@@ -107,13 +110,13 @@ using namespace umundo;
 #   private Receiver _receiver;
 # 
 #   public Subscriber(String channelName, Receiver receiver) {
-#     this(umundocoreCPPJNI.new_Subscriber(channelName), true);
+#     this(umundocoreJavaJNI.new_Subscriber(channelName), true);
 # 		setReceiver(receiver);
 #   }
 # 
 #   protected void setReceiver(Receiver receiver) {
 # 		_receiver = receiver;
-#     umundocoreCPPJNI.Subscriber_setReceiver(swigCPtr, this, Receiver.getCPtr(receiver), receiver);
+#     umundocoreJavaJNI.Subscriber_setReceiver(swigCPtr, this, Receiver.getCPtr(receiver), receiver);
 #   }
 # %}
 # //%typemap(javain, pre="    _receiver = $javainput;") umundo::Receiver* "$javainput"

@@ -361,18 +361,20 @@ endif()
 ############################################################
 
 # only run ant if we actually build the java bindings
-GET_TARGET_PROPERTY(UMUNDOCORESWIG_LOCATION umundocoreSwig LOCATION)
-if (UMUNDOCORESWIG_LOCATION)
+GET_TARGET_PROPERTY(UMUNDOCOREJAVA_LOCATION umundocoreJava LOCATION)
+if (UMUNDOCOREJAVA_LOCATION)
 	# Find UMUNDO_PROTOBUF_JAVA_RPC_EXECUTABLE
 	include("${CMAKE_MODULE_PATH}/UseUMundo.cmake")
 
 	set(JAR_EXCLUDE_DEBUG OFF)
+	set(JAR_EXCLUDE_JNI OFF)
 	
 	# include all the JNI libraries prepared from DIST_PREPARE builds on the various desktop platforms
 	if (CMAKE_CROSSCOMPILING)
-		SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC})
+		SET(JAR_JNI_ROOT_PATH ${PROJECT_SOURCE_DIR}/package/cross-compiled/${CMAKE_CROSSCOMPILING_TARGET_LC}-${CMAKE_SYSTEM_VERSION})
 		if (ANDROID)
 			find_program(PROTOBUF_PROTOC_EXECUTABLE NAMES protoc protoc.exe)
+			set(JAR_EXCLUDE_JNI ON)
 		endif()
 	else()
 		if (DIST_PREPARE)
@@ -396,7 +398,7 @@ if (UMUNDOCORESWIG_LOCATION)
 			-f build-java.xml protoc
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Creating ProtoBuf messages for Java ...")
-		add_dependencies(java_protoc_s11n umundocoreSwig)
+		add_dependencies(java_protoc_s11n umundocoreJava)
 		set_target_properties(java_protoc_s11n PROPERTIES FOLDER "Bindings")
 
 		ADD_CUSTOM_TARGET(java_protoc_rpc ALL
@@ -410,7 +412,7 @@ if (UMUNDOCORESWIG_LOCATION)
 			-f build-java.xml protoc
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Creating ProtoBuf services for Java ...")
-		add_dependencies(java_protoc_rpc umundocoreSwig)
+		add_dependencies(java_protoc_rpc umundocoreJava)
 		set_target_properties(java_protoc_rpc PROPERTIES FOLDER "Bindings")
 
 		# we need to build the protoc plugin first
@@ -427,13 +429,14 @@ if (UMUNDOCORESWIG_LOCATION)
 			-Dbuild.dir=${PROJECT_BINARY_DIR} 
 			-Dbuild.type=${CMAKE_BUILD_TYPE} 
 			-Dexclude.debug=${JAR_EXCLUDE_DEBUG}
+			-Dexclude.jni=${JAR_EXCLUDE_JNI}
 			-f build-java.xml
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contrib/java
 			COMMENT "Creating the jar ...")
 		# make sure ant runs after we built the wrappers
 		add_dependencies(java_build_jar java_protoc_s11n)
 		add_dependencies(java_build_jar java_protoc_rpc)
-		add_dependencies(java_build_jar umundocoreSwig)
+		add_dependencies(java_build_jar umundocoreJava)
 		set_target_properties(java_build_jar PROPERTIES FOLDER "Bindings")
 
 		add_test(java-tests 

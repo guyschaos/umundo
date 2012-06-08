@@ -41,25 +41,25 @@ private:
 	// 	return *this;
 	// }
 
-  // read subscription requests from publisher socket
+	// read subscription requests from publisher socket
 	void run();
-  void join();
-  
+	void join();
+
 	void* _socket;
 	void* _closer;
 	void* _zeroMQCtx;
 	shared_ptr<PublisherConfig> _config;
 
-  /**
-   * To ensure solid subscriptions, we receive them twice,
-   * once through the node socket and once through the
-   * xpub socket, only when both have been received do we
-   * we signal the greeters.
-   */
-  set<string> _pendingZMQSubscriptions;
-  map<string, string> _pendingSubscriptions;
-  map<string, string> _subscriptions;
-  
+	/**
+	 * To ensure solid subscriptions, we receive them twice,
+	 * once through the node socket and once through the
+	 * xpub socket, only when both have been received do we
+	 * we signal the greeters.
+	 */
+	set<string> _pendingZMQSubscriptions;
+	map<string, string> _pendingSubscriptions;
+	map<string, string> _subscriptions;
+
 	Monitor _pubLock;
 	Mutex _mutex;
 

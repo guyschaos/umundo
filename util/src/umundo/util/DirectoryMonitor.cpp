@@ -195,7 +195,8 @@ void DirectoryMonitor::run() {
 			}
 			closedir(dp);
 #else
-			} while (FindNextFile(hFind, &ffd) != 0);
+			}
+			while (FindNextFile(hFind, &ffd) != 0);
 			FindClose(hFind);
 #endif
 			// are there any known entries we have not seen this time around?

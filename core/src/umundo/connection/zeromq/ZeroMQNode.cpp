@@ -323,16 +323,16 @@ void ZeroMQNode::processSubscription(const char* remoteId, zmq_msg_t message, bo
 		return;
 	}
 
-  if (_localPubs.find(pubId) == _localPubs.end()) {
-    if (subscribe) {
-      LOG_WARN("Subscribing to unkown publisher");
-    } else {
-      LOG_WARN("Unsubscribing from unkown publisher");    
-    }
+	if (_localPubs.find(pubId) == _localPubs.end()) {
+		if (subscribe) {
+			LOG_WARN("Subscribing to unkown publisher");
+		} else {
+			LOG_WARN("Unsubscribing from unkown publisher");
+		}
 		assert(validateState());
 		return;
-  }
-  
+	}
+
 	shared_ptr<ZeroMQPublisher> pub = _localPubs[pubId];
 	if (subscribe) {
 		// remember remote node subscription to local pub
@@ -343,9 +343,9 @@ void ZeroMQNode::processSubscription(const char* remoteId, zmq_msg_t message, bo
 	} else {
 		// remove subscription on remote node for publisher
 		if (
-			_subscriptions.find(remoteId) != _subscriptions.end() &&
-			_subscriptions[remoteId].find(pubId) != _subscriptions[remoteId].end() &&
-			_subscriptions[remoteId][pubId].find(subId) != _subscriptions[remoteId][pubId].end()
+		    _subscriptions.find(remoteId) != _subscriptions.end() &&
+		    _subscriptions[remoteId].find(pubId) != _subscriptions[remoteId].end() &&
+		    _subscriptions[remoteId][pubId].find(subId) != _subscriptions[remoteId][pubId].end()
 		) {
 			// we knew about this subscription
 			pub->removedSubscriber(remoteId, subId);
@@ -429,7 +429,7 @@ void ZeroMQNode::notifyOfUnsubscription(void* socket, shared_ptr<ZeroMQSubscribe
 	zmq_msg_t msg;
 	ZMQ_PREPARE(msg,
 	            2 +                                      // uint16_t message type
-							PUB_INFO_SIZE(zPub) +                    // publisher info
+	            PUB_INFO_SIZE(zPub) +                    // publisher info
 	            zSub->getUUID().length() +               // uuid of subscriber
 	            1                                        // \0 string terminator
 	           );
@@ -451,7 +451,7 @@ void ZeroMQNode::notifyOfSubscription(void* socket, shared_ptr<ZeroMQSubscriber>
 	zmq_msg_t msg;
 	ZMQ_PREPARE(msg,
 	            2 +                                      // uint16_t message type
-							PUB_INFO_SIZE(zPub) +                    // publisher info
+	            PUB_INFO_SIZE(zPub) +                    // publisher info
 	            zSub->getUUID().length() +               // uuid of subscriber
 	            1                                        // \0 string terminator
 	           );
@@ -631,7 +631,7 @@ void ZeroMQNode::addRemotePubToLocalSubs(const char* remoteId, shared_ptr<Publis
 			if (!_nodes[remoteId]->isRemote()) {
 				pubIter->second->setRemote(false);
 			}
-			
+
 			// see if we have a local subscriber interested in the publisher's channel
 			for (subIter = _localSubs.begin(); subIter != _localSubs.end(); subIter++) {
 
@@ -692,7 +692,7 @@ void ZeroMQNode::addSubscriber(shared_ptr<SubscriberImpl> sub) {
 	}
 	assert(validateState());
 	UMUNDO_UNLOCK(_mutex);
-	/** 
+	/**
 	 * ZeroMQ reconnection timeout is 200ms, we need to wait here
 	 * for ZeroMQ to reestablish connections that already existed.
 	 */
@@ -728,7 +728,7 @@ void ZeroMQNode::removeSubscriber(shared_ptr<SubscriberImpl> sub) {
 		}
 	}
 	_localSubs.erase(zSub);
-	
+
 	assert(validateState());
 	UMUNDO_UNLOCK(_mutex);
 
@@ -743,8 +743,8 @@ void ZeroMQNode::addPublisher(shared_ptr<PublisherImpl> pub) {
 
 	UMUNDO_LOCK(_mutex);
 	// do we already now this publisher?
-  LOG_DEBUG("Publisher added %s at %d", zPub->getChannelName().c_str(), zPub->getPort());
-  
+	LOG_DEBUG("Publisher added %s at %d", zPub->getChannelName().c_str(), zPub->getPort());
+
 	if (_localPubs.find(zPub->getUUID()) == _localPubs.end()) {
 		_localPubs[zPub->getUUID()] = zPub;
 
@@ -763,8 +763,8 @@ void ZeroMQNode::addPublisher(shared_ptr<PublisherImpl> pub) {
 		}
 
 	} else {
-    LOG_DEBUG("Publisher %s at %d already exists", zPub->getChannelName().c_str(), zPub->getPort());
-    assert(_localPubs[zPub->getUUID()].get() != NULL);
+		LOG_DEBUG("Publisher %s at %d already exists", zPub->getChannelName().c_str(), zPub->getPort());
+		assert(_localPubs[zPub->getUUID()].get() != NULL);
 		assert(zPub->getChannelName().compare(_localPubs[zPub->getUUID()]->getChannelName()) == 0);
 	}
 
@@ -797,10 +797,10 @@ void ZeroMQNode::removePublisher(shared_ptr<PublisherImpl> pub) {
 			zmq_msg_close(&msg) && LOG_WARN("zmq_msg_close: %s",zmq_strerror(errno));
 		}
 		_localPubs.erase(zPub->getUUID());
-    assert(_localPubs.find(zPub->getUUID()) == _localPubs.end());
+		assert(_localPubs.find(zPub->getUUID()) == _localPubs.end());
 	} else {
-    assert(false);
-  }
+		assert(false);
+	}
 
 	assert(validateState());
 	UMUNDO_UNLOCK(_mutex);

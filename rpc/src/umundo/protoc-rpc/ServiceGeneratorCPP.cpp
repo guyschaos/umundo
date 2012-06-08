@@ -14,9 +14,9 @@ namespace umundo {
 using namespace google::protobuf::compiler::cpp;
 
 bool ServiceGeneratorCPP::Generate(const FileDescriptor* file,
-                                const string& parameter,
-                                GeneratorContext* generator_context,
-                                string* error) const {
+                                   const string& parameter,
+                                   GeneratorContext* generator_context,
+                                   string* error) const {
 	vector<pair<string, string> > options;
 	ParseGeneratorParameter(parameter, &options);
 
@@ -157,7 +157,7 @@ void ServiceGeneratorCPP::writeServiceHeader(io::Printer &printer, const Service
 		printer.Print(
 		    "protected:\n"
 		    "\tvoid callMethod(string&, void*, const string&, void*&, const string&);\n"
-	    	"\tvoid cleanUpObjects(string&, void*, void*);\n"
+		    "\tvoid cleanUpObjects(string&, void*, void*);\n"
 		);
 	}
 	printer.Print("};\n");

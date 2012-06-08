@@ -16,15 +16,15 @@ public:
 	void addService(Service*, ServiceDescription*);
 	void removeService(Service*);
 
-  // Connectable interface
-  std::set<umundo::Publisher*> getPublishers();
+	// Connectable interface
+	std::set<umundo::Publisher*> getPublishers();
 	std::set<umundo::Subscriber*> getSubscribers();
-  void addedToNode(Node* node);
-  void removedFromNode(Node* node);
+	void addedToNode(Node* node);
+	void removedFromNode(Node* node);
 
 	void receive(Message* msg);
 
-  ServiceDescription* find(ServiceFilter*);
+	ServiceDescription* find(ServiceFilter*);
 	void startQuery(ServiceFilter*, ResultSet<ServiceDescription>*);
 	void stopQuery(ServiceFilter*);
 
@@ -37,7 +37,7 @@ public:
 	std::set<Node*> _nodes;
 	Publisher* _svcPub;   ///< publish service queries
 	Subscriber* _svcSub;  ///< subscribe to service queries
-  Mutex _mutex;
+	Mutex _mutex;
 };
 
 }

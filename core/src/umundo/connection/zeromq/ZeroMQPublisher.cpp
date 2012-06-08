@@ -64,8 +64,9 @@ void ZeroMQPublisher::init(shared_ptr<Configuration> config) {
 	}
 	_port = port;
 
+#ifndef WIN32
 	start();
-
+#endif
 	LOG_DEBUG("ZeroMQPublisher bound to %s", ssNet.str().c_str());
 	LOG_DEBUG("ZeroMQPublisher bound to %s", ssInProc.str().c_str());
 }
@@ -74,24 +75,24 @@ ZeroMQPublisher::ZeroMQPublisher() {
 }
 
 ZeroMQPublisher::~ZeroMQPublisher() {
-
+#ifndef WIN32
 	stop();
 	join();
-
-  zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
+#endif
+	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 	zmq_close(_closer) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 }
 
 void ZeroMQPublisher::join() {
-  UMUNDO_LOCK(_mutex);
-  stop();
-  
+	UMUNDO_LOCK(_mutex);
+	stop();
+
 	std::stringstream ssInProc;
 	ssInProc << "inproc://" << _uuid;
-  zmq_connect(_closer, ssInProc.str().c_str()) && LOG_WARN("zmq_connect: %s", zmq_strerror(errno));
-  
-  Thread::join();
-  UMUNDO_UNLOCK(_mutex);
+	zmq_connect(_closer, ssInProc.str().c_str()) && LOG_WARN("zmq_connect: %s", zmq_strerror(errno));
+
+	Thread::join();
+	UMUNDO_UNLOCK(_mutex);
 }
 
 void ZeroMQPublisher::suspend() {
@@ -99,10 +100,11 @@ void ZeroMQPublisher::suspend() {
 		return;
 	_isSuspended = true;
 
-  stop();
+#ifndef WIN32
+	stop();
 	join();
-
-  zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
+#endif
+	zmq_close(_socket) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 	zmq_close(_closer) && LOG_WARN("zmq_close: %s",zmq_strerror(errno));
 }
 
@@ -115,30 +117,31 @@ void ZeroMQPublisher::resume() {
 
 void ZeroMQPublisher::run() {
 	// read subscription requests from the pub socket
-	while(isStarted()) {		
+	while(isStarted()) {
 		zmq_msg_t message;
 		zmq_msg_init(&message) && LOG_WARN("zmq_msg_init: %s", zmq_strerror(errno));
 		zmq_recvmsg(_socket, &message, 0) >= 0 || LOG_WARN("zmq_recvmsg: %s", zmq_strerror(errno));
-    if (!isStarted()) {
-      return;
-    }
-    
-    size_t msgSize = zmq_msg_size(&message);
-    // every subscriber will sent its uuid as a subscription as well
-    if (msgSize == 37) {
-      ScopeLock lock(&_mutex);
+		if (!isStarted()) {
+			zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s", zmq_strerror(errno));
+			return;
+		}
+
+		size_t msgSize = zmq_msg_size(&message);
+		// every subscriber will sent its uuid as a subscription as well
+		if (msgSize == 37) {
+			ScopeLock lock(&_mutex);
 
 			char* data = (char*)zmq_msg_data(&message);
-      bool subscription = (data[0] == 0x1);
-      char* subId = data+1;
-      subId[msgSize - 1] = 0;
+			bool subscription = (data[0] == 0x1);
+			char* subId = data+1;
+			subId[msgSize - 1] = 0;
 
-      if (subscription) {
-        _pendingZMQSubscriptions.insert(subId);
-        addedSubscriber("", subId);
-      }
+			if (subscription) {
+				_pendingZMQSubscriptions.insert(subId);
+				addedSubscriber("", subId);
+			}
 		}
-		zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s", zmq_strerror(errno));    
+		zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s", zmq_strerror(errno));
 	}
 }
 
@@ -148,31 +151,35 @@ void ZeroMQPublisher::run() {
 int ZeroMQPublisher::waitForSubscribers(int count) {
 	while (_subscriptions.size() < (unsigned int)count) {
 		UMUNDO_WAIT(_pubLock);
+#ifdef WIN32
 		// give the connection a moment to establish
+		Thread::sleepMs(300);
+#endif
 	}
 	return _subscriptions.size();
 }
 
 void ZeroMQPublisher::addedSubscriber(const string remoteId, const string subId) {
-  ScopeLock lock(&_mutex);
+	ScopeLock lock(&_mutex);
 
-  // ZeroMQPublisher::run calls us without a remoteId
-  if (remoteId.length() != 0) {
-    // we already know about this subscription
-    if (_pendingSubscriptions.find(subId) != _pendingSubscriptions.end())
-      return;
-    _pendingSubscriptions[subId] = remoteId;
-  }
-  
-  // if we received a subscription from xpub and the node socket
-  if (_pendingSubscriptions.find(subId) == _pendingSubscriptions.end() ||
-      _pendingZMQSubscriptions.find(subId) == _pendingZMQSubscriptions.end()) {
-    return;
-  }
+	// ZeroMQPublisher::run calls us without a remoteId
+	if (remoteId.length() != 0) {
+		// we already know about this subscription
+		if (_pendingSubscriptions.find(subId) != _pendingSubscriptions.end())
+			return;
+		_pendingSubscriptions[subId] = remoteId;
+	}
 
-  _subscriptions[subId] = _pendingSubscriptions[subId];
-  _pendingSubscriptions.erase(subId);
-  _pendingZMQSubscriptions.erase(subId);
+#ifndef WIN32
+	// if we received a subscription from xpub and the node socket
+	if (_pendingSubscriptions.find(subId) == _pendingSubscriptions.end() ||
+	        _pendingZMQSubscriptions.find(subId) == _pendingZMQSubscriptions.end()) {
+		return;
+	}
+#endif
+	_subscriptions[subId] = _pendingSubscriptions[subId];
+	_pendingSubscriptions.erase(subId);
+	_pendingZMQSubscriptions.erase(subId);
 
 	if (_greeter != NULL)
 		_greeter->welcome((Publisher*)_facade, _pendingSubscriptions[subId], subId);
@@ -180,10 +187,10 @@ void ZeroMQPublisher::addedSubscriber(const string remoteId, const string subId)
 }
 
 void ZeroMQPublisher::removedSubscriber(const string remoteId, const string subId) {
-  ScopeLock lock(&_mutex);
+	ScopeLock lock(&_mutex);
 
-  assert(_subscriptions.find(subId) != _subscriptions.end());
-  _subscriptions.erase(subId);
+	assert(_subscriptions.find(subId) != _subscriptions.end());
+	_subscriptions.erase(subId);
 
 	if (_greeter != NULL)
 		_greeter->farewell((Publisher*)_facade, _pendingSubscriptions[subId], subId);

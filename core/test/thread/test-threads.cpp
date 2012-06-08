@@ -75,7 +75,7 @@ bool testMonitors() {
 	TestThread thread1(0);
 	TestThread thread2(5);
 	TestThread thread3(10);
-	
+
 	for (int i = 0; i < 10; i++) {
 		passedMonitor = 0;
 
@@ -96,7 +96,7 @@ bool testMonitors() {
 		}
 		UMUNDO_BROADCAST(testMonitor); // signal all other threads
 		Thread::sleepMs(15);
-	
+
 		if (thread1.isStarted() || thread2.isStarted() || thread3.isStarted()) {
 			LOG_ERR("Threads ran to completion but still insist on being started");
 			assert(false);
@@ -122,7 +122,7 @@ bool testTimedMonitors() {
 	TestThread thread3(0); // waits forever
 	TestThread thread4(0); // waits forever
 	TestThread thread5(0); // waits forever
-	
+
 	for (int i = 0; i < 10; i++) {
 		// test waiting for a given time
 		passedTimedMonitor = 0;
@@ -132,7 +132,7 @@ bool testTimedMonitors() {
 		Thread::sleepMs(15);
 		assert(passedTimedMonitor == 1); // thread1 should have passed
 		assert(!thread1.isStarted());
-	
+
 		// test signalling a set of threads
 		passedTimedMonitor = 0;
 		thread2.start();
@@ -186,8 +186,8 @@ bool testTimedMonitors() {
 		Thread::sleepMs(5);
 		assert(passedTimedMonitor == 2);
 		assert(!thread2.isStarted());
-		
-	}	
+
+	}
 	return true;
 }
 

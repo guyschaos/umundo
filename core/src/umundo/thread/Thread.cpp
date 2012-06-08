@@ -10,6 +10,7 @@ namespace umundo {
 
 Thread::Thread() {
 	_isStarted = false;
+	_thread = NULL;
 }
 
 Thread::~Thread() {
@@ -22,7 +23,8 @@ Thread::~Thread() {
 	pthread_detach(_thread);
 #endif
 #ifdef THREAD_WIN32
-	CloseHandle(_thread);
+	if (_thread != NULL)
+		CloseHandle(_thread);
 #endif
 
 }
@@ -131,23 +133,23 @@ void Thread::sleepMs(uint32_t ms) {
 }
 
 uint64_t Thread::getTimeStampMs() {
-  uint64_t time = 0;
+	uint64_t time = 0;
 #ifdef WIN32
-  FILETIME tv;
-  GetSystemTimeAsFileTime(&tv);
-  time = (((uint64_t) tv.dwHighDateTime) << 32) + tv.dwLowDateTime;
-  time /= 10000;
+	FILETIME tv;
+	GetSystemTimeAsFileTime(&tv);
+	time = (((uint64_t) tv.dwHighDateTime) << 32) + tv.dwLowDateTime;
+	time /= 10000;
 #endif
 #ifdef UNIX
-  struct timeval tv;
+	struct timeval tv;
 	gettimeofday(&tv, NULL);
-  time += tv.tv_sec * 1000;
-  time += tv.tv_usec / 1000;
+	time += tv.tv_sec * 1000;
+	time += tv.tv_usec / 1000;
 #endif
-  return time;
+	return time;
 }
 
-  
+
 Mutex::Mutex() {
 #ifdef THREAD_PTHREAD
 	pthread_mutexattr_t attrib;
@@ -313,8 +315,8 @@ bool Monitor::wait(uint32_t ms) {
 	_waiters++;
 	// wait indefinitely
 	if (ms == 0) {
-    while(!_signaled) // are there enough signals for this thread to pass?
-      rv = pthread_cond_wait(&_cond, &_mutex);
+		while(!_signaled) // are there enough signals for this thread to pass?
+			rv = pthread_cond_wait(&_cond, &_mutex);
 		assert(_waiters && _signaled);
 		_signaled--;
 		_waiters--;
@@ -332,7 +334,7 @@ bool Monitor::wait(uint32_t ms) {
 		ts.tv_nsec = tv.tv_usec * 1000;
 
 		// were we signaled or timed out?
-    while(!_signaled && rv != ETIMEDOUT)
+		while(!_signaled && rv != ETIMEDOUT)
 			rv = pthread_cond_timedwait(&_cond, &_mutex, &ts);
 		// decrease number of signals if we awoke due to signal
 		if (rv != ETIMEDOUT) {
@@ -347,7 +349,7 @@ bool Monitor::wait(uint32_t ms) {
 #endif
 #ifdef THREAD_WIN32
 	_monitorLock.lock();
-	
+
 	// signaled prior to waiting
 	if (_signaled > 0) {
 		_signaled--;
@@ -363,7 +365,7 @@ bool Monitor::wait(uint32_t ms) {
 	_monitorLock.lock();
 	_waiters--;
 	_monitorLock.unlock();
-	
+
 	return result == WAIT_OBJECT_0;
 #endif
 	assert(_waiters >= 0);

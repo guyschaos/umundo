@@ -29,7 +29,7 @@ void* PBDeserializer::deserialize(const string& type, const string& data) {
 }
 
 void PBDeserializer::destroyObj(void* obj) {
-  delete (MessageLite*)obj;
+	delete (MessageLite*)obj;
 }
 
 void PBDeserializer::registerType(const std::string& type, void* deserializer) {

@@ -16,7 +16,7 @@ public:
 	void init(shared_ptr<Configuration>);
 	shared_ptr<Implementation> create(void*);
 	void* deserialize(const string& type, const string& data);
-  void destroyObj(void* obj);
+	void destroyObj(void* obj);
 
 	void registerType(const std::string&, void*);
 

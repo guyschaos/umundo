@@ -30,14 +30,14 @@ public:
 	virtual std::set<umundo::Subscriber*> getSubscribers() {
 		return set<Subscriber*>();
 	}
-  
-  // notify connectable that it has been added to a node
-  virtual void addedToNode(Node* node) {
-  }
 
-  // notify connectable that it has been removed from a node
-  virtual void removedFromNode(Node* node) {
-  }
+	// notify connectable that it has been added to a node
+	virtual void addedToNode(Node* node) {
+	}
+
+	// notify connectable that it has been removed from a node
+	virtual void removedFromNode(Node* node) {
+	}
 };
 
 /**
@@ -55,7 +55,7 @@ public:
 	virtual void setUUID(string uuid)           {
 		_uuid = uuid;
 	}
-	
+
 	//@}
 
 	inline bool operator==(NodeStub* n) const {

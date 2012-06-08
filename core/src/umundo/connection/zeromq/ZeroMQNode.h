@@ -129,7 +129,7 @@ private:
 	map<string, map<string, shared_ptr<PublisherStub> > > _remotePubs;            ///< remote node UUIDs to remote publisher UUIDs.
 	map<string, map<string, shared_ptr<PublisherStub> > > _pendingRemotePubs;     ///< publishers of yet undiscovered nodes.
 	map<string, map<string, set<string> > > _subscriptions;                       ///< remote node UUIDs to local publisher UUID to remote subscriber UUIDs.
-	
+
 	map<string, shared_ptr<ZeroMQPublisher> > _localPubs;                         ///< UUIDS to local publishers.
 	set<shared_ptr<ZeroMQSubscriber> > _localSubs;                                ///< Local subscribers.
 	map<string, shared_ptr<ZeroMQPublisher> > _suspendedLocalPubs;                ///< suspended publishers to be resumed.

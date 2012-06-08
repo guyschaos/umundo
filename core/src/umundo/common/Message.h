@@ -34,22 +34,22 @@ public:
 
 	Message() : _data(NULL), _size(0) {}
 	Message(const char* data, size_t length) : _data(NULL), _size(length) {
-    if (_size > 0) {
-      _data = (char*)malloc(_size);
-      memcpy(_data, data, _size);
-    }
+		if (_size > 0) {
+			_data = (char*)malloc(_size);
+			memcpy(_data, data, _size);
+		}
 	}
-  
-  Message(const Message& other) : _data(NULL), _size(other.size()) {
-    if (_size > 0) {
-      _data = (char*)malloc(_size);
-      memcpy(_data, other.data(), _size);
-    }
-    // STL containers will copy themselves
-    _meta = other._meta;
-  }
-	
-  virtual ~Message() {
+
+	Message(const Message& other) : _data(NULL), _size(other.size()) {
+		if (_size > 0) {
+			_data = (char*)malloc(_size);
+			memcpy(_data, other.data(), _size);
+		}
+		// STL containers will copy themselves
+		_meta = other._meta;
+	}
+
+	virtual ~Message() {
 		if (_data)
 			free(_data);
 	}
@@ -83,7 +83,7 @@ public:
 	virtual const string& getMeta(const string& key)                    {
 		return _meta[key];
 	}
-	
+
 	/// Simplified access to keyset for Java, namespace qualifiers required for swig!
 	virtual const std::vector<std::string> getKeys() {
 		vector<string> keys;

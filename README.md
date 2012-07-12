@@ -129,7 +129,7 @@ especially with the embedded mDNS server on Android.
 <dd>Yes. But it is your responsibility to provide all libraries on your system. Have a look at the top-level CMakeLists.txt at 
 	the 64bit section to add library directories. If you have some unorthodox paths to your 64bit libraries, consider using the 
 	environment variables for the various <tt>contrib/cmake/Find*.cmake</tt> modules or edit these files themselves.<br />
-	On Debian amd64 stable, there are some linking issues when enabling <tt>BUILD_PREFER_STATIC_LIBRARIES</tt> via cmake</dd>.
+	On Debian amd64 stable, there are some linking issues when enabling <tt>BUILD_PREFER_STATIC_LIBRARIES</tt> via cmake.</dd>
 	This is not a problem as you need to provide libzmq and all the libproto* libraries installed on your system anyway.
 
 <dt><b>Are these actually questions that are asked frequently?</b><dt>

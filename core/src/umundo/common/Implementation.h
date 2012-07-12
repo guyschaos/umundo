@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef IMPLEMENTATION_H_NZ2M9TXJ
 #define IMPLEMENTATION_H_NZ2M9TXJ
 
@@ -11,7 +26,7 @@ class Configuration;
  * Concrete implementors are registered at program initialization at the Factory and
  * instantiated for every Abstraction that needs an implementation.
  */
-class Implementation {
+class DLLEXPORT Implementation {
 public:
 	Implementation() : _isSuspended(false), _facade(NULL) {}
 	/** @name Life Cycle Management */
@@ -40,7 +55,7 @@ private:
  *
  * \todo The Configuration is shared between the Abstraction and the concrete Implementor - we might need a mutex.
  */
-class Configuration {
+class DLLEXPORT Configuration {
 private:
 	virtual shared_ptr<Configuration> create() = 0;
 	friend class Factory;

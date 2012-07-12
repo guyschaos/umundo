@@ -138,7 +138,7 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
     list(APPEND ${SRCS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.cc")
     list(APPEND ${HDRS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.h")
 
-		if (RPC_OR_S11N MATCHES "S11N")
+#		if (RPC_OR_S11N MATCHES "S11N")
 			add_custom_command(
 				OUTPUT "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.cc"
 				       "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.h"
@@ -152,10 +152,10 @@ function(UMUNDO_PROTOBUF_GENERATE_CPP RPC_OR_S11N SRCS HDRS)
 	   	
     	list(APPEND ${SRCS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.cc")
     	list(APPEND ${HDRS} "${CMAKE_BINARY_DIR}/protobuf/generated/${FIL_WE}.pb.h")
-		endif()
+#		endif()
 
 		if (RPC_OR_S11N MATCHES "RPC")
-			if (NOT UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE)
+			if (NOT UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE AND NOT UMUNDO_PROTOBUF_CPP_RPC_EXECUTABLE_DEP)
 				message(FATAL_ERROR "Could not find protoc-umundo-cpp-rpc")
 				RETURN()
 			endif()

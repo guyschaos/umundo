@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef PTHREAD_H_KU2YWI3W
 #define PTHREAD_H_KU2YWI3W
 
@@ -80,7 +95,7 @@ namespace umundo {
 /**
  * Platform independent parallel control-flows.
  */
-class Thread {
+class DLLEXPORT Thread {
 public:
 	Thread();
 	virtual ~Thread();
@@ -96,6 +111,7 @@ public:
 	static void sleepMs(uint32_t ms);
 	static int getThreadId(); ///< integer unique to the current thread
 	static uint64_t getTimeStampMs(); ///< timestamp in ms since 01.01.1970
+	static string getHostId(); /// a 36 byte string unique to the host
 
 private:
 	bool _isStarted;
@@ -114,7 +130,7 @@ private:
 /**
  * Platform independant mutual exclusion.
  */
-class Mutex {
+class DLLEXPORT Mutex {
 public:
 	Mutex();
 	virtual ~Mutex();
@@ -136,7 +152,7 @@ private:
 /**
  * Instantiate on stack to give code in scope below exclusive access.
  */
-class ScopeLock {
+class DLLEXPORT ScopeLock {
 public:
 	ScopeLock(Mutex*);
 	~ScopeLock();
@@ -148,7 +164,7 @@ public:
  * See comments from Schmidt on condition variables in windows:
  * http://www.cs.wustl.edu/~schmidt/win32-cv-1.html (we choose 3.2)
  */
-class Monitor {
+class DLLEXPORT Monitor {
 public:
 	Monitor();
 	virtual ~Monitor();

@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef DISCOVERER_H_94LKA4M1
 #define DISCOVERER_H_94LKA4M1
 
@@ -31,7 +46,7 @@ class BonjourNodeStub;
  *  http://developer.apple.com/library/mac/#documentation/networking/Conceptual/dns_discovery_api/Introduction.html<br />
  *  http://developer.apple.com/opensource/
  */
-class BonjourNodeDiscovery : public DiscoveryImpl, public Thread {
+class DLLEXPORT BonjourNodeDiscovery : public DiscoveryImpl, public Thread {
 public:
 	virtual ~BonjourNodeDiscovery();
 	static shared_ptr<BonjourNodeDiscovery> getInstance();  ///< Return the singleton instance.

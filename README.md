@@ -15,6 +15,9 @@ iOS devices and Android.
 <dd>- <a href="http://umundo.tk.informatik.tu-darmstadt.de/cdash/index.php?project=umundo">Build Reports</a></dd>
 <dd>- <a href="http://umundo.tk.informatik.tu-darmstadt.de/docs">Doxygen Documentation</a></dd>
 
+## License
+uMundo is distributed under the Simplified BSD license.
+
 ## Components
 
 uMundo is divided into four components with different responsibilities in various stages of maturity:

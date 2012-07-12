@@ -123,7 +123,7 @@ bool testTimedMonitors() {
 	TestThread thread4(0); // waits forever
 	TestThread thread5(0); // waits forever
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 50; i++) {
 		// test waiting for a given time
 		passedTimedMonitor = 0;
 		thread1.start(); // wait for 15ms at mutex before resuming

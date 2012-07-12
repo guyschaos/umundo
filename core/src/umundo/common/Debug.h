@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef DEBUG_H_Z6YNJLCS
 #define DEBUG_H_Z6YNJLCS
 
@@ -43,7 +58,7 @@ namespace umundo {
  *
  * trueForSuccess() || LOG_WARN("Failed to succeed");
  */
-class Debug {
+class DLLEXPORT Debug {
 public:
 	static const char* relFileName(const char* filename);
 	static bool logMsg(int lvl, const char* fmt, const char* filename, const int line, ...);

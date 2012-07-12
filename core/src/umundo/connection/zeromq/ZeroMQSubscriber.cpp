@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #include "umundo/connection/zeromq/ZeroMQNode.h"
 
 #include "umundo/connection/Publisher.h"
@@ -124,7 +139,8 @@ void ZeroMQSubscriber::run() {
 			zmq_msg_init(&message) && LOG_WARN("zmq_msg_init: %s",zmq_strerror(errno));
 
 			while (zmq_recvmsg(_socket, &message, 0) < 0)
-				LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
+        if (errno != EINTR)
+          LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
 
 			size_t msgSize = zmq_msg_size(&message);
 

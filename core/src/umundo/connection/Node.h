@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef NODE_H_AA94X8L6
 #define NODE_H_AA94X8L6
 
@@ -20,7 +35,7 @@ class Connectable;
 /**
  * Convinience class to connect register an entity with many publishers / subscribers.
  */
-class Connectable {
+class DLLEXPORT Connectable {
 public:
 	virtual ~Connectable() {};
 	// namepace qualifiers are required for swig typemaps!
@@ -43,7 +58,7 @@ public:
 /**
  * Representation of a remote umundo Node.
  */
-class NodeStub : public EndPoint {
+class DLLEXPORT NodeStub : public EndPoint {
 public:
 	virtual ~NodeStub() {}
 
@@ -74,7 +89,7 @@ private:
 
 };
 
-class NodeConfig : public Configuration {
+class DLLEXPORT NodeConfig : public Configuration {
 public:
 	shared_ptr<Configuration> create();
 	virtual ~NodeConfig() {}
@@ -90,7 +105,7 @@ class Node;
 /**
  * The local umundo node implementor basis class (bridge pattern).
  */
-class NodeImpl : public Implementation, public NodeStub {
+class DLLEXPORT NodeImpl : public Implementation, public NodeStub {
 public:
 	NodeImpl();
 	virtual ~NodeImpl() {}
@@ -108,7 +123,7 @@ public:
 /**
  * The local umundo node abstraction (bridge pattern).
  */
-class Node : public NodeStub {
+class DLLEXPORT Node : public NodeStub {
 public:
 	Node();
 	Node(string domain);

@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef NODEQUERY_H_3YGLQKC0
 #define NODEQUERY_H_3YGLQKC0
 
@@ -19,7 +34,7 @@ class NodeStub;
  * discovery implementors. At the moment, this is just an extension point to allow more refined
  * queries if we need such a feature.
  */
-class NodeQuery : public boost::enable_shared_from_this<NodeQuery> {
+class DLLEXPORT NodeQuery : public boost::enable_shared_from_this<NodeQuery> {
 public:
 	NodeQuery(string domain, ResultSet<NodeStub>*);
 	virtual ~NodeQuery();

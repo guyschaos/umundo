@@ -64,8 +64,8 @@
 		<include name="**/*Swig*.dll"/>
 		<exclude name="cross-compiled/**"/>
 		<!-- do not include debug builds in release -->
-		<exclude name="**/*undocoreSwigSwig_d*" if="${exclude.debug.jar}"/>
-		<exclude name="**/*undocoreSwig64_d*" if="${exclude.debug.jar}"/>
+		<!--exclude name="**/*undocoreSwigSwig_d*" if="${exclude.debug.jar}"/ -->
+		<!--exclude name="**/*undocoreSwig64_d*" if="${exclude.debug.jar}"/ -->
 	</fileset>
 	
 	<mkdir dir="${lib.dir}/jni" />
@@ -98,10 +98,10 @@
 		<!-- The JNI libraries -->
     <fileset dir="${lib.dir}/jni" >
       <include name="**/*" />
-			<exclude name="**/*" if="${exclude.jni.jar}" />
+			<!-- exclude name="**/*" if="${exclude.jni.jar}" / -->
     </fileset>
 	</jar>
-	<delete dir="${lib.dir}/jni" />
+	<!-- delete dir="${lib.dir}/jni" / -->
 </target>
 
 <target name="test" description="Test the uMundo Java wrappers">

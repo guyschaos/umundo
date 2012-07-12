@@ -17,7 +17,32 @@ LIST(APPEND UMUNDOUTIL_LIBRARIES umundoutil)
 # setup umundoutil library
 ############################################################
 
+include(UseUMundo)
+
 LIST(SORT UMUNDOUTIL_HEADER_FILES)
+
+if (S11N_PROTOBUF)
+	find_package(Protobuf REQUIRED)
+	LIST(APPEND UMUNDOUTIL_LIBRARIES optimized ${PROTOBUF_LIBRARY})
+	LIST(APPEND UMUNDOUTIL_LIBRARIES debug ${PROTOBUF_LIBRARY_DEBUG})
+	include_directories(${PROTOBUF_INCLUDE_DIRS})
+
+	file(GLOB_RECURSE S11N_PROTOBUF_FILES src/umundo/util/protobuf/*.cpp)
+	list(APPEND UMUNDOUTIL_FILES  ${S11N_PROTOBUF_FILES})
+
+	if (NOT PROTOBUF_PROTOC_EXECUTABLE)
+		message(FATAL_ERROR "protoc binary required for serialization")
+	endif()
+
+	# process .proto files
+	file(GLOB_RECURSE PROTOBUF_INTERFACES src/*.proto)
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
+	
+	UMUNDO_PROTOBUF_GENERATE_CPP_RPC(PROTO_SRCS PROTO_HDRS ${PROTOBUF_INTERFACES})
+	list(APPEND UMUNDOUTIL_HEADER_FILES ${PROTO_HDRS})	
+	list(APPEND UMUNDOUTIL_FILES ${PROTO_SRCS})	
+	
+endif(S11N_PROTOBUF)
 
 add_library(umundoutil ${UMUNDOUTIL_FILES})
 INSTALL_HEADERS(HEADERS ${UMUNDOUTIL_HEADER_FILES} COMPONENT headers)

@@ -8,7 +8,7 @@ notes to build uMundo on your platform.
 <table>
     <tr><th>Platform</th><th>Dependency</th><th>Version</th><th>Comment</th></tr>
 	<tr>
-		<td rowspan="5">*Everyone*</td>
+		<td rowspan="6">*Everyone*</td>
 			<td><a href="http://www.cmake.org/cmake/resources/software.html">CMake</a><br />required</td>
 			<td>>=&nbsp;2.8.6</td>
 			<td>The build-system used to build umundo from sources.</td></tr>
@@ -28,6 +28,10 @@ notes to build uMundo on your platform.
 			<td><a href="http://code.google.com/p/protobuf/">Protocol&nbsp;Buffers</a><br />required s11n</td>
 			<td>2.4.1 works</td>
 			<td>Object serializer currently used.</td></tr>
+		<tr>
+			<td><a href="http://www.pcre.org/">PCRE</a><br />required rpc</td>
+			<td>7.0 works</td>
+			<td>Regular expressions implementation for service queries. There are <a href="http://sourceforge.net/projects/gnuwin32/files/pcre/7.0/pcre-7.0.exe/download">pre-built binaries for windows</a> available.</td></tr>
 		<tr>
 			<td><a href="http://git-scm.com/">Git</a><br />required</td>
 			<td></td>

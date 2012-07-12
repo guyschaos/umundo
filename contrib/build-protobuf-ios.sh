@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# build ZeroMQ for iOS and iOS simulator
+# build ProtoBuf for iOS and iOS simulator
 #
 
 PROTOC=`which protoc`

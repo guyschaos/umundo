@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef SERVICE_H_8J9Z1YLY
 #define SERVICE_H_8J9Z1YLY
 
@@ -12,20 +27,25 @@ class ServiceStub;
 /**
  * A ServiceDescription returned by the ServiceManager to be used to instantiate local ServiceStubs.
  */
-class ServiceDescription {
+class DLLEXPORT ServiceDescription {
 public:
+	ServiceDescription(const string&, map<string, string>);
+	ServiceDescription(const string&);
+
 	const string getName();
 	const string getChannelName();
 	const map<string, string>& getProperties();
 	const string getProperty(const string&);
 	void setProperty(const string&, const string&);
 
+  ///< We need the ServiceManagers nodes in several Services
+  ServiceManager* getServiceManager() { return _svcManager; }
+
 protected:
 	ServiceDescription(Message*);
-	ServiceDescription(const string&, map<string, string>);
 
 	Message* toMessage();
-
+  
 	string _svcName;
 	string _channelName;
 	std::map<string, string> _properties;
@@ -38,7 +58,7 @@ protected:
 /**
  * A ServiceFilter can be used with the ServiceManager to get ServiceDescriptions.
  */
-class ServiceFilter {
+class DLLEXPORT ServiceFilter {
 public:
 	enum Predicate {
 	    OP_EQUALS       = 0x0001,
@@ -57,15 +77,24 @@ public:
 
 	Message* toMessage();
 
-	void addRule(const string&, const string&, Predicate = OP_EQUALS);
+  void addRule(const string& key, const string& value, int pred = OP_EQUALS);
+	void addRule(const string& key, const string& pattern, const string& value, int pred = OP_EQUALS);
+  void clearRules();
 	bool matches(ServiceDescription*);
 
+  string _uuid;
 	string _svcName;
-	map<string, string> _condition;
-	map<string, Predicate> _predicate;
+	map<string, string> _pattern;
+	map<string, string> _value;
+	map<string, int> _predicate;
+
+private:
+  bool isNumeric(const string& test);
+  double toNumber(const string& numberString);
+
 };
 
-class ServiceStub : public TypedReceiver, public Connectable {
+class DLLEXPORT ServiceStub : public TypedReceiver, public Connectable {
 public:
 	ServiceStub(const string& channel);
 	ServiceStub(ServiceDescription* svcDesc);
@@ -74,8 +103,8 @@ public:
 	virtual const string& getChannelName();
 
 	// Connectable interface
-	std::set<umundo::Publisher*> getPublishers();
-	std::set<umundo::Subscriber*> getSubscribers();
+	virtual std::set<umundo::Publisher*> getPublishers();
+	virtual std::set<umundo::Subscriber*> getSubscribers();
 
 	virtual void receive(void* object, Message* msg);
 
@@ -97,7 +126,7 @@ protected:
 	friend class ServiceManager;
 };
 
-class Service : public ServiceStub {
+class DLLEXPORT Service : public ServiceStub {
 public:
 	Service();
 	virtual ~Service();

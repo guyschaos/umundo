@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #include "umundo/protoc-rpc/ServiceGeneratorCPP.h"
 
 #include <set>
@@ -138,9 +153,9 @@ void ServiceGeneratorCPP::writeServiceStubHeader(io::Printer& printer, const Ser
 
 void ServiceGeneratorCPP::writeServiceHeader(io::Printer &printer, const ServiceDescriptor* svcDesc) const {
 	printer.Print(
-	    "class $svcName$ : public Service {\n"
+	    "class $svcName$Base : public Service {\n"
 	    "public:\n"
-	    "\t$svcName$();\n",
+	    "\t$svcName$Base();\n",
 	    "svcName", svcDesc->name()
 	);
 
@@ -210,7 +225,7 @@ void ServiceGeneratorCPP::writeServiceImplConstructor(io::Printer& printer, cons
 	printer.Print("}\n\n");
 
 	printer.Print(
-	    "$className$::$className$() {\n"
+	    "$className$Base::$className$Base() {\n"
 	    "\t_serviceName = \"$className$\";\n",
 	    "className", svcDesc->name()
 	);
@@ -236,7 +251,7 @@ void ServiceGeneratorCPP::writeServiceImplConstructor(io::Printer& printer, cons
 void ServiceGeneratorCPP::writeServiceImplDispatcher(io::Printer& printer, const ServiceDescriptor* svcDesc) const {
 
 	printer.Print(
-	    "void $className$::callMethod(string& methodName, void* in, const string& inType, void* &out, const string& outType) {\n"
+	    "void $className$Base::callMethod(string& methodName, void* in, const string& inType, void* &out, const string& outType) {\n"
 	    "\tif (false) {\n",
 	    "className", svcDesc->name()
 	);
@@ -257,7 +272,7 @@ void ServiceGeneratorCPP::writeServiceImplDispatcher(io::Printer& printer, const
 
 void ServiceGeneratorCPP::writeServiceImplCleanUp(io::Printer& printer, const ServiceDescriptor* svcDesc) const {
 	printer.Print(
-	    "void $className$::cleanUpObjects(string& methodName, void* in, void* out) {\n"
+	    "void $className$Base::cleanUpObjects(string& methodName, void* in, void* out) {\n"
 	    "\tif (false) {\n",
 	    "className", svcDesc->name()
 	);

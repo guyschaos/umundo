@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef PUBLISHER_H_F3M1RWLN
 #define PUBLISHER_H_F3M1RWLN
 
@@ -17,14 +32,14 @@ class Publisher;
  * A greeter can be registered at a publisher to send a message, whenever a new subscriber
  * is added to the publisher.
  */
-class Greeter {
+class DLLEXPORT Greeter {
 public:
 	virtual ~Greeter() {};
 	virtual void welcome(Publisher*, const string nodeId, const string subId) {};
 	virtual void farewell(Publisher*, const string nodeId, const string subId) {};
 };
 
-class PublisherConfig : public Configuration {
+class DLLEXPORT PublisherConfig : public Configuration {
 public:
 	shared_ptr<Configuration> create();
 	virtual ~PublisherConfig() {}
@@ -37,7 +52,7 @@ public:
 /**
  * Representation of a remote Publisher.
  */
-class PublisherStub : public EndPoint {
+class DLLEXPORT PublisherStub : public EndPoint {
 public:
 	PublisherStub() {}
 	virtual ~PublisherStub() {}
@@ -80,7 +95,7 @@ protected:
 /**
  * Publisher implementor basis class (bridge pattern)
  */
-class PublisherImpl : public Implementation, public PublisherStub {
+class DLLEXPORT PublisherImpl : public Implementation, public PublisherStub {
 public:
 	PublisherImpl() : _greeter(NULL) {}
 	virtual ~PublisherImpl();
@@ -117,7 +132,7 @@ protected:
  *
  * We need to overwrite everything and use the concrete implementors fields.
  */
-class Publisher : private PublisherStub {
+class DLLEXPORT Publisher : private PublisherStub {
 public:
 	Publisher(const string& channelName);
 	virtual ~Publisher();

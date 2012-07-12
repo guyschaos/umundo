@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #include "umundo/common/Debug.h"
 #include "umundo/thread/Thread.h"
 #include <stdio.h>
@@ -160,6 +175,7 @@ bool Debug::logMsg(int lvl, const char* fmt, const char* filename, const int lin
 	if (lvl == 3) severity = "DEBUG";
 
 	char* padding = (char*)malloc((longestFilename - (strlen(filename) + lineNumberLength)) + 1);
+  assert(padding != NULL);
 	padding[(longestFilename - (strlen(filename) + lineNumberLength))] = 0;
 	memset(padding, ' ', longestFilename - (strlen(filename) + lineNumberLength));
 

@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifdef WIN32
 #include <time.h>
 #include <WinSock2.h>
@@ -120,7 +135,11 @@ void ZeroMQPublisher::run() {
 	while(isStarted()) {
 		zmq_msg_t message;
 		zmq_msg_init(&message) && LOG_WARN("zmq_msg_init: %s", zmq_strerror(errno));
-		zmq_recvmsg(_socket, &message, 0) >= 0 || LOG_WARN("zmq_recvmsg: %s", zmq_strerror(errno));
+    
+    while (zmq_recvmsg(_socket, &message, 0) < 0)
+      if (errno != EINTR)
+        LOG_WARN("zmq_recvmsg: %s",zmq_strerror(errno));
+
 		if (!isStarted()) {
 			zmq_msg_close(&message) && LOG_WARN("zmq_msg_close: %s", zmq_strerror(errno));
 			return;

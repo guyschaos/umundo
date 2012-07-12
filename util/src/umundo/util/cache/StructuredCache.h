@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef SCACHE_H_LAY4Q1LN
 #define SCACHE_H_LAY4Q1LN
 
@@ -16,7 +31,7 @@ class SCacheItem;
  * subclasses thereof to access SCacheItems in the cache as this will allow the cache to page out items
  * that are "father away" form the pointers.
  */
-class SCachePointer {
+class DLLEXPORT SCachePointer {
 public:
 
 	SCachePointer() {}
@@ -32,7 +47,7 @@ public:
  * Subclasses of this class are expected to alleviate the pressure put on them by
  * paging out their contents. If the pressure drops, they are to reload their content.
  */
-class SCacheItem {
+class DLLEXPORT SCacheItem {
 public:
 	virtual ~SCacheItem();
 
@@ -52,7 +67,7 @@ protected:
 /**
  * A SCache orders its items in a graph and puts pressure on those far away from items pointed to.
  */
-class SCache : public Thread {
+class DLLEXPORT SCache : public Thread {
 public:
 	SCache();
 	virtual ~SCache();

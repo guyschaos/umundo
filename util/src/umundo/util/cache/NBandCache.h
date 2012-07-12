@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef NBANDCACHE_H_MJROKJNY
 #define NBANDCACHE_H_MJROKJNY
 
@@ -7,7 +22,7 @@ namespace umundo {
 
 class NBandCacheItem;
 
-class NBandProxyCacheItem : public SCacheItem {
+class DLLEXPORT NBandProxyCacheItem : public SCacheItem {
 public:
 	NBandProxyCacheItem();
 	set<SCacheItem*> getNext();
@@ -20,7 +35,7 @@ public:
 };
 
 
-class NBandCacheItem : public SCacheItem {
+class DLLEXPORT NBandCacheItem : public SCacheItem {
 public:
 	NBandCacheItem(string name, string band);
 
@@ -37,7 +52,7 @@ public:
 	bool _isPrepared;
 };
 
-class NBandCachePtr : public SCachePointer {
+class DLLEXPORT NBandCachePtr : public SCachePointer {
 public:
 	NBandCachePtr();
 
@@ -56,7 +71,7 @@ public:
 	NBandCacheItem* _item;
 };
 
-class NBandCache : public SCache {
+class DLLEXPORT NBandCache : public SCache {
 public:
 	NBandCache();
 

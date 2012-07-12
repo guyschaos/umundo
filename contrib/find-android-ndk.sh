@@ -13,7 +13,7 @@ if [ ! -f ${ANDROID_NDK_ROOT}/ndk-build ]; then
 	elif [ -d /Developer/Applications/android-ndk-r7c ]; then
 		ANDROID_NDK_ROOT="/Developer/Applications/android-ndk-r7c"
 	elif [ -d /home/sradomski/Documents/android-dev/android-ndk-r7c ]; then
-		ANDROID_NDK_ROOT="/home/sradomski/Documents/android-dev/android-ndk-r7c"
+		ANDROID_NDK_ROOT="/home/sradomski/Documents/android-dev/android-ndk-r8"
 	else
 		echo
 		echo "Cannot find android-ndk, call script as"

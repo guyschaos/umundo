@@ -244,9 +244,11 @@ endif()
 
 # built shared or static libraries?
 if(BUILD_STATIC_LIBRARIES)
+	add_definitions("-DUMUNDO_STATIC")
 	SET(BUILD_SHARED_LIBS OFF)
 else()
 	SET(BUILD_SHARED_LIBS ON)
+	add_definitions("-DCOMPILING_DLL")
 endif()
 
 # prefer static libraries for linking
@@ -294,7 +296,6 @@ include_directories(${Boost_INCLUDE_DIR})
 
 # determine path seperator to shorten filenames in Debug.cpp
 if (WIN32)
-	LIST(APPEND UMUNDOCORE_LIBRARIES Ws2_32)
     SET(PATH_SEPERATOR "\\\\")
 else()
 	SET(PATH_SEPERATOR "/")
@@ -313,6 +314,17 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_subdirectory(core)
 GET_DIRECTORY_PROPERTY(CORE_INCLUDES DIRECTORY core INCLUDE_DIRECTORIES)
 include_directories(${CORE_INCLUDES})
+
+if (BUILD_UMUNDO_S11N)
+	include_directories("s11n/src")
+endif()
+if (BUILD_UMUNDO_RPC)
+	include_directories("rpc/src")
+endif()
+if (BUILD_UMUNDO_UTIL)
+	include_directories("util/src")
+endif()
+
 if (BUILD_UMUNDO_S11N)
 	add_subdirectory(s11n)
 	GET_DIRECTORY_PROPERTY(S11N_INCLUDES DIRECTORY s11n INCLUDE_DIRECTORIES)

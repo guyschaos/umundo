@@ -10,6 +10,15 @@ file(GLOB_RECURSE UMUNDOS11N_HEADER_FILES src/umundo/*.h)
 
 include(UseUMundo)
 
+if (WIN32)
+	set(PC_PCRE_LIBDIR "C:/Program Files/GnuWin32/lib")
+	set(PC_PCRE_INCLUDEDIR "C:/Program Files/GnuWin32/include")
+endif()
+
+find_package(PCRE REQUIRED)
+include_directories(${PCRE_INCLUDE_DIR})
+LIST(APPEND UMUNDOS11N_LIBRARIES ${PCRE_LIBRARIES})
+
 ###########################################
 # gather implementation agnostic files
 ###########################################

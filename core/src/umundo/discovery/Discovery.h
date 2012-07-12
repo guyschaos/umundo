@@ -1,3 +1,18 @@
+/**
+ *  Copyright (C) 2012  Stefan Radomski (stefan.radomski@cs.tu-darmstadt.de)
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the FreeBSD license as published by the FreeBSD
+ *  project.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  You should have received a copy of the FreeBSD license along with this
+ *  program. If not, see <http://www.opensource.org/licenses/bsd-license>.
+ */
+
 #ifndef DISCOVERY_H_PWR3M1QA
 #define DISCOVERY_H_PWR3M1QA
 
@@ -9,7 +24,7 @@ class NodeImpl;
 class NodeQuery;
 class Node;
 
-class DiscoveryConfig : public Configuration {
+class DLLEXPORT DiscoveryConfig : public Configuration {
 	// at the moment, there is nothing we need to configure
 };
 
@@ -17,7 +32,7 @@ class DiscoveryConfig : public Configuration {
  * Discovery implementor basis class (bridge pattern).
  * \see Discovery
  */
-class DiscoveryImpl : public Implementation {
+class DLLEXPORT DiscoveryImpl : public Implementation {
 public:
 
 	virtual void add(shared_ptr<NodeImpl> node) = 0;
@@ -38,7 +53,7 @@ public:
  *
  * \see DiscoveryImpl defines the abstract base class for concrete implementors.
  */
-class Discovery {
+class DLLEXPORT Discovery {
 public:
 	/**
 	 * Create a new discovery subsystem.

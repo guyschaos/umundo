@@ -9,6 +9,10 @@
 // macros from cmake
 %import "umundo/config.h"
 
+// set DLLEXPORT macro to empty string
+#define DLLEXPORT
+
+
 // SWIG does not recognize 'using std::string' from an include
 typedef std::string string;
 typedef std::vector vector;

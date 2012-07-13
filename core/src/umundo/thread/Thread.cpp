@@ -569,7 +569,8 @@ bool Monitor::wait(uint32_t ms) {
 	if (ms == 0) {
 		while(!_signaled) // are there enough signals for this thread to pass?
 			rv = pthread_cond_wait(&_cond, &_mutex);
-		assert(_waiters && _signaled);
+    assert(_signaled > 0);
+    assert(_waiters > 0);
 		_signaled--;
 		_waiters--;
 		pthread_mutex_unlock(&_mutex);

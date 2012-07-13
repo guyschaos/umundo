@@ -132,6 +132,8 @@ ServiceDescription* ServiceManager::find(ServiceFilter* svcFilter) {
 	delete findMsg;
 
 	_findRequests[reqId].wait();
+
+	ScopeLock lock(&_mutex);
 	_findRequests.erase(reqId);
 
 	if (_findResponses.find(reqId) != _findResponses.end()) {

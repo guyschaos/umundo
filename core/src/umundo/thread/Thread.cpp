@@ -70,7 +70,8 @@ Thread::~Thread() {
 	}
 
 #ifdef THREAD_PTHREAD
-	pthread_detach(_thread);
+  if (_thread != NULL)
+    pthread_detach(_thread);
 #endif
 #ifdef THREAD_WIN32
 	if (_thread != NULL)

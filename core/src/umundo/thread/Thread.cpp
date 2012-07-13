@@ -485,6 +485,7 @@ Monitor::Monitor() {
 }
 
 Monitor::~Monitor() {
+  broadcast();
 #ifdef THREAD_PTHREAD
 	int err;
 	while((err = pthread_cond_destroy(&_cond))) {
@@ -590,9 +591,11 @@ bool Monitor::wait(uint32_t ms) {
 		while(!_signaled && rv != ETIMEDOUT)
 			rv = pthread_cond_timedwait(&_cond, &_mutex, &ts);
 		// decrease number of signals if we awoke due to signal
-    assert(_signaled > 0);
+    if (rv != ETIMEDOUT) {
+      assert(_signaled > 0);
+      _signaled--;
+    }
     assert(_waiters > 0);
-    _signaled--;
 		_waiters--;
 		pthread_mutex_unlock(&_mutex);
 		return rv == 0;

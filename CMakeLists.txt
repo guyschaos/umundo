@@ -2,7 +2,7 @@
 # To cross compile, choose a toolchain file (e.g. iOS):
 # build$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../contrib/cmake/CrossCompile-iOS.cmake
 #
-cmake_minimum_required(VERSION 2.8.5)
+cmake_minimum_required(VERSION 2.8.4)
 
 # specify umundo version
 SET(UMUNDO_VERSION_MAJOR "0")

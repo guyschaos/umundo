@@ -335,46 +335,46 @@ bool continuousQueries() {
     ServiceManager* queryMgr = new ServiceManager();
     queryNode->connect(queryMgr);
     queryMgr->startQuery(pingSvcFilter, svcListener);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 1);
     
     // adding another matching service
     hostMgr->addService(localPingService2);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 2);
 
     // adding the same service ought to be ignored
     hostMgr->addService(localPingService2);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 2);
 
     // remove matching services
     hostMgr->removeService(localPingService1);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 1);
 
     // removing same service ought to do nothing
     hostMgr->removeService(localPingService1);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 1);
 
     hostMgr->removeService(localPingService2);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 0);
 
     // add service again
     hostMgr->addService(localPingService2);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 1);
 
     // stop query - listener should know nothing
     queryMgr->stopQuery(pingSvcFilter);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     assert(svcListener->_instances.size() == 1);
     delete svcListener;
     
     queryNode->disconnect(queryMgr);
-    Thread::sleepMs(100);
+    Thread::sleepMs(200);
     hostNode->disconnect(hostMgr);
     
     delete queryMgr;

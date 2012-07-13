@@ -589,11 +589,9 @@ bool Monitor::wait(uint32_t ms) {
 		while(!_signaled && rv != ETIMEDOUT)
 			rv = pthread_cond_timedwait(&_cond, &_mutex, &ts);
 		// decrease number of signals if we awoke due to signal
-		if (rv != ETIMEDOUT) {
-			assert(_signaled);
-			_signaled--;
-		}
-		// in any case we won't be a waiter anymore
+    assert(_signaled > 0);
+    assert(_waiters > 0);
+    _signaled--;
 		_waiters--;
 		pthread_mutex_unlock(&_mutex);
 		return rv == 0;

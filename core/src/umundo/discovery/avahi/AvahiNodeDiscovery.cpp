@@ -194,7 +194,7 @@ void AvahiNodeDiscovery::browse(shared_ptr<NodeQuery> query) {
 
 	client = avahi_client_new(avahi_simple_poll_get(_simplePoll), (AvahiClientFlags)0, browseClientCallback, (void*)address, &error);
 	if (client == NULL) {
-		LOG_WARN("avahi_client_new failed - is the Avahi daemon running?", error);
+		LOG_ERR("avahi_client_new failed - is the Avahi daemon running?", error);
 		assert(validateState());
 		UMUNDO_UNLOCK(_mutex);
 		return;

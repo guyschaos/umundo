@@ -70,7 +70,7 @@ Thread::~Thread() {
 	}
 
 #ifdef THREAD_PTHREAD
-  if (_thread != NULL)
+  if (_thread)
     pthread_detach(_thread);
 #endif
 #ifdef THREAD_WIN32
@@ -133,7 +133,7 @@ void Thread::start() {
 	_isStarted = true;
 
 #ifdef THREAD_PTHREAD
-	if (_thread != 0)
+	if (_thread)
 		join();
 		
 	int err = pthread_create(&_thread, NULL, &runWrapper, (void*)this);
